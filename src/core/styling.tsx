@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import {
   Paint,
   LinearGradient,
@@ -140,7 +141,7 @@ function Dash({ c }: { c: ShapeConfig }) {
  * shader + shadow on the base pass, plus a stroke pass (or a bare dash when the
  * base pass is itself the stroke).
  */
-export function ShapeDecorations({ c }: { c: ShapeConfig }) {
+export const ShapeDecorations = memo(({ c }: { c: ShapeConfig }) => {
   const fill = hasFill(c);
   const stroke = hasStroke(c);
   return (
@@ -161,4 +162,5 @@ export function ShapeDecorations({ c }: { c: ShapeConfig }) {
       {!fill && stroke && <Dash c={c} />}
     </>
   );
-}
+});
+ShapeDecorations.displayName = 'ShapeDecorations';

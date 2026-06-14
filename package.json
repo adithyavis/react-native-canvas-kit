@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "example": "yarn workspace react-native-canvas-kit-example",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "clean": "del-cli lib example/.expo example/dist",
     "prepare": "bob build",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -66,12 +66,11 @@
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.0.0",
-    "@react-native/babel-preset": "0.85.0",
-    "@react-native/eslint-config": "0.85.0",
-    "@react-native/jest-preset": "0.85.0",
+    "@react-native/babel-preset": "0.76.9",
+    "@react-native/eslint-config": "0.76.9",
     "@release-it/conventional-changelog": "^10.0.6",
     "@shopify/react-native-skia": "^2.6.4",
-    "@types/react": "^19.2.0",
+    "@types/react": "~18.3.12",
     "commitlint": "^20.5.0",
     "del-cli": "^7.0.0",
     "eslint": "^9.39.4",
@@ -81,10 +80,10 @@
     "jest": "^30.3.0",
     "lefthook": "^2.1.4",
     "prettier": "^3.8.1",
-    "react": "19.2.3",
-    "react-native": "0.85.0",
+    "react": "18.3.1",
+    "react-native": "0.76.9",
     "react-native-builder-bob": "^0.41.0",
-    "react-native-web": "~0.21.1",
+    "react-native-web": "~0.19.13",
     "release-it": "^19.2.4",
     "turbo": "^2.8.21",
     "typescript": "^6.0.2"
@@ -94,6 +93,9 @@
     "react": "*",
     "react-native": "<0.82.0",
     "react-native-reanimated": "^3.0.0"
+  },
+  "resolutions": {
+    "@types/react": "~18.3.12"
   },
   "workspaces": [
     "example"
@@ -125,7 +127,7 @@
     "useTabs": false
   },
   "jest": {
-    "preset": "@react-native/jest-preset",
+    "preset": "react-native",
     "testEnvironment": "node",
     "modulePathIgnorePatterns": [
       "<rootDir>/example/node_modules",

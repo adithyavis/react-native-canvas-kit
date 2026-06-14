@@ -1,11 +1,9 @@
-import { AppRegistry } from 'react-native';
+import { registerRootComponent } from 'expo';
 import App from './src/App';
-import { name as appName } from './app.json';
 
-AppRegistry.registerComponent(appName, () => App);
-
-if (typeof document !== 'undefined') {
-  AppRegistry.runApplication(appName, {
-    rootTag: document.getElementById('root'),
-  });
-}
+// Expo native entry point. `registerRootComponent` calls
+// `AppRegistry.registerComponent('main', () => App)` and wires up the root view
+// for the iOS/Android dev client and standalone builds.
+//
+// Web is served separately by Vite — see index.web.js / index.html.
+registerRootComponent(App);

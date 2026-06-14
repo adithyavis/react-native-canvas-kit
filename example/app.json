@@ -1,4 +1,17 @@
 {
-  "name": "CanvasKitExample",
-  "displayName": "CanvasKitExample"
+  "expo": {
+    "name": "CanvasKitExample",
+    "slug": "react-native-canvas-kit-example",
+    "version": "1.0.0",
+    "scheme": "canvaskitexample",
+    "orientation": "portrait",
+    "newArchEnabled": false,
+    "ios": {
+      "bundleIdentifier": "com.canvaskit.example",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.canvaskit.example"
+    }
+  }
 }

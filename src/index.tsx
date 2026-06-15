@@ -3,6 +3,9 @@
  * Native, rendered with @shopify/react-native-skia.
  */
 
+import { assertReanimatedVersion } from './core/assertReanimatedVersion';
+assertReanimatedVersion();
+
 export { Stage } from './components/Stage';
 export type { StageProps } from './components/Stage';
 export { Layer } from './components/Layer';

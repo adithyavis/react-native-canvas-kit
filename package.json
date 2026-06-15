@@ -89,9 +89,9 @@
     "typescript": "^6.0.2"
   },
   "peerDependencies": {
-    "@shopify/react-native-skia": "<=1.12.4",
+    "@shopify/react-native-skia": ">=1.0.0",
     "react": "*",
-    "react-native": "<0.82.0",
+    "react-native": "*",
     "react-native-reanimated": "^3.0.0"
   },
   "resolutions": {

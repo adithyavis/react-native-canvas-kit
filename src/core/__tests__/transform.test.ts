@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { buildTransform, resolveTransform } from '../transform';
+import { buildTransforms3dArray, resolveTransform } from '../transform';
 
 describe('resolveTransform', () => {
   it('applies defaults', () => {
@@ -37,20 +37,20 @@ describe('resolveTransform', () => {
   });
 });
 
-describe('buildTransform', () => {
+describe('buildTransforms3dArray', () => {
   it('emits nothing for an identity transform', () => {
-    expect(buildTransform({})).toEqual([]);
+    expect(buildTransforms3dArray({})).toEqual([]);
   });
 
   it('emits translate for position', () => {
-    expect(buildTransform({ x: 10, y: 20 })).toEqual([
+    expect(buildTransforms3dArray({ x: 10, y: 20 })).toEqual([
       { translateX: 10 },
       { translateY: 20 },
     ]);
   });
 
   it('preserves matrix order: translate -> rotate -> skew -> scale -> -offset', () => {
-    const out = buildTransform({
+    const out = buildTransforms3dArray({
       x: 1,
       y: 2,
       rotation: 180,
@@ -76,7 +76,7 @@ describe('buildTransform', () => {
 
   it('omits identity operations', () => {
     // scale of 1 and rotation of 0 should not appear
-    expect(buildTransform({ x: 5, scaleX: 1, rotation: 0 })).toEqual([
+    expect(buildTransforms3dArray({ x: 5, scaleX: 1, rotation: 0 })).toEqual([
       { translateX: 5 },
     ]);
   });

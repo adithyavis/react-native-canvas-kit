@@ -1,7 +1,6 @@
 import type { SkEnum, BlendMode } from '@shopify/react-native-skia';
 import type { GlobalCompositeOperation } from './types';
 
-/** Skia's accepted blend-mode prop type (lowercased enum keys). */
 export type SkiaBlendMode = SkEnum<typeof BlendMode>;
 
 const BLEND_MAP: Record<GlobalCompositeOperation, string> = {

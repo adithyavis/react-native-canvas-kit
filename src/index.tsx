@@ -1,8 +1,3 @@
-/**
- * react-native-canvas-kit — a Konva-style declarative 2D canvas for React
- * Native, rendered with @shopify/react-native-skia.
- */
-
 import { assertReanimatedVersion } from './core/assertReanimatedVersion';
 assertReanimatedVersion();
 
@@ -42,6 +37,7 @@ export type {
   KonvaEventObject,
   KonvaEventListener,
   NodeEventHandlers,
+  NodeHandle,
 } from './core/types';
 
 // Convenience re-exports for loading assets (used with <Image> and <Text>).

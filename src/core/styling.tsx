@@ -30,7 +30,6 @@ export function hasStroke(c: ShapeConfig): boolean {
   return c.stroke != null && (c.strokeWidth ?? DEFAULT_STROKE_WIDTH) > 0;
 }
 
-/** Whether anything visible should be drawn at all. */
 export function isPaintable(c: ShapeConfig): boolean {
   return hasFill(c) || hasStroke(c);
 }
@@ -44,10 +43,6 @@ interface BasePaintProps {
   blendMode?: SkiaBlendMode;
 }
 
-/**
- * Inline paint props for the primitive's first (base) pass. Returns the fill
- * when present, otherwise the stroke, otherwise `null` (draw nothing).
- */
 export function basePaintProps(c: ShapeConfig): BasePaintProps | null {
   const blendMode = toSkiaBlendMode(c.globalCompositeOperation);
   if (hasFill(c)) {
@@ -68,7 +63,6 @@ export function basePaintProps(c: ShapeConfig): BasePaintProps | null {
   return null;
 }
 
-/** Parse a flat `[offset, color, ...]` array into Skia colors/positions. */
 function parseColorStops(stops: ColorStops): {
   colors: string[];
   positions: number[];
@@ -136,11 +130,6 @@ function Dash({ c }: { c: ShapeConfig }) {
   return <DashPathEffect intervals={c.dash} phase={c.dashOffset ?? 0} />;
 }
 
-/**
- * The paint children to nest inside a shape's primitive. Renders the fill
- * shader + shadow on the base pass, plus a stroke pass (or a bare dash when the
- * base pass is itself the stroke).
- */
 export const ShapeDecorations = memo(({ c }: { c: ShapeConfig }) => {
   const fill = hasFill(c);
   const stroke = hasStroke(c);

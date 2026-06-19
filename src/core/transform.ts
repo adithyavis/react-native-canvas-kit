@@ -29,11 +29,7 @@ export function resolveTransform(config: NodeConfig): ResolvedTransform {
   };
 }
 
-/**
- * Build the Skia `transform` array for a node. Identity operations are omitted
- * to keep the array minimal.
- */
-export function buildTransform(config: NodeConfig): Transforms3d {
+export function buildTransforms3dArray(config: NodeConfig): Transforms3d {
   const t = resolveTransform(config);
   const out: Transforms3d = [];
 

@@ -1,18 +1,24 @@
 import { memo, useMemo } from 'react';
-import { Text as SkiaText, matchFont } from '@shopify/react-native-skia';
+import {
+  Text as SkiaText,
+  matchFont,
+  type SkFont,
+} from '@shopify/react-native-skia';
 import type { FontStyle, ShapeConfig } from '../../core/types';
 import {
   basePaintProps,
   hasStroke,
   ShapeDecorations,
 } from '../../core/styling';
+import { boxHit, hitStrokePad } from '../../core/hitTest';
 import { Container } from '../internal/Container';
 
 export interface TextProps extends ShapeConfig {
   text?: string;
   fontFamily?: string;
   fontSize?: number;
-  fontStyle?: FontStyle; // e.g. "normal", "bold", "italic", "italic bold"
+  fontStyle?: FontStyle;
+  font?: SkFont | null;
 }
 
 export const Text = memo(
@@ -21,6 +27,7 @@ export const Text = memo(
     fontFamily = 'sans-serif',
     fontSize = 16,
     fontStyle = 'normal',
+    font: fontProp,
     ...props
   }: TextProps) => {
     const config: ShapeConfig = {
@@ -28,7 +35,7 @@ export const Text = memo(
       fill: props.fill ?? (hasStroke(props) ? undefined : 'black'),
     };
 
-    const font = useMemo(() => {
+    const matched = useMemo(() => {
       const style = {
         fontFamily,
         fontSize,
@@ -37,6 +44,7 @@ export const Text = memo(
       };
       return matchFont(style as Parameters<typeof matchFont>[0]);
     }, [fontFamily, fontSize, fontStyle]);
+    const font = fontProp ?? matched;
 
     if (!font) {
       return null;
@@ -45,10 +53,17 @@ export const Text = memo(
     if (!base) {
       return null;
     }
-    const baseline = -font.getMetrics().ascent;
+    const metrics = font.getMetrics();
+    const baseline = -metrics.ascent;
+    const boxWidth = font.measureText(text).width;
+    const boxHeight = metrics.descent - metrics.ascent;
 
     return (
-      <Container config={config}>
+      <Container
+        config={config}
+        type="shape"
+        hitTest={boxHit(0, 0, boxWidth, boxHeight, hitStrokePad(config))}
+      >
         <SkiaText x={0} y={baseline} text={text} font={font} {...base}>
           <ShapeDecorations c={config} />
         </SkiaText>

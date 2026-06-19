@@ -6,6 +6,7 @@ import {
   isPaintable,
   ShapeDecorations,
 } from '../../core/styling';
+import { rectHit, hitStrokePad } from '../../core/hitTest';
 import { Container } from '../internal/Container';
 
 export interface RectProps extends ShapeConfig {
@@ -25,7 +26,11 @@ export const Rect = memo(({ cornerRadius, ...props }: RectProps) => {
   const r = Array.isArray(cornerRadius) ? cornerRadius[0] : cornerRadius;
 
   return (
-    <Container config={config}>
+    <Container
+      config={config}
+      type="shape"
+      hitTest={rectHit(width, height, r ?? 0, hitStrokePad(config))}
+    >
       {r ? (
         <RoundedRect x={0} y={0} width={width} height={height} r={r} {...base}>
           <ShapeDecorations c={config} />

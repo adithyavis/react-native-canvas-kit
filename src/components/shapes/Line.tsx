@@ -6,13 +6,18 @@ import {
   isPaintable,
   ShapeDecorations,
 } from '../../core/styling';
-import { linePath } from '../../core/geometry';
+import { linePath } from '../../core/path';
+import {
+  polygonHit,
+  segmentDistanceHit,
+  hitStrokePad,
+} from '../../core/hitTest';
 import { Container } from '../internal/Container';
 
 export interface LineProps extends ShapeConfig {
   points?: number[];
   closed?: boolean;
-  /** Accepted for Konva parity; spline smoothing is not yet implemented. */
+  /** spline smoothing is not yet implemented. */
   tension?: number;
 }
 
@@ -24,8 +29,12 @@ export const Line = memo(
       return null;
     }
     const base = basePaintProps(config)!;
+    const pad = hitStrokePad(config);
+    const hitTest = closed
+      ? polygonHit(points, pad)
+      : segmentDistanceHit(points, Math.max(pad, 1));
     return (
-      <Container config={config}>
+      <Container config={config} type="shape" hitTest={hitTest}>
         <Path path={path} {...base}>
           <ShapeDecorations c={config} />
         </Path>

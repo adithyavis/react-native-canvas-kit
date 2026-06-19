@@ -6,6 +6,7 @@ import {
   isPaintable,
   ShapeDecorations,
 } from '../../core/styling';
+import { circleHit, hitStrokePad } from '../../core/hitTest';
 import { Container } from '../internal/Container';
 
 export interface CircleProps extends ShapeConfig {
@@ -19,7 +20,11 @@ export const Circle = memo(({ radius = 0, ...props }: CircleProps) => {
   }
   const base = basePaintProps(config)!;
   return (
-    <Container config={config}>
+    <Container
+      config={config}
+      type="shape"
+      hitTest={circleHit(radius, hitStrokePad(config))}
+    >
       <SkiaCircle cx={0} cy={0} r={radius} {...base}>
         <ShapeDecorations c={config} />
       </SkiaCircle>

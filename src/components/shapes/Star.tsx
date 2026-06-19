@@ -6,7 +6,8 @@ import {
   isPaintable,
   ShapeDecorations,
 } from '../../core/styling';
-import { starPath } from '../../core/geometry';
+import { starPath } from '../../core/path';
+import { polygonHit, starVertices, hitStrokePad } from '../../core/hitTest';
 import { Container } from '../internal/Container';
 
 export interface StarProps extends ShapeConfig {
@@ -32,7 +33,14 @@ export const Star = memo(
     }
     const base = basePaintProps(config)!;
     return (
-      <Container config={config}>
+      <Container
+        config={config}
+        type="shape"
+        hitTest={polygonHit(
+          starVertices(numPoints, innerRadius, outerRadius),
+          hitStrokePad(config)
+        )}
+      >
         <Path path={path} {...base}>
           <ShapeDecorations c={config} />
         </Path>

@@ -6,6 +6,7 @@ import {
   isPaintable,
   ShapeDecorations,
 } from '../../core/styling';
+import { ellipseHit, hitStrokePad } from '../../core/hitTest';
 import { Container } from '../internal/Container';
 
 export interface EllipseProps extends ShapeConfig {
@@ -21,7 +22,11 @@ export const Ellipse = memo(
     }
     const base = basePaintProps(config)!;
     return (
-      <Container config={config}>
+      <Container
+        config={config}
+        type="shape"
+        hitTest={ellipseHit(radiusX, radiusY, hitStrokePad(config))}
+      >
         <Oval
           x={-radiusX}
           y={-radiusY}

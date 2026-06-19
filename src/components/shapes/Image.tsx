@@ -7,6 +7,7 @@ import {
   type Fit,
 } from '@shopify/react-native-skia';
 import type { ShapeConfig } from '../../core/types';
+import { boxHit, hitStrokePad } from '../../core/hitTest';
 import { Container } from '../internal/Container';
 
 export interface ImageProps extends ShapeConfig {
@@ -26,14 +27,20 @@ export const Image = memo(
       return null;
     }
     const config: ShapeConfig = props;
+    const w = width ?? skImage.width();
+    const h = height ?? skImage.height();
     return (
-      <Container config={config}>
+      <Container
+        config={config}
+        type="shape"
+        hitTest={boxHit(0, 0, w, h, hitStrokePad(config))}
+      >
         <SkiaImage
           image={skImage}
           x={0}
           y={0}
-          width={width ?? skImage.width()}
-          height={height ?? skImage.height()}
+          width={w}
+          height={h}
           fit={fit ?? 'fill'}
         />
       </Container>

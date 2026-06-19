@@ -34,8 +34,8 @@ export type {
   GlobalCompositeOperation,
   ColorStops,
   FontStyle,
-  KonvaEventObject,
-  KonvaEventListener,
+  EventObject,
+  EventListener,
   NodeEventHandlers,
   NodeHandle,
 } from './core/types';

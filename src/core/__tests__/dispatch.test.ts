@@ -2,7 +2,7 @@ import { describe, it, expect, jest } from '@jest/globals';
 import { NodeRegistry } from '../registry';
 import { dispatch, GestureController, type DragHost } from '../dispatch';
 import { buildAffineMatrixFromConfig } from '../matrix';
-import type { KonvaEventObject, NodeConfig, Vector2d } from '../types';
+import type { EventObject, NodeConfig, Vector2d } from '../types';
 
 function shape(
   reg: NodeRegistry,
@@ -62,7 +62,7 @@ describe('dispatch bubbling', () => {
       onClick: () => log.push('stage'),
     });
     const group = container(reg, stage, 'group', {
-      onClick: (e: KonvaEventObject) => {
+      onClick: (e: EventObject) => {
         log.push('group');
         e.cancelBubble = true;
       },
@@ -76,12 +76,10 @@ describe('dispatch bubbling', () => {
     const reg = new NodeRegistry();
     const seen: Array<[number, number]> = [];
     const stage = container(reg, null, 'stage', {
-      onClick: (e: KonvaEventObject) =>
-        seen.push([e.target.id, e.currentTarget.id]),
+      onClick: (e: EventObject) => seen.push([e.target.id, e.currentTarget.id]),
     });
     const sh = shape(reg, stage, {
-      onClick: (e: KonvaEventObject) =>
-        seen.push([e.target.id, e.currentTarget.id]),
+      onClick: (e: EventObject) => seen.push([e.target.id, e.currentTarget.id]),
     });
     dispatch(reg, 'click', sh, {});
     expect(seen).toEqual([

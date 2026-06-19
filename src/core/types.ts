@@ -47,7 +47,7 @@ export interface NodeHandle {
   getAbsolutePosition: () => Vector2d;
 }
 
-export interface KonvaEventObject<E = unknown> {
+export interface EventObject<E = unknown> {
   type: string;
   target: NodeHandle;
   currentTarget: NodeHandle;
@@ -55,38 +55,36 @@ export interface KonvaEventObject<E = unknown> {
   cancelBubble: boolean;
 }
 
-export type KonvaEventListener<E = unknown> = (
-  evt: KonvaEventObject<E>
-) => void;
+export type EventListener<E = unknown> = (evt: EventObject<E>) => void;
 
 /**
  * Pointer/touch/mouse event handler props. Accepted but inert in v1 — they
  * exist so component signatures are stable when the event engine lands.
  */
 export interface NodeEventHandlers {
-  onClick?: KonvaEventListener;
-  onDblClick?: KonvaEventListener;
-  onMouseDown?: KonvaEventListener;
-  onMouseUp?: KonvaEventListener;
-  onMouseEnter?: KonvaEventListener;
-  onMouseLeave?: KonvaEventListener;
-  onMouseMove?: KonvaEventListener;
-  onMouseOver?: KonvaEventListener;
-  onMouseOut?: KonvaEventListener;
-  onWheel?: KonvaEventListener;
-  onTap?: KonvaEventListener;
-  onDblTap?: KonvaEventListener;
-  onTouchStart?: KonvaEventListener;
-  onTouchMove?: KonvaEventListener;
-  onTouchEnd?: KonvaEventListener;
-  onPointerDown?: KonvaEventListener;
-  onPointerMove?: KonvaEventListener;
-  onPointerUp?: KonvaEventListener;
-  onPointerEnter?: KonvaEventListener;
-  onPointerLeave?: KonvaEventListener;
-  onDragStart?: KonvaEventListener;
-  onDragMove?: KonvaEventListener;
-  onDragEnd?: KonvaEventListener;
+  onClick?: EventListener;
+  onDblClick?: EventListener;
+  onMouseDown?: EventListener;
+  onMouseUp?: EventListener;
+  onMouseEnter?: EventListener;
+  onMouseLeave?: EventListener;
+  onMouseMove?: EventListener;
+  onMouseOver?: EventListener;
+  onMouseOut?: EventListener;
+  onWheel?: EventListener;
+  onTap?: EventListener;
+  onDblTap?: EventListener;
+  onTouchStart?: EventListener;
+  onTouchMove?: EventListener;
+  onTouchEnd?: EventListener;
+  onPointerDown?: EventListener;
+  onPointerMove?: EventListener;
+  onPointerUp?: EventListener;
+  onPointerEnter?: EventListener;
+  onPointerLeave?: EventListener;
+  onDragStart?: EventListener;
+  onDragMove?: EventListener;
+  onDragEnd?: EventListener;
 }
 
 export interface NodeConfig extends NodeEventHandlers {
@@ -98,7 +96,7 @@ export interface NodeConfig extends NodeEventHandlers {
   scale?: Vector2d;
   scaleX?: number;
   scaleY?: number;
-  rotation?: number; // degrees, like Konva
+  rotation?: number; // degrees
   skewX?: number;
   skewY?: number;
   offset?: Vector2d;

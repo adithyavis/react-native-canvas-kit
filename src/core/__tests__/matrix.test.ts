@@ -61,7 +61,7 @@ describe('Transforms', () => {
     });
   });
 
-  it('keeps the offset point fixed under rotation (Konva pivot semantics)', () => {
+  it('keeps the offset point fixed under rotation', () => {
     // offset moves the rotation pivot; the offset point itself maps to (x, y).
     const m = buildAffineMatrixFromConfig({
       x: 100,

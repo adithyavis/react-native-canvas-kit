@@ -1,4 +1,4 @@
-import type { KonvaEventObject, NodeEventHandlers, Vector2d } from './types';
+import type { EventObject, NodeEventHandlers, Vector2d } from './types';
 import type { NodeRegistry } from './registry';
 import { applyTransformsToPoint, invert, type Mat } from './matrix';
 import { dist } from './geometry';
@@ -28,9 +28,9 @@ export function dispatch(
   type: string,
   targetId: number,
   evt: unknown
-): KonvaEventObject {
+): EventObject {
   const eventPropName = TYPE_TO_PROP_NAME[type];
-  const event: KonvaEventObject = {
+  const event: EventObject = {
     type,
     target: registry.getHandle(targetId),
     currentTarget: registry.getHandle(targetId),

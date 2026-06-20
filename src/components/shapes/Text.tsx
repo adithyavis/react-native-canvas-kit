@@ -5,13 +5,13 @@ import {
   type SkFont,
 } from '@shopify/react-native-skia';
 import type { FontStyle, ShapeConfig } from '../../core/types';
+import { basePaintProps, ShapeDecorations } from '../../core/styling';
 import {
-  basePaintProps,
-  hasStroke,
-  ShapeDecorations,
-} from '../../core/styling';
-import { boxHit, hitStrokePad } from '../../core/hitTest';
+  boxHitTestDescriptor,
+  hitStrokePad,
+} from '../../core/hitTestDescriptor';
 import { Container } from '../internal/Container';
+import { hasStroke } from '../../core/paint';
 
 export interface TextProps extends ShapeConfig {
   text?: string;
@@ -62,7 +62,13 @@ export const Text = memo(
       <Container
         config={config}
         type="shape"
-        hitTest={boxHit(0, 0, boxWidth, boxHeight, hitStrokePad(config))}
+        hitTestDescriptor={boxHitTestDescriptor(
+          0,
+          0,
+          boxWidth,
+          boxHeight,
+          hitStrokePad(config)
+        )}
       >
         <SkiaText x={0} y={baseline} text={text} font={font} {...base}>
           <ShapeDecorations c={config} />

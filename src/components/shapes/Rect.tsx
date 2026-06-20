@@ -1,13 +1,13 @@
 import { memo } from 'react';
 import { Rect as SkiaRect, RoundedRect } from '@shopify/react-native-skia';
 import type { ShapeConfig } from '../../core/types';
+import { basePaintProps, ShapeDecorations } from '../../core/styling';
 import {
-  basePaintProps,
-  isPaintable,
-  ShapeDecorations,
-} from '../../core/styling';
-import { rectHit, hitStrokePad } from '../../core/hitTest';
+  rectHitTestDescriptor,
+  hitStrokePad,
+} from '../../core/hitTestDescriptor';
 import { Container } from '../internal/Container';
+import { isPaintable } from '../../core/paint';
 
 export interface RectProps extends ShapeConfig {
   width?: number;
@@ -29,7 +29,12 @@ export const Rect = memo(({ cornerRadius, ...props }: RectProps) => {
     <Container
       config={config}
       type="shape"
-      hitTest={rectHit(width, height, r ?? 0, hitStrokePad(config))}
+      hitTestDescriptor={rectHitTestDescriptor(
+        width,
+        height,
+        r ?? 0,
+        hitStrokePad(config)
+      )}
     >
       {r ? (
         <RoundedRect x={0} y={0} width={width} height={height} r={r} {...base}>

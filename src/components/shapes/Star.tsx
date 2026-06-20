@@ -1,14 +1,15 @@
 import { memo, useMemo } from 'react';
 import { Path } from '@shopify/react-native-skia';
 import type { ShapeConfig } from '../../core/types';
-import {
-  basePaintProps,
-  isPaintable,
-  ShapeDecorations,
-} from '../../core/styling';
+import { basePaintProps, ShapeDecorations } from '../../core/styling';
 import { starPath } from '../../core/path';
-import { polygonHit, starVertices, hitStrokePad } from '../../core/hitTest';
+import { starVertices } from '../../core/hitTest';
+import {
+  polygonHitTestDescriptor,
+  hitStrokePad,
+} from '../../core/hitTestDescriptor';
 import { Container } from '../internal/Container';
+import { isPaintable } from '../../core/paint';
 
 export interface StarProps extends ShapeConfig {
   numPoints?: number;
@@ -36,7 +37,7 @@ export const Star = memo(
       <Container
         config={config}
         type="shape"
-        hitTest={polygonHit(
+        hitTestDescriptor={polygonHitTestDescriptor(
           starVertices(numPoints, innerRadius, outerRadius),
           hitStrokePad(config)
         )}

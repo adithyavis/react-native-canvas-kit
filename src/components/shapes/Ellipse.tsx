@@ -1,13 +1,13 @@
 import { memo } from 'react';
 import { Oval } from '@shopify/react-native-skia';
 import type { ShapeConfig } from '../../core/types';
+import { basePaintProps, ShapeDecorations } from '../../core/styling';
 import {
-  basePaintProps,
-  isPaintable,
-  ShapeDecorations,
-} from '../../core/styling';
-import { ellipseHit, hitStrokePad } from '../../core/hitTest';
+  ellipseHitTestDescriptor,
+  hitStrokePad,
+} from '../../core/hitTestDescriptor';
 import { Container } from '../internal/Container';
+import { isPaintable } from '../../core/paint';
 
 export interface EllipseProps extends ShapeConfig {
   radiusX?: number;
@@ -25,7 +25,11 @@ export const Ellipse = memo(
       <Container
         config={config}
         type="shape"
-        hitTest={ellipseHit(radiusX, radiusY, hitStrokePad(config))}
+        hitTestDescriptor={ellipseHitTestDescriptor(
+          radiusX,
+          radiusY,
+          hitStrokePad(config)
+        )}
       >
         <Oval
           x={-radiusX}

@@ -1,18 +1,15 @@
 import { memo, useMemo } from 'react';
 import { Path } from '@shopify/react-native-skia';
 import type { ShapeConfig } from '../../core/types';
-import {
-  basePaintProps,
-  isPaintable,
-  ShapeDecorations,
-} from '../../core/styling';
+import { basePaintProps, ShapeDecorations } from '../../core/styling';
 import { regularPolygonPath } from '../../core/path';
+import { regularPolygonVertices } from '../../core/hitTest';
 import {
-  polygonHit,
-  regularPolygonVertices,
+  polygonHitTestDescriptor,
   hitStrokePad,
-} from '../../core/hitTest';
+} from '../../core/hitTestDescriptor';
 import { Container } from '../internal/Container';
+import { isPaintable } from '../../core/paint';
 
 export interface RegularPolygonProps extends ShapeConfig {
   sides?: number;
@@ -34,7 +31,7 @@ export const RegularPolygon = memo(
       <Container
         config={config}
         type="shape"
-        hitTest={polygonHit(
+        hitTestDescriptor={polygonHitTestDescriptor(
           regularPolygonVertices(sides, radius),
           hitStrokePad(config)
         )}

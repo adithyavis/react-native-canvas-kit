@@ -3,7 +3,6 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { NodeRegistry } from '../core/registry';
-import { identity } from '../core/matrix';
 import {
   RegistryContext,
   ParentContext,
@@ -37,7 +36,6 @@ export const Stage = memo(({ width, height, style, children }: StageProps) => {
       parentId: null,
       type: 'stage',
       getConfig: () => ({}),
-      getLocalMatrix: () => identity(),
     });
     return () => registry.unregister(rootId);
   }, [registry, rootId]);

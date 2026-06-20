@@ -1,18 +1,15 @@
 import { memo, useMemo } from 'react';
 import { Path } from '@shopify/react-native-skia';
 import type { ShapeConfig } from '../../core/types';
-import {
-  basePaintProps,
-  isPaintable,
-  ShapeDecorations,
-} from '../../core/styling';
+import { basePaintProps, ShapeDecorations } from '../../core/styling';
 import { linePath } from '../../core/path';
 import {
-  polygonHit,
-  segmentDistanceHit,
+  polygonHitTestDescriptor,
+  segmentHitTestDescriptor,
   hitStrokePad,
-} from '../../core/hitTest';
+} from '../../core/hitTestDescriptor';
 import { Container } from '../internal/Container';
+import { isPaintable } from '../../core/paint';
 
 export interface LineProps extends ShapeConfig {
   points?: number[];
@@ -30,11 +27,15 @@ export const Line = memo(
     }
     const base = basePaintProps(config)!;
     const pad = hitStrokePad(config);
-    const hitTest = closed
-      ? polygonHit(points, pad)
-      : segmentDistanceHit(points, Math.max(pad, 1));
+    const hitTestDescriptor = closed
+      ? polygonHitTestDescriptor(points, pad)
+      : segmentHitTestDescriptor(points, Math.max(pad, 1));
     return (
-      <Container config={config} type="shape" hitTest={hitTest}>
+      <Container
+        config={config}
+        type="shape"
+        hitTestDescriptor={hitTestDescriptor}
+      >
         <Path path={path} {...base}>
           <ShapeDecorations c={config} />
         </Path>

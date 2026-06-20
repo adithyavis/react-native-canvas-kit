@@ -7,9 +7,10 @@ import {
   isValidElement,
   type ReactNode,
 } from 'react';
-import type { NodeConfig, Vector2d } from '../../core/types';
+import type { NodeConfig } from '../../core/types';
 import { NodeRegistry, type NodeType } from '../../core/registry';
-import { buildAffineMatrixFromConfig, type Mat } from '../../core/matrix';
+import type { Mat } from '../../core/matrix';
+import type { HitTestDescriptor } from '../../core/hitTestDescriptor';
 
 export const RegistryContext = createContext<NodeRegistry | null>(null);
 export const ParentContext = createContext<number | null>(null);
@@ -22,15 +23,15 @@ export function useRegistry(): NodeRegistry | null {
 interface RegisterArgs {
   type: NodeType;
   config: NodeConfig;
-  getLocalMatrix?: () => Mat;
-  hitTest?: (p: Vector2d) => boolean;
+  getBaseMatrix?: () => Mat;
+  hitTestDescriptor?: HitTestDescriptor;
 }
 
 export function useRegisterNode({
   type,
   config,
-  getLocalMatrix,
-  hitTest,
+  getBaseMatrix,
+  hitTestDescriptor,
 }: RegisterArgs): number | null {
   const registry = useContext(RegistryContext);
   const parentId = useContext(ParentContext);
@@ -44,34 +45,44 @@ export function useRegisterNode({
 
   const configRef = useRef(config);
   configRef.current = config;
-  const localMatrixRef = useRef(getLocalMatrix);
-  localMatrixRef.current = getLocalMatrix;
-  const hitTestRef = useRef(hitTest);
-  hitTestRef.current = hitTest;
-  const hasHitTest = hitTest != null;
+  const baseMatrixRef = useRef(getBaseMatrix);
+  baseMatrixRef.current = getBaseMatrix;
+  const hitTestDescriptorRef = useRef(hitTestDescriptor);
+  hitTestDescriptorRef.current = hitTestDescriptor;
+  const paintIndexRef = useRef(paintIndex);
+  paintIndexRef.current = paintIndex;
 
   useLayoutEffect(() => {
+    const hasHitTestDescriptor = hitTestDescriptorRef.current != null;
     if (!registry || id == null) return;
     registry.register({
       id,
       parentId,
       type,
-      paintIndex,
+      paintIndex: paintIndexRef.current,
       getConfig: () => configRef.current,
-      getLocalMatrix: () =>
-        localMatrixRef.current
-          ? localMatrixRef.current()
-          : buildAffineMatrixFromConfig(configRef.current),
-      hitTest: hasHitTest ? (p) => hitTestRef.current!(p) : undefined,
+      getBaseMatrix: baseMatrixRef.current
+        ? () => baseMatrixRef.current!()
+        : undefined,
+      getHitTestDescriptor: hasHitTestDescriptor
+        ? () => hitTestDescriptorRef.current ?? null
+        : undefined,
     });
     return () => registry.unregister(id);
-    // Registered once per mount; parentId/type are stable for an element.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registry, id, parentId, type]);
 
   useLayoutEffect(() => {
-    if (registry && id != null) registry.setChildIndex(id, paintIndex);
-  });
+    if (registry && id !== null) {
+      registry.setChildIndex(id, paintIndex);
+    }
+  }, [registry, id, paintIndex]);
+
+  useLayoutEffect(() => {
+    if (registry && id !== null) {
+      // on changing radius,x,y etc, we mark the snapshot stale in order to rebuild it
+      registry.invalidateSnapshot();
+    }
+  }, [registry, id, config, getBaseMatrix, hitTestDescriptor]);
 
   return id;
 }

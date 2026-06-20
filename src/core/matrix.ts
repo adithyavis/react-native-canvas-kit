@@ -11,10 +11,12 @@ export type Mat = [
 ];
 
 export function identity(): Mat {
+  'worklet';
   return [1, 0, 0, 1, 0, 0];
 }
 
 export function multiply(a: Mat, b: Mat): Mat {
+  'worklet';
   const [a1, b1, c1, d1, e1, f1] = a;
   const [a2, b2, c2, d2, e2, f2] = b;
   return [
@@ -51,6 +53,7 @@ export function buildAffineMatrixFromConfig(
 }
 
 export function invert(m: Mat): Mat | null {
+  'worklet';
   const [a, b, c, d, e, f] = m;
   const det = a * d - b * c;
   if (det === 0 || !Number.isFinite(det)) {
@@ -68,6 +71,7 @@ export function invert(m: Mat): Mat | null {
 }
 
 export function applyTransformsToPoint(m: Mat, p: Vector2d): Vector2d {
+  'worklet';
   return {
     x: m[0] * p.x + m[2] * p.y + m[4],
     y: m[1] * p.x + m[3] * p.y + m[5],

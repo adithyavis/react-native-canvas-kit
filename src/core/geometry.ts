@@ -1,8 +1,14 @@
+import type { Vector2d } from './types';
+
+export const ZERO_VECTOR: Vector2d = { x: 0, y: 0 };
+
 export function dist(ax: number, ay: number, bx: number, by: number): number {
+  'worklet';
   return Math.hypot(ax - bx, ay - by);
 }
 
 export function dist2(ax: number, ay: number, bx: number, by: number): number {
+  'worklet';
   const dx = ax - bx;
   const dy = ay - by;
   return dx * dx + dy * dy;
@@ -16,6 +22,7 @@ function pointSegmentDist2(
   bx: number,
   by: number
 ): number {
+  'worklet';
   const dx = bx - ax;
   const dy = by - ay;
   const len2 = dx * dx + dy * dy;
@@ -30,6 +37,7 @@ export function minSegmentDist(
   px: number,
   py: number
 ): number {
+  'worklet';
   let min = Infinity;
   for (let i = 0; i + 3 < points.length; i += 2) {
     const d = pointSegmentDist2(

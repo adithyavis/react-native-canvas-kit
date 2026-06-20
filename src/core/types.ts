@@ -44,6 +44,8 @@ export interface NodeHandle {
   attrId?: string;
   name?: string;
   getConfig: () => NodeConfig;
+  getX: () => number;
+  getY: () => number;
   getAbsolutePosition: () => Vector2d;
 }
 
@@ -57,10 +59,6 @@ export interface EventObject<E = unknown> {
 
 export type EventListener<E = unknown> = (evt: EventObject<E>) => void;
 
-/**
- * Pointer/touch/mouse event handler props. Accepted but inert in v1 — they
- * exist so component signatures are stable when the event engine lands.
- */
 export interface NodeEventHandlers {
   onClick?: EventListener;
   onDblClick?: EventListener;

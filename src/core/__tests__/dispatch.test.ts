@@ -1,8 +1,8 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import { NodeRegistry } from '../registry';
 import { dispatch, GestureController, type DragHost } from '../dispatch';
-import { buildAffineMatrixFromConfig } from '../matrix';
-import type { EventObject, NodeConfig, Vector2d } from '../types';
+import { boxHitTestDescriptor } from '../hitTestDescriptor';
+import type { EventObject, NodeConfig } from '../types';
 
 function shape(
   reg: NodeRegistry,
@@ -16,8 +16,7 @@ function shape(
     parentId,
     type: 'shape',
     getConfig: () => cfg,
-    getLocalMatrix: () => buildAffineMatrixFromConfig(cfg),
-    hitTest: (p: Vector2d) => p.x >= 0 && p.x <= w && p.y >= 0 && p.y <= h,
+    getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, w, h, 0),
   });
 }
 
@@ -31,7 +30,6 @@ function container(
     parentId,
     type,
     getConfig: () => config,
-    getLocalMatrix: () => buildAffineMatrixFromConfig(config),
   });
 }
 

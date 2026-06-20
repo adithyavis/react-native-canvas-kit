@@ -8,8 +8,8 @@ import {
   polygonHit,
   regularPolygonVertices,
   starVertices,
-  hitStrokePad,
 } from '../hitTest';
+import { hitStrokePad } from '../hitTestDescriptor';
 
 describe('rectHit', () => {
   it('tests a plain box', () => {

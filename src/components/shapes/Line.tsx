@@ -14,14 +14,16 @@ import { isPaintable } from '../../core/paint';
 export interface LineProps extends ShapeConfig {
   points?: number[];
   closed?: boolean;
-  /** spline smoothing is not yet implemented. */
   tension?: number;
 }
 
 export const Line = memo(
-  ({ points = [], closed = false, ...props }: LineProps) => {
+  ({ points = [], closed = false, tension = 0, ...props }: LineProps) => {
     const config: ShapeConfig = props;
-    const path = useMemo(() => linePath(points, closed), [points, closed]);
+    const path = useMemo(
+      () => linePath(points, closed, tension),
+      [points, closed, tension]
+    );
     if (!isPaintable(config)) {
       return null;
     }

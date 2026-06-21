@@ -29,7 +29,16 @@ interface ContainerProps {
 }
 
 export const Container = memo(
-  ({ config, type, hitTestDescriptor, children }: ContainerProps) => {
+  ({ config: _config, type, hitTestDescriptor, children }: ContainerProps) => {
+    const config = useMemo(() => {
+      const defaultGestureEnabled =
+        type === 'shape' || type === 'group' ? true : undefined;
+      return {
+        ..._config,
+        gestureEnabled: _config?.gestureEnabled ?? defaultGestureEnabled,
+      };
+    }, [_config, type]);
+
     const registry = useRegistry();
     const draggable = config.draggable === true;
 

@@ -24,7 +24,8 @@ import type { Vector2d } from '../../core/types';
 
 export function useStageGestures(
   registry: NodeRegistry,
-  rootId: number
+  rootId: number,
+  enabled = true
 ): GestureType {
   const snapshotSV = useSharedValue<Snapshot>(EMPTY_SNAPSHOT);
   const idToDragOffsetMapSV = useSharedValue<
@@ -57,6 +58,7 @@ export function useStageGestures(
   return useMemo(() => {
     const on = dispatchRef.current;
     return Gesture.Pan()
+      .enabled(enabled)
       .minDistance(0)
       .onBegin((e) => {
         'worklet';
@@ -129,5 +131,5 @@ export function useStageGestures(
           Date.now()
         );
       });
-  }, [snapshotSV, idToDragOffsetMapSV, pressState, lastTap, rootId]);
+  }, [snapshotSV, idToDragOffsetMapSV, pressState, lastTap, rootId, enabled]);
 }

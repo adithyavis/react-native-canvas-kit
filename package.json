@@ -33,14 +33,12 @@
   ],
   "scripts": {
     "example": "yarn workspace react-native-canvas-kit-example",
-    "clean": "del-cli lib example/.expo example/dist",
+    "clean": "del-cli lib example/.expo",
     "prepare": "bob build",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
-    "release": "release-it --only-version",
-    "web": "vite",
-    "build:web": "vite build"
+    "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
@@ -83,7 +81,8 @@
     "react": "18.3.1",
     "react-native": "0.76.9",
     "react-native-builder-bob": "^0.41.0",
-    "react-native-web": "~0.19.13",
+    "react-native-gesture-handler": "~2.20.2",
+    "react-native-reanimated": "~3.16.7",
     "release-it": "^19.2.4",
     "turbo": "^2.8.21",
     "typescript": "^6.0.2"
@@ -92,6 +91,7 @@
     "@shopify/react-native-skia": ">=1.0.0",
     "react": "*",
     "react-native": "*",
+    "react-native-gesture-handler": ">=2.0.0",
     "react-native-reanimated": "^3.0.0"
   },
   "resolutions": {
@@ -165,8 +165,7 @@
       "eslint",
       "jest",
       "lefthook",
-      "release-it",
-      "vite"
+      "release-it"
     ],
     "version": "0.62.0"
   }

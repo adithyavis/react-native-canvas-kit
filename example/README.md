@@ -52,16 +52,7 @@ yarn prebuild
 > are not committed. The New Architecture is **off** by default
 > (`newArchEnabled` in `app.json`); flip it to `true` to test the new arch.
 
-## Step 3: Run on Web
-
-Web runs through **Vite** + `react-native-web` (not Expo's web bundler):
-
-```sh
-yarn web        # dev server
-yarn build:web  # production build into ./dist
-```
-
-## Step 4: Modify the app
+## Step 3: Modify the app
 
 Edit `src/App.tsx` and save — [Fast Refresh](https://docs.expo.dev/develop/development-builds/use-development-builds/)
 updates the running app. Because this lives in the library's monorepo, edits to

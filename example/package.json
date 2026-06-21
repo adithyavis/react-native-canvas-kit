@@ -7,30 +7,24 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "prebuild": "expo prebuild",
-    "web": "vite",
-    "build:web": "vite build"
+    "prebuild": "expo prebuild"
   },
   "dependencies": {
     "@shopify/react-native-skia": "1.12.4",
     "expo": "~52.0.0",
     "react": "18.3.1",
-    "react-dom": "18.3.1",
     "react-native": "0.76.9",
-    "react-native-reanimated": "~3.16.7",
-    "react-native-web": "~0.19.13"
+    "react-native-gesture-handler": "~2.20.2",
+    "react-native-reanimated": "~3.16.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
     "@types/react": "~18.3.12",
-    "@vitejs/plugin-react": "^5.0.0",
     "babel-preset-expo": "~12.0.0",
     "react-native-builder-bob": "^0.41.0",
-    "react-native-monorepo-config": "^0.3.3",
-    "vite": "^7.1.1",
-    "vite-plugin-commonjs": "^0.10.4"
+    "react-native-monorepo-config": "^0.3.3"
   },
   "engines": {
     "node": ">= 22.11.0"

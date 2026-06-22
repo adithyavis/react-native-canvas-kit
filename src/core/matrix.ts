@@ -29,27 +29,30 @@ export function multiply(a: Mat, b: Mat): Mat {
   ];
 }
 
+/** Build an affine matrix from already-resolved transform params (UI-thread safe). */
+export function composeMatrix(t: ResolvedTransform): Mat {
+  'worklet';
+  let m = identity();
+  if (t.x !== 0) m = multiply(m, [1, 0, 0, 1, t.x, 0]);
+  if (t.y !== 0) m = multiply(m, [1, 0, 0, 1, 0, t.y]);
+  if (t.rotation !== 0) {
+    const cos = Math.cos(t.rotation);
+    const sin = Math.sin(t.rotation);
+    m = multiply(m, [cos, sin, -sin, cos, 0, 0]);
+  }
+  if (t.skewX !== 0) m = multiply(m, [1, 0, t.skewX, 1, 0, 0]);
+  if (t.skewY !== 0) m = multiply(m, [1, t.skewY, 0, 1, 0, 0]);
+  if (t.scaleX !== 1) m = multiply(m, [t.scaleX, 0, 0, 1, 0, 0]);
+  if (t.scaleY !== 1) m = multiply(m, [1, 0, 0, t.scaleY, 0, 0]);
+  if (t.offsetX !== 0) m = multiply(m, [1, 0, 0, 1, -t.offsetX, 0]);
+  if (t.offsetY !== 0) m = multiply(m, [1, 0, 0, 1, 0, -t.offsetY]);
+  return m;
+}
+
 export function buildAffineMatrixFromConfig(
   config: Parameters<typeof resolveTransform>[0]
 ): Mat {
-  function fromResolvedTransform(t: ResolvedTransform): Mat {
-    let m = identity();
-    if (t.x !== 0) m = multiply(m, [1, 0, 0, 1, t.x, 0]);
-    if (t.y !== 0) m = multiply(m, [1, 0, 0, 1, 0, t.y]);
-    if (t.rotation !== 0) {
-      const cos = Math.cos(t.rotation);
-      const sin = Math.sin(t.rotation);
-      m = multiply(m, [cos, sin, -sin, cos, 0, 0]);
-    }
-    if (t.skewX !== 0) m = multiply(m, [1, 0, t.skewX, 1, 0, 0]);
-    if (t.skewY !== 0) m = multiply(m, [1, t.skewY, 0, 1, 0, 0]);
-    if (t.scaleX !== 1) m = multiply(m, [t.scaleX, 0, 0, 1, 0, 0]);
-    if (t.scaleY !== 1) m = multiply(m, [1, 0, 0, t.scaleY, 0, 0]);
-    if (t.offsetX !== 0) m = multiply(m, [1, 0, 0, 1, -t.offsetX, 0]);
-    if (t.offsetY !== 0) m = multiply(m, [1, 0, 0, 1, 0, -t.offsetY]);
-    return m;
-  }
-  return fromResolvedTransform(resolveTransform(config));
+  return composeMatrix(resolveTransform(config));
 }
 
 export function invert(m: Mat): Mat | null {

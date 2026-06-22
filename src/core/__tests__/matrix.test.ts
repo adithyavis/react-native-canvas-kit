@@ -3,10 +3,12 @@ import {
   identity,
   multiply,
   buildAffineMatrixFromConfig,
+  composeMatrix,
   invert,
   applyTransformsToPoint,
   type Mat,
 } from '../matrix';
+import { resolveTransform } from '../transform';
 
 const expectPointClose = (
   a: { x: number; y: number },
@@ -80,6 +82,42 @@ describe('Transforms', () => {
     const m = buildAffineMatrixFromConfig({ x: 3, y: 4, scaleX: 2, scaleY: 2 });
     // (1,1) scaled to (2,2) then translated to (5,6)
     expectPointClose(applyTransformsToPoint(m, { x: 1, y: 1 }), { x: 5, y: 6 });
+  });
+});
+
+describe('composeMatrix', () => {
+  it('matches buildAffineMatrixFromConfig for the same params', () => {
+    const config = {
+      x: 12,
+      y: -5,
+      rotation: 25,
+      scaleX: 1.4,
+      scaleY: 0.6,
+      offsetX: 3,
+      offsetY: 7,
+    };
+    expect(composeMatrix(resolveTransform(config))).toEqual(
+      buildAffineMatrixFromConfig(config)
+    );
+  });
+
+  it('composes an effective (config * live) transform', () => {
+    // config scaleX 2, live factor 1.5 → effective 3
+    const m = composeMatrix({
+      x: 0,
+      y: 0,
+      rotation: 0,
+      scaleX: 2 * 1.5,
+      scaleY: 1,
+      skewX: 0,
+      skewY: 0,
+      offsetX: 0,
+      offsetY: 0,
+    });
+    expectPointClose(applyTransformsToPoint(m, { x: 10, y: 0 }), {
+      x: 30,
+      y: 0,
+    });
   });
 });
 

@@ -34,6 +34,8 @@ function oppositeAnchor(anchor: AnchorId): AnchorId {
       return 'top-center';
     case 'bottom-right':
       return 'top-left';
+    case 'rotater':
+      return 'rotater';
   }
 }
 
@@ -62,6 +64,8 @@ export function anchorLocalPoint(rect: Rect, anchor: AnchorId): Vector2d {
       return { x: centerX, y: bottom };
     case 'bottom-right':
       return { x: right, y: bottom };
+    case 'rotater':
+      return { x: centerX, y: top };
   }
 }
 

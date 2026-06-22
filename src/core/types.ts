@@ -59,6 +59,32 @@ export interface EventObject<E = unknown> {
 
 export type EventListener<E = unknown> = (evt: EventObject<E>) => void;
 
+export type AnchorId =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'middle-left'
+  | 'middle-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right'
+  | 'rotater';
+
+export interface TransformResult {
+  x: number;
+  y: number;
+  scaleX: number;
+  scaleY: number;
+  rotation: number; // degrees
+}
+
+export interface TransformEvent extends TransformResult {
+  targetId: number | null;
+  anchor: AnchorId;
+}
+
+export type TransformEventListener = (evt: TransformEvent) => void;
+
 export interface NodeEventHandlers {
   onClick?: EventListener;
   onDblClick?: EventListener;

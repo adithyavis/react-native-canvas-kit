@@ -24,6 +24,8 @@ export { Text } from './components/shapes/Text';
 export type { TextProps } from './components/shapes/Text';
 export { Image } from './components/shapes/Image';
 export type { ImageProps } from './components/shapes/Image';
+export { Transformer } from './components/Transformer';
+export type { TransformerProps } from './components/Transformer';
 
 export type {
   Vector2d,
@@ -38,6 +40,10 @@ export type {
   EventListener,
   NodeEventHandlers,
   NodeHandle,
+  AnchorId,
+  TransformResult,
+  TransformEvent,
+  TransformEventListener,
 } from './core/types';
 
 // Convenience re-exports for loading assets (used with <Image> and <Text>).

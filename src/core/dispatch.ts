@@ -1,6 +1,6 @@
 import type { EventObject, NodeEventHandlers, Vector2d } from './types';
 import type { NodeRegistry } from './registry';
-import { DEFAULT_DRAG_DISTANCE, type OffsetLookup } from './snapshot';
+import { DEFAULT_DRAG_DISTANCE, type TransformLookup } from './snapshot';
 import {
   pointerDown,
   pointerMove,
@@ -67,7 +67,7 @@ export class GestureController {
   private lastTap = createSharedValue<LastTap | null>(null);
   private offsets = new Map<number, Vector2d>();
   private gestureEventCallbacks: GestureEventCallbacks;
-  private getOffset: OffsetLookup;
+  private getTransform: TransformLookup;
   private lastEvt: unknown = null;
 
   constructor(
@@ -75,9 +75,13 @@ export class GestureController {
     private rootId: number,
     private host: DragHost
   ) {
-    this.getOffset = (id) => this.offsets.get(id) ?? { x: 0, y: 0 };
+    this.getTransform = (id) => ({
+      offset: this.offsets.get(id) ?? { x: 0, y: 0 },
+      scale: { x: 1, y: 1 },
+      rotation: 0,
+    });
     this.gestureEventCallbacks = {
-      setOffset: (id, x, y) => {
+      setTransform: (id, x, y) => {
         this.offsets.set(id, { x, y });
         this.host.setDragOffset(id, x, y);
       },
@@ -89,7 +93,7 @@ export class GestureController {
     this.lastEvt = evt;
     pointerDown(
       this.registry.getSnapshot(),
-      this.getOffset,
+      this.getTransform,
       this.press,
       this.gestureEventCallbacks,
       this.rootId,
@@ -103,7 +107,7 @@ export class GestureController {
     this.lastEvt = evt;
     pointerMove(
       this.registry.getSnapshot(),
-      this.getOffset,
+      this.getTransform,
       this.press,
       this.gestureEventCallbacks,
       pt.x,
@@ -115,7 +119,7 @@ export class GestureController {
     this.lastEvt = evt;
     pointerUp(
       this.registry.getSnapshot(),
-      this.getOffset,
+      this.getTransform,
       this.press,
       this.lastTap,
       this.gestureEventCallbacks,

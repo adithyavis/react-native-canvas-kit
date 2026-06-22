@@ -6,7 +6,7 @@ import {
   findDragTarget,
   getAbsoluteMatrixFromSnapshot,
   getHitNodeIdFromSnapshot,
-  type OffsetLookup,
+  type TransformLookup,
   type Snapshot,
 } from './snapshot';
 
@@ -14,7 +14,7 @@ export const TAP_SLOP = 5;
 export const DBL_TAP_MS = 300;
 
 export interface GestureEventCallbacks {
-  setOffset: (id: number, x: number, y: number) => void;
+  setTransform: (id: number, x: number, y: number) => void;
   on: (type: string, id: number) => void;
 }
 
@@ -42,7 +42,7 @@ export interface LastTap {
 
 function beginDrag(
   snapshot: Snapshot,
-  getOffset: OffsetLookup,
+  getTransform: TransformLookup,
   press: SharedValue<PressState | null>,
   gestureEventCallbacks: GestureEventCallbacks
 ): void {
@@ -53,7 +53,7 @@ function beginDrag(
   const parentId = node ? node.parentId : -1;
   const parentInv =
     parentId !== -1
-      ? invert(getAbsoluteMatrixFromSnapshot(snapshot, getOffset, parentId))
+      ? invert(getAbsoluteMatrixFromSnapshot(snapshot, getTransform, parentId))
       : invert(identity());
   let dragStartParentX = 0;
   let dragStartParentY = 0;
@@ -62,7 +62,7 @@ function beginDrag(
     dragStartParentX = sp.x;
     dragStartParentY = sp.y;
   }
-  const base = getOffset(id);
+  const base = getTransform(id).offset;
   press.value = {
     ...p,
     parentInv,
@@ -77,7 +77,7 @@ function beginDrag(
 
 export function pointerDown(
   snapshot: Snapshot,
-  getOffset: OffsetLookup,
+  getTransform: TransformLookup,
   press: SharedValue<PressState | null>,
   gestureEventCallbacks: GestureEventCallbacks,
   rootId: number,
@@ -88,7 +88,7 @@ export function pointerDown(
   'worklet';
   const hitNodeId = getHitNodeIdFromSnapshot(
     snapshot,
-    getOffset,
+    getTransform,
     rootId,
     px,
     py
@@ -118,7 +118,7 @@ export function pointerDown(
 
 export function pointerMove(
   snapshot: Snapshot,
-  getOffset: OffsetLookup,
+  getTransform: TransformLookup,
   press: SharedValue<PressState | null>,
   gestureEventCallbacks: GestureEventCallbacks,
   px: number,
@@ -129,21 +129,21 @@ export function pointerMove(
   if (!p || p.dragTargetId === -1) return;
   if (!p.dragging) {
     if (dist(px, py, p.startX, p.startY) < p.dragDistance) return;
-    beginDrag(snapshot, getOffset, press, gestureEventCallbacks);
+    beginDrag(snapshot, getTransform, press, gestureEventCallbacks);
   }
   const p2 = press.value!;
   if (p2.dragging && p2.parentInv) {
     const cur = applyTransformsToPoint(p2.parentInv, { x: px, y: py });
     const dx = p2.baseOffsetX + (cur.x - p2.dragStartParentX);
     const dy = p2.baseOffsetY + (cur.y - p2.dragStartParentY);
-    gestureEventCallbacks.setOffset(p2.dragTargetId, dx, dy);
+    gestureEventCallbacks.setTransform(p2.dragTargetId, dx, dy);
     gestureEventCallbacks.on('dragmove', p2.dragTargetId);
   }
 }
 
 export function pointerUp(
   snapshot: Snapshot,
-  getOffset: OffsetLookup,
+  getTransform: TransformLookup,
   press: SharedValue<PressState | null>,
   lastTap: SharedValue<LastTap | null>,
   gestureEventCallbacks: GestureEventCallbacks,
@@ -169,7 +169,7 @@ export function pointerUp(
 
   const hitNodeId = getHitNodeIdFromSnapshot(
     snapshot,
-    getOffset,
+    getTransform,
     rootId,
     px,
     py

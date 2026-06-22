@@ -29,7 +29,6 @@ export function multiply(a: Mat, b: Mat): Mat {
   ];
 }
 
-/** Build an affine matrix from already-resolved transform params (UI-thread safe). */
 export function composeMatrix(t: ResolvedTransform): Mat {
   'worklet';
   let m = identity();

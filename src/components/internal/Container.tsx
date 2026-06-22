@@ -11,7 +11,7 @@ import {
 } from '@shopify/react-native-skia';
 import { useSharedValue, useDerivedValue } from 'react-native-reanimated';
 import type { NodeConfig, Vector2d } from '../../core/types';
-import { buildTransforms3dArray } from '../../core/transform';
+import { buildTransforms3dArray, resolveTransform } from '../../core/transform';
 import type { HitTestDescriptor } from '../../core/hitTestDescriptor';
 import type { NodeType } from '../../core/registry';
 import {
@@ -21,12 +21,7 @@ import {
   useRegistry,
 } from './NodeContext';
 
-interface ContainerProps {
-  config: NodeConfig;
-  type: NodeType;
-  hitTestDescriptor?: HitTestDescriptor;
-  children?: ReactNode;
-}
+const DEG_TO_RAD = Math.PI / 180;
 
 export const Container = memo(
   ({ config: _config, type, hitTestDescriptor, children }: ContainerProps) => {
@@ -43,35 +38,64 @@ export const Container = memo(
     const draggable = config.draggable === true;
 
     const dragOffsetSV = useSharedValue<Vector2d>({ x: 0, y: 0 });
+    const scaleSV = useSharedValue<Vector2d>({ x: 1, y: 1 });
+    const rotationSV = useSharedValue<number>(0);
 
     const id = useRegisterNode({ type, config, hitTestDescriptor });
 
     useLayoutEffect(() => {
       if (!registry || id == null || !draggable) return;
       registry.registerDragOffset(id, dragOffsetSV);
-      return () => registry.unregisterDragOffset(id);
-    }, [registry, id, draggable, dragOffsetSV]);
+      registry.registerScale(id, scaleSV);
+      registry.registerRotation(id, rotationSV);
+      return () => {
+        registry.unregisterDragOffset(id);
+        registry.unregisterScale(id);
+        registry.unregisterRotation(id);
+      };
+    }, [registry, id, draggable, dragOffsetSV, scaleSV, rotationSV]);
 
     useEffect(() => {
-      // on change of prop provided x or y, we reset drag values to make the component controlled
       dragOffsetSV.value = { x: 0, y: 0 };
-    }, [config.x, config.y, dragOffsetSV]);
+      scaleSV.value = { x: 1, y: 1 };
+      rotationSV.value = 0;
+    }, [
+      config.x,
+      config.y,
+      config.scaleX,
+      config.scaleY,
+      config.rotation,
+      dragOffsetSV,
+      scaleSV,
+      rotationSV,
+    ]);
 
+    const resolved = useMemo(() => resolveTransform(config), [config]);
     const staticTransform = useMemo(
       () => buildTransforms3dArray(config),
       [config]
     );
+
     const animatedTransform = useDerivedValue<Transforms3d>(() => {
-      const transforms3d: Transforms3d = [];
-      const dx = dragOffsetSV.value.x;
-      const dy = dragOffsetSV.value.y;
-      if (dx !== 0) transforms3d.push({ translateX: dx });
-      if (dy !== 0) transforms3d.push({ translateY: dy });
-      for (let i = 0; i < staticTransform.length; i++) {
-        transforms3d.push(staticTransform[i]!);
-      }
-      return transforms3d;
-    }, [staticTransform]);
+      const offset = dragOffsetSV.value;
+      const scale = scaleSV.value;
+      const x = resolved.x + offset.x;
+      const y = resolved.y + offset.y;
+      const rotation = resolved.rotation + rotationSV.value * DEG_TO_RAD;
+      const scaleX = resolved.scaleX * scale.x;
+      const scaleY = resolved.scaleY * scale.y;
+      const out: Transforms3d = [];
+      if (x !== 0) out.push({ translateX: x });
+      if (y !== 0) out.push({ translateY: y });
+      if (rotation !== 0) out.push({ rotate: rotation });
+      if (resolved.skewX !== 0) out.push({ skewX: resolved.skewX });
+      if (resolved.skewY !== 0) out.push({ skewY: resolved.skewY });
+      if (scaleX !== 1) out.push({ scaleX });
+      if (scaleY !== 1) out.push({ scaleY });
+      if (resolved.offsetX !== 0) out.push({ translateX: -resolved.offsetX });
+      if (resolved.offsetY !== 0) out.push({ translateY: -resolved.offsetY });
+      return out;
+    }, [resolved]);
 
     const transform = useMemo(
       () => (draggable ? animatedTransform : staticTransform),
@@ -92,3 +116,10 @@ export const Container = memo(
   }
 );
 Container.displayName = 'Container';
+
+interface ContainerProps {
+  config: NodeConfig;
+  type: NodeType;
+  hitTestDescriptor?: HitTestDescriptor;
+  children?: ReactNode;
+}

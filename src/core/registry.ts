@@ -1,5 +1,12 @@
 import type { NodeConfig, NodeHandle, Vector2d } from './types';
 import { buildAffineMatrixFromConfig, type Mat } from './matrix';
+import { resolveTransform } from './transform';
+import {
+  getSelfRect as getSelfRectFromDescriptor,
+  getClientRect as getClientRectFromMatrix,
+  unionRect,
+  type Rect,
+} from './bounds';
 import type { HitTestDescriptor } from './hitTestDescriptor';
 import {
   DEFAULT_DRAG_DISTANCE,
@@ -10,12 +17,14 @@ import {
   getAncestorChainFromSnapshot,
   findDragTarget,
   getHitNodeIdFromSnapshot,
-  type OffsetLookup,
+  type TransformLookup,
   type Snapshot,
   type SnapshotNode,
 } from './snapshot';
 import type { SharedValue } from 'react-native-reanimated';
 import { ZERO_VECTOR } from './geometry';
+
+const UNIT_SCALE: Vector2d = { x: 1, y: 1 };
 
 export type NodeType = 'stage' | 'layer' | 'group' | 'shape';
 
@@ -61,6 +70,8 @@ export class NodeRegistry {
   private nodes = new Map<number, Node>();
   private children = new Map<number, ChildList>();
   private idToDragOffsetMap = new Map<number, SharedValue<Vector2d>>();
+  private idToScaleMap = new Map<number, SharedValue<Vector2d>>();
+  private idToRotationMap = new Map<number, SharedValue<number>>();
   private nextId = 1;
 
   private snapshot: Snapshot = EMPTY_SNAPSHOT;
@@ -69,10 +80,13 @@ export class NodeRegistry {
 
   private listeners = new Set<() => void>();
   private flushScheduled = false;
-  idToDragOffsetMapVersion = 0;
+  idToTransformMapVersion = 0;
 
-  private offsetLookup: OffsetLookup = (id) =>
-    this.idToDragOffsetMap.get(id)?.value ?? ZERO_VECTOR;
+  private getTransform: TransformLookup = (id) => ({
+    offset: this.idToDragOffsetMap.get(id)?.value ?? ZERO_VECTOR,
+    scale: this.idToScaleMap.get(id)?.value ?? UNIT_SCALE,
+    rotation: this.idToRotationMap.get(id)?.value ?? 0,
+  });
 
   allocateId(): number {
     return this.nextId++;
@@ -134,21 +148,59 @@ export class NodeRegistry {
 
   registerDragOffset(id: number, ref: SharedValue<Vector2d>): void {
     this.idToDragOffsetMap.set(id, ref);
-    this.idToDragOffsetMapVersion++;
+    this.idToTransformMapVersion++;
     this.invalidateSnapshot();
   }
 
   unregisterDragOffset(id: number): void {
     if (this.idToDragOffsetMap.delete(id)) {
-      this.idToDragOffsetMapVersion++;
+      this.idToTransformMapVersion++;
+      this.invalidateSnapshot();
+    }
+  }
+
+  registerScale(id: number, ref: SharedValue<Vector2d>): void {
+    this.idToScaleMap.set(id, ref);
+    this.idToTransformMapVersion++;
+    this.invalidateSnapshot();
+  }
+
+  unregisterScale(id: number): void {
+    if (this.idToScaleMap.delete(id)) {
+      this.idToTransformMapVersion++;
+      this.invalidateSnapshot();
+    }
+  }
+
+  registerRotation(id: number, ref: SharedValue<number>): void {
+    this.idToRotationMap.set(id, ref);
+    this.idToTransformMapVersion++;
+    this.invalidateSnapshot();
+  }
+
+  unregisterRotation(id: number): void {
+    if (this.idToRotationMap.delete(id)) {
+      this.idToTransformMapVersion++;
       this.invalidateSnapshot();
     }
   }
 
   getIdToDragOffsetMap(): Record<number, SharedValue<Vector2d>> {
-    const offsetsById: Record<number, SharedValue<Vector2d>> = {};
-    for (const [id, ref] of this.idToDragOffsetMap) offsetsById[id] = ref;
-    return offsetsById;
+    const byId: Record<number, SharedValue<Vector2d>> = {};
+    for (const [id, ref] of this.idToDragOffsetMap) byId[id] = ref;
+    return byId;
+  }
+
+  getIdToScaleMap(): Record<number, SharedValue<Vector2d>> {
+    const byId: Record<number, SharedValue<Vector2d>> = {};
+    for (const [id, ref] of this.idToScaleMap) byId[id] = ref;
+    return byId;
+  }
+
+  getIdToRotationMap(): Record<number, SharedValue<number>> {
+    const byId: Record<number, SharedValue<number>> = {};
+    for (const [id, ref] of this.idToRotationMap) byId[id] = ref;
+    return byId;
   }
 
   subscribeToChanges(listener: () => void): () => void {
@@ -204,6 +256,7 @@ export class NodeRegistry {
       parentId: node.parentId ?? -1,
       type: getSnapshotNodeType(node.type),
       paintIndex: node.paintIndex,
+      transform: resolveTransform(cfg),
       baseMatrix: node.getBaseMatrix(),
       visible: cfg.visible !== false,
       listening: cfg.listening !== false,
@@ -231,7 +284,7 @@ export class NodeRegistry {
   getAbsoluteMatrix(id: number): Mat {
     return getAbsoluteMatrixFromSnapshot(
       this.getSnapshot(),
-      this.offsetLookup,
+      this.getTransform,
       id
     );
   }
@@ -239,7 +292,7 @@ export class NodeRegistry {
   getAbsolutePosition(id: number): Vector2d {
     return getAbsolutePositionFromSnapshot(
       this.getSnapshot(),
-      this.offsetLookup,
+      this.getTransform,
       id
     );
   }
@@ -271,7 +324,7 @@ export class NodeRegistry {
   getHitNodeId(point: Vector2d, rootId: number): number | null {
     const hitNodeId = getHitNodeIdFromSnapshot(
       this.getSnapshot(),
-      this.offsetLookup,
+      this.getTransform,
       rootId,
       point.x,
       point.y
@@ -290,5 +343,65 @@ export class NodeRegistry {
 
   getParentId(id: number): number | null {
     return this.nodes.get(id)?.parentId ?? null;
+  }
+
+  findBySelector(selector: string): number | null {
+    if (!selector) return null;
+    const byName = selector[0] === '.';
+    const key = selector[0] === '#' || byName ? selector.slice(1) : selector;
+    for (const node of this.nodes.values()) {
+      const cfg = node.getConfig();
+      if (byName ? cfg.name === key : cfg.id === key) return node.id;
+    }
+    return null;
+  }
+
+  getLocalMatrix(id: number): Mat | null {
+    const node = this.nodes.get(id);
+    if (!node) return null;
+    return node.getBaseMatrix();
+  }
+
+  getSelfRect(id: number, ignoreStroke = false): Rect | null {
+    const node = this.nodes.get(id);
+    if (!node) return null;
+    const descriptor = node.getHitTestDescriptor?.() ?? null;
+    if (descriptor) {
+      return getSelfRectFromDescriptor(
+        descriptor,
+        node.getConfig(),
+        ignoreStroke
+      );
+    }
+    let union: Rect | null = null;
+    for (const childId of this.sortedChildIds(id)) {
+      const childRect = this.getSelfRect(childId, ignoreStroke);
+      const childNode = this.nodes.get(childId);
+      if (!childRect || !childNode) continue;
+      const childBox = getClientRectFromMatrix(
+        childRect,
+        childNode.getBaseMatrix()
+      );
+      union = union ? unionRect(union, childBox) : childBox;
+    }
+    return union;
+  }
+
+  getDragOffset(id: number): SharedValue<Vector2d> | undefined {
+    return this.idToDragOffsetMap.get(id);
+  }
+
+  getScale(id: number): SharedValue<Vector2d> | undefined {
+    return this.idToScaleMap.get(id);
+  }
+
+  getRotation(id: number): SharedValue<number> | undefined {
+    return this.idToRotationMap.get(id);
+  }
+
+  getClientRect(id: number, ignoreStroke = false): Rect | null {
+    const rect = this.getSelfRect(id, ignoreStroke);
+    if (!rect) return null;
+    return getClientRectFromMatrix(rect, this.getAbsoluteMatrix(id));
   }
 }

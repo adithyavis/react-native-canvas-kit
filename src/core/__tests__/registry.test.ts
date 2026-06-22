@@ -127,6 +127,101 @@ describe('NodeRegistry tree queries', () => {
   });
 });
 
+describe('NodeRegistry transformer support', () => {
+  it('resolves selectors by id (#), name (.), and bare id', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const layer = addContainer(reg, stage, 'layer');
+    const byId = addShape(reg, layer, { id: 'rect1' }, 10, 10);
+    const byName = addShape(reg, layer, { name: 'pickme' }, 10, 10);
+    expect(reg.findBySelector('#rect1')).toBe(byId);
+    expect(reg.findBySelector('rect1')).toBe(byId);
+    expect(reg.findBySelector('.pickme')).toBe(byName);
+    expect(reg.findBySelector('#missing')).toBeNull();
+  });
+
+  it('returns a node self-rect from its descriptor', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const layer = addContainer(reg, stage, 'layer');
+    const shape = addShape(reg, layer, { x: 0, y: 0 }, 40, 30);
+    expect(reg.getSelfRect(shape)).toEqual({
+      x: 0,
+      y: 0,
+      width: 40,
+      height: 30,
+    });
+  });
+
+  it('returns a client rect in absolute space through container transforms', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const group = addContainer(reg, stage, 'group', { x: 100, y: 100 });
+    const shape = addShape(reg, group, { x: 0, y: 0 }, 20, 20);
+    expect(reg.getClientRect(shape)).toEqual({
+      x: 100,
+      y: 100,
+      width: 20,
+      height: 20,
+    });
+  });
+
+  it('unions child boxes for a container (group) self-rect', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const group = addContainer(reg, stage, 'group', { x: 0, y: 0 });
+    addShape(reg, group, { x: 0, y: 0 }, 20, 20); // (0,0)-(20,20)
+    addShape(reg, group, { x: 50, y: 30 }, 10, 40); // (50,30)-(60,70)
+    expect(reg.getSelfRect(group)).toEqual({
+      x: 0,
+      y: 0,
+      width: 60,
+      height: 70,
+    });
+  });
+
+  it('exposes a registered drag offset, undefined otherwise', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const shape = addShape(reg, stage, { x: 0, y: 0 }, 10, 10);
+    expect(reg.getDragOffset(shape)).toBeUndefined();
+    const offset: SharedValue<Vector2d> = createSharedValue({ x: 0, y: 0 });
+    reg.registerDragOffset(shape, offset);
+    expect(reg.getDragOffset(shape)).toBe(offset);
+  });
+
+  it('exposes the local matrix from config', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const shape = addShape(reg, stage, { x: 5, y: 7 }, 10, 10);
+    const m = reg.getLocalMatrix(shape)!;
+    expect(m).not.toBeNull();
+    expect(m[4]).toBeCloseTo(5);
+    expect(m[5]).toBeCloseTo(7);
+  });
+});
+
+describe('NodeRegistry live scale channel', () => {
+  it('folds a live scale factor into hit-testing', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const layer = addContainer(reg, stage, 'layer');
+    // box (0,0)-(20,20), draggable so it carries live channels
+    const shape = addShape(reg, layer, { x: 0, y: 0, draggable: true }, 20, 20);
+
+    const scale: SharedValue<Vector2d> = createSharedValue({ x: 1, y: 1 });
+    reg.registerScale(shape, scale);
+
+    // Before scaling: (10,10) hits, (30,30) misses.
+    expect(reg.getHitNodeId({ x: 10, y: 10 }, stage)).toBe(shape);
+    expect(reg.getHitNodeId({ x: 30, y: 30 }, stage)).toBeNull();
+
+    // Scale x2 live: the box now spans (0,0)-(40,40) for hit-testing.
+    scale.value = { x: 2, y: 2 };
+    expect(reg.getHitNodeId({ x: 30, y: 30 }, stage)).toBe(shape);
+  });
+});
+
 describe('NodeRegistry live drag offset', () => {
   it('folds the live drag offset into position, handle, and hit-testing', () => {
     const reg = new NodeRegistry();

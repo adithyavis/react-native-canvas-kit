@@ -1,10 +1,12 @@
 import {
   applyTransformsToPoint,
+  composeMatrix,
   identity,
   invert,
   multiply,
   type Mat,
 } from './matrix';
+import type { ResolvedTransform } from './transform';
 import { ZERO_VECTOR } from './geometry';
 import {
   getIsHitTestSuccessful,
@@ -13,6 +15,7 @@ import {
 import type { Vector2d } from './types';
 
 export const DEFAULT_DRAG_DISTANCE = 3;
+const DEG_TO_RAD = Math.PI / 180;
 
 export const SnapshotNodeType = {
   Stage: 'Stage',
@@ -28,6 +31,7 @@ export interface SnapshotNode {
   parentId: number;
   type: SnapshotNodeType;
   paintIndex: number;
+  transform: ResolvedTransform;
   baseMatrix: Mat;
   visible: boolean;
   listening: boolean;
@@ -45,17 +49,44 @@ export interface Snapshot {
 
 export const EMPTY_SNAPSHOT: Snapshot = { nodes: {}, children: {}, rootId: -1 };
 
-export type OffsetLookup = (id: number) => Vector2d;
+export interface Transform {
+  offset: Vector2d;
+  scale: Vector2d;
+  rotation: number;
+}
 
-function getLocalMatrix(node: SnapshotNode, offset: Vector2d): Mat {
+export type TransformLookup = (id: number) => Transform;
+
+function getLocalMatrix(node: SnapshotNode, transform: Transform): Mat {
   'worklet';
-  if (offset.x === 0 && offset.y === 0) return node.baseMatrix;
-  return multiply([1, 0, 0, 1, offset.x, offset.y], node.baseMatrix);
+  const off = transform.offset;
+  const sc = transform.scale;
+  if (
+    off.x === 0 &&
+    off.y === 0 &&
+    sc.x === 1 &&
+    sc.y === 1 &&
+    transform.rotation === 0
+  ) {
+    return node.baseMatrix;
+  }
+  const t = node.transform;
+  return composeMatrix({
+    x: t.x + off.x,
+    y: t.y + off.y,
+    rotation: t.rotation + transform.rotation * DEG_TO_RAD,
+    scaleX: t.scaleX * sc.x,
+    scaleY: t.scaleY * sc.y,
+    skewX: t.skewX,
+    skewY: t.skewY,
+    offsetX: t.offsetX,
+    offsetY: t.offsetY,
+  });
 }
 
 export function getAbsoluteMatrixFromSnapshot(
   snapshot: Snapshot,
-  getOffset: OffsetLookup,
+  getTransform: TransformLookup,
   id: number
 ): Mat {
   'worklet';
@@ -68,19 +99,22 @@ export function getAbsoluteMatrixFromSnapshot(
   let m: Mat = identity();
   for (let i = snapshotNodesChain.length - 1; i >= 0; i--) {
     const snapshotNode = snapshot.nodes[snapshotNodesChain[i]!]!;
-    m = multiply(m, getLocalMatrix(snapshotNode, getOffset(snapshotNode.id)));
+    m = multiply(
+      m,
+      getLocalMatrix(snapshotNode, getTransform(snapshotNode.id))
+    );
   }
   return m;
 }
 
 export function getAbsolutePositionFromSnapshot(
   snapshot: Snapshot,
-  getOffset: OffsetLookup,
+  getTransform: TransformLookup,
   id: number
 ): Vector2d {
   'worklet';
   return applyTransformsToPoint(
-    getAbsoluteMatrixFromSnapshot(snapshot, getOffset, id),
+    getAbsoluteMatrixFromSnapshot(snapshot, getTransform, id),
     ZERO_VECTOR
   );
 }
@@ -111,7 +145,7 @@ export function findDragTarget(snapshot: Snapshot, id: number): number {
 
 export function getHitNodeIdFromSnapshot(
   snapshot: Snapshot,
-  getOffset: OffsetLookup,
+  getTransform: TransformLookup,
   id: number,
   px: number,
   py: number
@@ -126,7 +160,7 @@ export function getHitNodeIdFromSnapshot(
     for (let i = children.length - 1; i >= 0; i--) {
       const hitNodeId = getHitNodeIdFromSnapshot(
         snapshot,
-        getOffset,
+        getTransform,
         children[i]!,
         px,
         py
@@ -140,7 +174,9 @@ export function getHitNodeIdFromSnapshot(
     (node.gestureEnabled || node.draggable) &&
     node.hitTestDescriptor
   ) {
-    const inv = invert(getAbsoluteMatrixFromSnapshot(snapshot, getOffset, id));
+    const inv = invert(
+      getAbsoluteMatrixFromSnapshot(snapshot, getTransform, id)
+    );
     if (!inv) return -1;
     const lp = applyTransformsToPoint(inv, { x: px, y: py });
     if (

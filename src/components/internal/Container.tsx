@@ -49,50 +49,53 @@ export const Container = memo(
       };
     }, [registry, id, draggable, dragOffsetSV, scaleSV, rotationSV]);
 
-    // Reset the live gesture channels in the same commit that applies the new
-    // config (before paint), so the committed transform and the channels never
-    // disagree for a frame — which would flash the pre-commit position.
+    const resolvedTransfromFromConfig = useMemo(
+      () => resolveTransform(config),
+      [config]
+    );
+    const resolvedTransfromFromConfigSV = useSharedValue(
+      resolvedTransfromFromConfig
+    );
+
     useLayoutEffect(() => {
+      resolvedTransfromFromConfigSV.value = resolvedTransfromFromConfig;
       dragOffsetSV.value = { x: 0, y: 0 };
       scaleSV.value = { x: 1, y: 1 };
       rotationSV.value = 0;
     }, [
-      config.x,
-      config.y,
-      config.scaleX,
-      config.scaleY,
-      config.rotation,
+      resolvedTransfromFromConfig,
+      resolvedTransfromFromConfigSV,
       dragOffsetSV,
       scaleSV,
       rotationSV,
     ]);
 
-    const resolved = useMemo(() => resolveTransform(config), [config]);
     const staticTransform = useMemo(
       () => buildTransforms3dArray(config),
       [config]
     );
 
     const animatedTransform = useDerivedValue<Transforms3d>(() => {
+      const r = resolvedTransfromFromConfigSV.value;
       const offset = dragOffsetSV.value;
       const scale = scaleSV.value;
-      const x = resolved.x + offset.x;
-      const y = resolved.y + offset.y;
-      const rotation = resolved.rotation + rotationSV.value * DEG_TO_RAD;
-      const scaleX = resolved.scaleX * scale.x;
-      const scaleY = resolved.scaleY * scale.y;
+      const x = r.x + offset.x;
+      const y = r.y + offset.y;
+      const rotation = r.rotation + rotationSV.value * DEG_TO_RAD;
+      const scaleX = r.scaleX * scale.x;
+      const scaleY = r.scaleY * scale.y;
       const out: Transforms3d = [];
       if (x !== 0) out.push({ translateX: x });
       if (y !== 0) out.push({ translateY: y });
       if (rotation !== 0) out.push({ rotate: rotation });
-      if (resolved.skewX !== 0) out.push({ skewX: resolved.skewX });
-      if (resolved.skewY !== 0) out.push({ skewY: resolved.skewY });
+      if (r.skewX !== 0) out.push({ skewX: r.skewX });
+      if (r.skewY !== 0) out.push({ skewY: r.skewY });
       if (scaleX !== 1) out.push({ scaleX });
       if (scaleY !== 1) out.push({ scaleY });
-      if (resolved.offsetX !== 0) out.push({ translateX: -resolved.offsetX });
-      if (resolved.offsetY !== 0) out.push({ translateY: -resolved.offsetY });
+      if (r.offsetX !== 0) out.push({ translateX: -r.offsetX });
+      if (r.offsetY !== 0) out.push({ translateY: -r.offsetY });
       return out;
-    }, [resolved]);
+    }, []);
 
     const transform = useMemo(
       () => (draggable ? animatedTransform : staticTransform),

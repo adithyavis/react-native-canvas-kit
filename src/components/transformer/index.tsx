@@ -1,4 +1,4 @@
-import { Fragment, memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Fragment, memo, useCallback, useMemo } from 'react';
 import {
   useAnimatedReaction,
   useSharedValue,
@@ -15,7 +15,6 @@ import { TransformerHandles } from './TransformerHandles';
 import {
   DEG_TO_RAD,
   resolveAnchorTransform,
-  resolveTransformerCfg,
   rotaterAnchorPoint,
   type ActiveAnchorDrag,
   type TransformConstraints,
@@ -28,7 +27,7 @@ import type {
   Vector2d,
 } from '../../core/types';
 import { ALL_ANCHORS } from './constants';
-import { useGetHandleId, useOnTransform } from './hooks';
+import { useGetHandleId, useOnTransform, useTransformerTarget } from './hooks';
 
 export interface TransformerProps {
   node: string;
@@ -76,57 +75,22 @@ export const Transformer = memo((props: TransformerProps) => {
   } = props;
 
   const registry = useRegistry();
-  const selector = node;
-  const targetId =
-    registry && selector != null ? registry.findBySelector(selector) : null;
-
-  const targetDragSV =
-    registry && targetId != null ? registry.getDragOffset(targetId) : undefined;
-  const targetScaleSV =
-    registry && targetId != null ? registry.getScale(targetId) : undefined;
-  const targetRotationSV =
-    registry && targetId != null ? registry.getRotation(targetId) : undefined;
+  const getHandleId = useGetHandleId();
+  const target = useTransformerTarget(
+    registry,
+    node,
+    ignoreStroke,
+    enabledAnchors,
+    getHandleId
+  );
 
   const activeAnchorSV = useSharedValue<ActiveAnchorDrag | null>(null);
 
-  const getHandleId = useGetHandleId(registry, selector);
-
   const onTransform = useOnTransform(_onTransform);
 
-  const anchorToDragOffsetMapRef = useRef<
-    Record<AnchorId, NonNullable<typeof targetDragSV>>
-  >({} as any);
-
-  useEffect(() => {
-    if (registry) {
-      for (const h of enabledAnchors) {
-        const anchorId = registry.findBySelector('#' + getHandleId(h));
-        if (anchorId == null) continue;
-        const dragOffsetSV = registry.getDragOffset(anchorId);
-        if (dragOffsetSV) anchorToDragOffsetMapRef.current[h] = dragOffsetSV;
-      }
-    }
-  }, [enabledAnchors, getHandleId, registry]);
-
-  const config = useMemo(
-    () => registry?.getConfig(targetId ?? -1),
-    [registry, targetId]
-  );
-  const selfRect = useMemo(
-    () =>
-      registry && targetId != null
-        ? registry.getSelfRect(targetId, ignoreStroke)
-        : null,
-    [registry, targetId, ignoreStroke]
-  );
-  const transformerConfig = useMemo(
-    () => resolveTransformerCfg(config),
-    [config]
-  );
-
   const rect = useMemo(
-    () => (selfRect ? inflateRect(selfRect, padding) : null),
-    [selfRect, padding]
+    () => (target ? inflateRect(target.selfRect, padding) : null),
+    [target, padding]
   );
 
   const showRotater = enabledAnchors.indexOf('rotater') !== -1;
@@ -144,117 +108,89 @@ export const Transformer = memo((props: TransformerProps) => {
   useAnimatedReaction(
     () => {
       const a = activeAnchorSV.value;
-      if (!a) return null;
-      const dragOffsetSV = anchorToDragOffsetMapRef.current[a.anchor];
+      if (!a || !target) return null;
+      const dragOffsetSV = target.anchorDragOffsets[a.anchor];
       return dragOffsetSV ? dragOffsetSV.value : null;
     },
     (offset) => {
-      if (!offset) return;
+      if (!offset || !target) return;
+      const { dragSV, scaleSV, rotationSV } = target;
       const a = activeAnchorSV.value;
-      if (!a || !targetDragSV || !targetScaleSV || !targetRotationSV) return;
+      if (!a || !dragSV || !scaleSV || !rotationSV) return;
       if (a.cfgScaleX === 0 || a.cfgScaleY === 0) return;
       const result = resolveAnchorTransform(
         a,
         { x: a.startPointer.x + offset.x, y: a.startPointer.y + offset.y },
         constraints
       );
-      targetDragSV.value = { x: result.x - a.cfgX, y: result.y - a.cfgY };
-      targetScaleSV.value = {
+      dragSV.value = { x: result.x - a.cfgX, y: result.y - a.cfgY };
+      scaleSV.value = {
         x: result.scaleX / a.cfgScaleX,
         y: result.scaleY / a.cfgScaleY,
       };
-      targetRotationSV.value = result.rotation - a.cfgRotation;
-      runOnJS(onTransform)({ ...result, targetId, anchor: a.anchor });
+      rotationSV.value = result.rotation - a.cfgRotation;
+      runOnJS(onTransform)({
+        ...result,
+        targetId: target.id,
+        anchor: a.anchor,
+      });
     },
-    [
-      anchorToDragOffsetMapRef.current,
-      targetDragSV,
-      targetScaleSV,
-      targetRotationSV,
-      constraints,
-      targetId,
-    ]
+    [target, constraints]
   );
-
-  const configMatrix = useMemo(() => {
-    if (!targetId) return null;
-    return registry?.getLocalMatrix(targetId) ?? null;
-  }, [registry, targetId]);
 
   const handleCenterAnchor = useCallback(
     (h: AnchorId): Vector2d => {
-      if (
-        !configMatrix ||
-        !registry ||
-        targetId == null ||
-        !config ||
-        !transformerConfig ||
-        !rect
-      ) {
+      if (!target || !rect) {
         return {} as Vector2d;
       }
       if (h === 'rotater') {
         const base = applyTransformsToPoint(
-          configMatrix,
+          target.matrix,
           anchorLocalPoint(rect, 'top-center')
         );
         return rotaterAnchorPoint(
           base,
-          transformerConfig.rotation * DEG_TO_RAD,
+          target.config.rotation * DEG_TO_RAD,
           rotateAnchorOffset
         );
       }
-      return applyTransformsToPoint(configMatrix, anchorLocalPoint(rect, h));
+      return applyTransformsToPoint(target.matrix, anchorLocalPoint(rect, h));
     },
-    [
-      transformerConfig,
-      config,
-      configMatrix,
-      rect,
-      registry,
-      rotateAnchorOffset,
-      targetId,
-    ]
+    [target, rect, rotateAnchorOffset]
   );
 
   const onHandleDragStart = useCallback(
     (h: AnchorId) => (e: EventObject) => {
-      if (!configMatrix || !transformerConfig || !rect) {
+      if (!target || !rect) {
         return;
       }
       e.cancelBubble = true;
+      const { config } = target;
       activeAnchorSV.value = {
         anchor: h,
         startPointer: handleCenterAnchor(h),
         rect,
-        matrix: configMatrix,
-        cfgX: transformerConfig.x,
-        cfgY: transformerConfig.y,
-        cfgScaleX: transformerConfig.scaleX,
-        cfgScaleY: transformerConfig.scaleY,
-        cfgRotation: transformerConfig.rotation,
-        offsetX: transformerConfig.offsetX,
-        offsetY: transformerConfig.offsetY,
+        matrix: target.matrix,
+        cfgX: config.x,
+        cfgY: config.y,
+        cfgScaleX: config.scaleX,
+        cfgScaleY: config.scaleY,
+        cfgRotation: config.rotation,
+        offsetX: config.offsetX,
+        offsetY: config.offsetY,
       };
-      onTransformStart?.({ ...transformerConfig, targetId, anchor: h });
+      onTransformStart?.({ ...config, targetId: target.id, anchor: h });
     },
-    [
-      activeAnchorSV,
-      transformerConfig,
-      configMatrix,
-      handleCenterAnchor,
-      onTransformStart,
-      rect,
-      targetId,
-    ]
+    [activeAnchorSV, target, handleCenterAnchor, onTransformStart, rect]
   );
 
   const onHandleDragEnd = useCallback(
     (h: AnchorId) => () => {
+      if (!target) return;
       const a = activeAnchorSV.value;
       activeAnchorSV.value = null;
-      let result = { ...transformerConfig } as TransformResult;
-      const dragOffsetSV = anchorToDragOffsetMapRef.current[h];
+      let result = { ...target.config } as TransformResult;
+      const dragOffsetSV = target.anchorDragOffsets[h];
       if (a && dragOffsetSV) {
         const offset = dragOffsetSV.value;
         result = resolveAnchorTransform(
@@ -263,29 +199,21 @@ export const Transformer = memo((props: TransformerProps) => {
           constraints
         );
       }
-      onTransformEnd?.({ ...result, targetId, anchor: h });
+      onTransformEnd?.({ ...result, targetId: target.id, anchor: h });
     },
-    [activeAnchorSV, transformerConfig, constraints, onTransformEnd, targetId]
+    [activeAnchorSV, target, constraints, onTransformEnd]
   );
 
-  if (
-    !configMatrix ||
-    !registry ||
-    targetId == null ||
-    !config ||
-    !transformerConfig ||
-    !rect
-  )
-    return null;
+  if (!registry || !target || !rect) return null;
 
   return (
     <Fragment>
       <TransformerBorder
         rect={rect}
-        transformerConfig={transformerConfig}
-        dragSV={targetDragSV}
-        scaleSV={targetScaleSV}
-        rotationSV={targetRotationSV}
+        transformerConfig={target.config}
+        dragSV={target.dragSV}
+        scaleSV={target.scaleSV}
+        rotationSV={target.rotationSV}
         showRotater={showRotater}
         rotateAnchorOffset={rotateAnchorOffset}
         stroke={borderStroke}
@@ -293,10 +221,10 @@ export const Transformer = memo((props: TransformerProps) => {
       />
       <TransformerHandles
         rect={rect}
-        transformerConfig={transformerConfig}
-        dragSV={targetDragSV}
-        scaleSV={targetScaleSV}
-        rotationSV={targetRotationSV}
+        transformerConfig={target.config}
+        dragSV={target.dragSV}
+        scaleSV={target.scaleSV}
+        rotationSV={target.rotationSV}
         enabledAnchors={enabledAnchors}
         anchorSize={anchorSize}
         anchorCornerRadius={anchorCornerRadius}

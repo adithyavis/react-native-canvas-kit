@@ -1,10 +1,4 @@
-import {
-  memo,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  type ReactNode,
-} from 'react';
+import { memo, useLayoutEffect, useMemo, type ReactNode } from 'react';
 import {
   Group as SkiaGroup,
   type Transforms3d,
@@ -55,7 +49,10 @@ export const Container = memo(
       };
     }, [registry, id, draggable, dragOffsetSV, scaleSV, rotationSV]);
 
-    useEffect(() => {
+    // Reset the live gesture channels in the same commit that applies the new
+    // config (before paint), so the committed transform and the channels never
+    // disagree for a frame — which would flash the pre-commit position.
+    useLayoutEffect(() => {
       dragOffsetSV.value = { x: 0, y: 0 };
       scaleSV.value = { x: 1, y: 1 };
       rotationSV.value = 0;

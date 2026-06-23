@@ -1,4 +1,10 @@
-import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
+import {
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
 import type { SharedValue } from 'react-native-reanimated';
 import type {
   AnchorId,
@@ -10,8 +16,6 @@ import type { NodeRegistry } from '../../core/registry';
 import type { Mat } from '../../core/matrix';
 import type { Rect } from '../../core/bounds';
 import { resolveTransformerCfg, type TransformerCfg } from './utils';
-
-let nextTargetTransformerId = 0;
 
 export const useOnTransform = (
   onTransform: TransformEventListener | undefined
@@ -26,10 +30,8 @@ export const useOnTransform = (
 };
 
 export const useGetHandleId = () => {
-  const transformerIdRef = useRef(-1);
-  if (transformerIdRef.current < 0)
-    transformerIdRef.current = nextTargetTransformerId++;
-  return useCallback((h: AnchorId) => `${transformerIdRef.current}-${h}`, []);
+  const transformerId = useId();
+  return useCallback((h: AnchorId) => `${transformerId}-${h}`, [transformerId]);
 };
 
 export interface TransformerTarget {

@@ -24,8 +24,8 @@ export { Text } from './components/shapes/Text';
 export type { TextProps } from './components/shapes/Text';
 export { Image } from './components/shapes/Image';
 export type { ImageProps } from './components/shapes/Image';
-export { Transformer } from './components/Transformer';
-export type { TransformerProps } from './components/Transformer';
+export { Transformer } from './components/transformer';
+export type { TransformerProps } from './components/transformer';
 
 export type {
   Vector2d,

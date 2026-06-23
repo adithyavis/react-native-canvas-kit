@@ -6,7 +6,7 @@ import {
   multiply,
   type Mat,
 } from './matrix';
-import type { ResolvedTransform } from './transform';
+import { type ResolvedTransform, DEG_TO_RAD } from './transform';
 import { ZERO_VECTOR } from './geometry';
 import {
   getIsHitTestSuccessful,
@@ -15,7 +15,6 @@ import {
 import type { Vector2d } from './types';
 
 export const DEFAULT_DRAG_DISTANCE = 3;
-const DEG_TO_RAD = Math.PI / 180;
 
 export const SnapshotNodeType = {
   Stage: 'Stage',

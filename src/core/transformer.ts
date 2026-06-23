@@ -1,9 +1,7 @@
 import { applyTransformsToPoint, type Mat } from './matrix';
 import type { Rect } from './bounds';
 import type { AnchorId, TransformResult, Vector2d } from './types';
-
-const DEG_TO_RAD = Math.PI / 180;
-const RAD_TO_DEG = 180 / Math.PI;
+import { DEG_TO_RAD, RAD_TO_DEG } from './transform';
 
 export function isCornerAnchor(anchor: AnchorId): boolean {
   'worklet';

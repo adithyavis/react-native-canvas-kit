@@ -1,30 +1,12 @@
 import type { SharedValue } from 'react-native-reanimated';
 import type { Mat } from '../../core/matrix';
 import type { Rect as BoundsRect } from '../../core/bounds';
-import type { ResolvedTransform } from '../../core/transform';
+import { type ResolvedTransform, DEG_TO_RAD } from '../../core/transform';
 import { computeResize, computeRotation } from '../../core/transformer';
-import type {
-  AnchorId,
-  NodeConfig,
-  TransformResult,
-  Vector2d,
-} from '../../core/types';
+import { ZERO_VECTOR, UNIT_VECTOR } from '../../core/geometry';
+import type { AnchorId, TransformResult, Vector2d } from '../../core/types';
 
-export const DEG_TO_RAD = Math.PI / 180;
 const MIN_SIZE = 1;
-
-const ZERO: Vector2d = { x: 0, y: 0 };
-const UNIT: Vector2d = { x: 1, y: 1 };
-
-export interface TransformerCfg {
-  x: number;
-  y: number;
-  scaleX: number;
-  scaleY: number;
-  rotation: number;
-  offsetX: number;
-  offsetY: number;
-}
 
 export interface TransformChannels {
   dragOffsetSV?: SharedValue<Vector2d>;
@@ -53,28 +35,13 @@ export interface TransformConstraints {
   rotationSnapTolerance: number;
 }
 
-export function resolveTransformerCfg(
-  config: NodeConfig | undefined
-): TransformerCfg | null {
-  if (!config) return null;
-  return {
-    x: config.x ?? 0,
-    y: config.y ?? 0,
-    scaleX: config.scaleX ?? config.scale?.x ?? 1,
-    scaleY: config.scaleY ?? config.scale?.y ?? 1,
-    rotation: config.rotation ?? 0,
-    offsetX: config.offsetX ?? config.offset?.x ?? 0,
-    offsetY: config.offsetY ?? config.offset?.y ?? 0,
-  };
-}
-
 export function computeTransform(
   resolvedTransform: ResolvedTransform,
   channels: TransformChannels
 ): TransformResult {
   'worklet';
-  const dO = channels.dragOffsetSV ? channels.dragOffsetSV.value : ZERO;
-  const sV = channels.scaleSV ? channels.scaleSV.value : UNIT;
+  const dO = channels.dragOffsetSV ? channels.dragOffsetSV.value : ZERO_VECTOR;
+  const sV = channels.scaleSV ? channels.scaleSV.value : UNIT_VECTOR;
   const rV = channels.rotationSV ? channels.rotationSV.value : 0;
   return {
     x: resolvedTransform.x + dO.x,

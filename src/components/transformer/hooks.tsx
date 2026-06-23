@@ -9,8 +9,7 @@ import type {
 import type { NodeRegistry } from '../../core/registry';
 import type { Mat } from '../../core/matrix';
 import type { Rect } from '../../core/bounds';
-import type { ResolvedTransform } from '../../core/transform';
-import { resolveTransformerCfg, type TransformerCfg } from './utils';
+import { resolveTransform, type ResolvedTransform } from '../../core/transform';
 
 export const useOnTransform = (
   onTransform: TransformEventListener | undefined
@@ -31,7 +30,7 @@ export const useGetHandleId = () => {
 
 export interface TransformerTarget {
   id: number;
-  config: TransformerCfg;
+  config: ResolvedTransform;
   selfRect: Rect;
   matrix: Mat;
   dragOffsetSV?: SharedValue<Vector2d>;
@@ -64,10 +63,9 @@ export function useTransformerTarget(
       return null;
     }
     const targetId = registry.findBySelector(selector);
-    const config =
-      targetId != null
-        ? resolveTransformerCfg(registry.getConfig(targetId))
-        : null;
+    const rawConfig =
+      targetId != null ? registry.getConfig(targetId) : undefined;
+    const config = rawConfig ? resolveTransform(rawConfig) : null;
     const selfRect =
       targetId != null ? registry.getSelfRect(targetId, ignoreStroke) : null;
     const matrix = targetId != null ? registry.getLocalMatrix(targetId) : null;

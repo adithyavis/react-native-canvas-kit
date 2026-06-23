@@ -5,7 +5,11 @@ import {
 } from '@shopify/react-native-skia';
 import { useSharedValue, useDerivedValue } from 'react-native-reanimated';
 import type { NodeConfig, Vector2d } from '../../core/types';
-import { buildTransforms3dArray, resolveTransform } from '../../core/transform';
+import {
+  buildTransforms3dArray,
+  resolveTransform,
+  DEG_TO_RAD,
+} from '../../core/transform';
 import type { HitTestDescriptor } from '../../core/hitTestDescriptor';
 import type { NodeType } from '../../core/registry';
 import {
@@ -14,8 +18,6 @@ import {
   useRegisterNode,
   useRegistry,
 } from './NodeContext';
-
-const DEG_TO_RAD = Math.PI / 180;
 
 export const Container = memo(
   ({ config: _config, type, hitTestDescriptor, children }: ContainerProps) => {

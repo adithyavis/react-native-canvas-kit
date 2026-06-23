@@ -1,7 +1,8 @@
 import type { Transforms3d } from '@shopify/react-native-skia';
 import type { NodeConfig } from './types';
 
-const DEG_TO_RAD = Math.PI / 180;
+export const DEG_TO_RAD = Math.PI / 180;
+export const RAD_TO_DEG = 180 / Math.PI;
 
 export interface ResolvedTransform {
   x: number;

@@ -1,6 +1,7 @@
 import type { Vector2d } from './types';
 
 export const ZERO_VECTOR: Vector2d = { x: 0, y: 0 };
+export const UNIT_VECTOR: Vector2d = { x: 1, y: 1 };
 
 export function dist(ax: number, ay: number, bx: number, by: number): number {
   'worklet';

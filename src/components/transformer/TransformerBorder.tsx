@@ -3,10 +3,9 @@ import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 import { Path, Skia } from '@shopify/react-native-skia';
 import { transformLocalPoint } from '../../core/transformer';
 import type { Rect as BoundsRect } from '../../core/bounds';
-import type { ResolvedTransform } from '../../core/transform';
+import { DEG_TO_RAD, type ResolvedTransform } from '../../core/transform';
 import {
   computeTransform,
-  DEG_TO_RAD,
   rotaterAnchorPoint,
   type TransformChannels,
 } from './utils';

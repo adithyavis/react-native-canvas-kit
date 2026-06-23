@@ -13,7 +13,6 @@ import { anchorLocalPoint } from '../../core/transformer';
 import { TransformerBorder } from './TransformerBorder';
 import { TransformerHandles } from './TransformerHandles';
 import {
-  DEG_TO_RAD,
   resolveAnchorTransform,
   rotaterAnchorPoint,
   type ActiveAnchorDrag,
@@ -28,6 +27,7 @@ import type {
 } from '../../core/types';
 import { ALL_ANCHORS } from './constants';
 import { useGetHandleId, useOnTransform, useTransformerTarget } from './hooks';
+import { DEG_TO_RAD } from '../../core/transform';
 
 export interface TransformerProps {
   node: string;
@@ -150,7 +150,7 @@ export const Transformer = memo((props: TransformerProps) => {
         );
         return rotaterAnchorPoint(
           base,
-          target.config.rotation * DEG_TO_RAD,
+          target.config.rotation,
           rotateAnchorOffset
         );
       }
@@ -166,6 +166,7 @@ export const Transformer = memo((props: TransformerProps) => {
       }
       e.cancelBubble = true;
       const { config } = target;
+      const rotationDeg = config.rotation / DEG_TO_RAD;
       activeAnchorSV.value = {
         anchor: h,
         startPointer: handleCenterAnchor(h),
@@ -175,11 +176,19 @@ export const Transformer = memo((props: TransformerProps) => {
         cfgY: config.y,
         cfgScaleX: config.scaleX,
         cfgScaleY: config.scaleY,
-        cfgRotation: config.rotation,
+        cfgRotation: rotationDeg,
         offsetX: config.offsetX,
         offsetY: config.offsetY,
       };
-      onTransformStart?.({ ...config, targetId: target.id, anchor: h });
+      onTransformStart?.({
+        x: config.x,
+        y: config.y,
+        scaleX: config.scaleX,
+        scaleY: config.scaleY,
+        rotation: rotationDeg,
+        targetId: target.id,
+        anchor: h,
+      });
     },
     [activeAnchorSV, target, handleCenterAnchor, onTransformStart, rect]
   );
@@ -189,7 +198,13 @@ export const Transformer = memo((props: TransformerProps) => {
       if (!target) return;
       const a = activeAnchorSV.value;
       activeAnchorSV.value = null;
-      let result = { ...target.config } as TransformResult;
+      let result: TransformResult = {
+        x: target.config.x,
+        y: target.config.y,
+        scaleX: target.config.scaleX,
+        scaleY: target.config.scaleY,
+        rotation: target.config.rotation / DEG_TO_RAD,
+      };
       const dragOffsetSV = target.anchorDragOffsets[h];
       if (a && dragOffsetSV) {
         const offset = dragOffsetSV.value;

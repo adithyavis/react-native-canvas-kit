@@ -22,9 +22,7 @@ import {
   type SnapshotNode,
 } from './snapshot';
 import type { SharedValue } from 'react-native-reanimated';
-import { ZERO_VECTOR } from './geometry';
-
-const UNIT_SCALE: Vector2d = { x: 1, y: 1 };
+import { ZERO_VECTOR, UNIT_VECTOR } from './geometry';
 
 export type NodeType = 'stage' | 'layer' | 'group' | 'shape';
 
@@ -88,7 +86,7 @@ export class NodeRegistry {
 
   private getTransform: TransformLookup = (id) => ({
     offset: this.idToDragOffsetMap.get(id)?.value ?? ZERO_VECTOR,
-    scale: this.idToScaleMap.get(id)?.value ?? UNIT_SCALE,
+    scale: this.idToScaleMap.get(id)?.value ?? UNIT_VECTOR,
     rotation: this.idToRotationMap.get(id)?.value ?? 0,
   });
 

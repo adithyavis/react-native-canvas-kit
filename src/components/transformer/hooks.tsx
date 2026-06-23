@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useId,
-  useMemo,
-  useRef,
-  useSyncExternalStore,
-} from 'react';
+import { useCallback, useId, useRef, useSyncExternalStore } from 'react';
 import type { SharedValue } from 'react-native-reanimated';
 import type {
   AnchorId,
@@ -15,6 +9,7 @@ import type {
 import type { NodeRegistry } from '../../core/registry';
 import type { Mat } from '../../core/matrix';
 import type { Rect } from '../../core/bounds';
+import type { ResolvedTransform } from '../../core/transform';
 import { resolveTransformerCfg, type TransformerCfg } from './utils';
 
 export const useOnTransform = (
@@ -39,13 +34,12 @@ export interface TransformerTarget {
   config: TransformerCfg;
   selfRect: Rect;
   matrix: Mat;
-  dragSV?: SharedValue<Vector2d>;
+  dragOffsetSV?: SharedValue<Vector2d>;
   scaleSV?: SharedValue<Vector2d>;
   rotationSV?: SharedValue<number>;
+  resolvedTransformSV?: SharedValue<ResolvedTransform>;
   anchorDragOffsets: Partial<Record<AnchorId, SharedValue<Vector2d>>>;
 }
-
-const UNSET = Symbol('unset');
 
 export function useTransformerTarget(
   registry: NodeRegistry | null,
@@ -54,14 +48,8 @@ export function useTransformerTarget(
   enabledAnchors: AnchorId[],
   getHandleId: (h: AnchorId) => string
 ): TransformerTarget | null {
-  const transformerTargetCacheRef = useRef<
-    TransformerTarget | null | typeof UNSET
-  >(UNSET);
-  const transformerTargetKeyRef = useRef<string>('');
-  const lastSnapshotRef = useRef<unknown>(UNSET);
-  const lastIgnoreStrokeRef = useRef(ignoreStroke);
-  const anchorsKey = useMemo(() => enabledAnchors.join(','), [enabledAnchors]);
-  const lastAnchorsKeyRef = useRef(anchorsKey);
+  const transformerTargetCacheRef = useRef<TransformerTarget | null>(null);
+  const transformerTargetKeyRef = useRef<string | null>(null);
 
   const subscribe = useCallback(
     (onChange: () => void) =>
@@ -72,38 +60,27 @@ export function useTransformerTarget(
   const getSnapshot = useCallback((): TransformerTarget | null => {
     if (!registry) {
       transformerTargetCacheRef.current = null;
+      transformerTargetKeyRef.current = null;
       return null;
     }
-
-    const snapshot = registry.getSnapshot();
-    if (
-      transformerTargetCacheRef.current !== UNSET &&
-      snapshot === lastSnapshotRef.current &&
-      ignoreStroke === lastIgnoreStrokeRef.current &&
-      anchorsKey === lastAnchorsKeyRef.current
-    ) {
-      return transformerTargetCacheRef.current;
-    }
-    lastSnapshotRef.current = snapshot;
-    lastIgnoreStrokeRef.current = ignoreStroke;
-    lastAnchorsKeyRef.current = anchorsKey;
-
     const targetId = registry.findBySelector(selector);
-    if (targetId == null) {
+    const config =
+      targetId != null
+        ? resolveTransformerCfg(registry.getConfig(targetId))
+        : null;
+    const selfRect =
+      targetId != null ? registry.getSelfRect(targetId, ignoreStroke) : null;
+    const matrix = targetId != null ? registry.getLocalMatrix(targetId) : null;
+    if (targetId == null || !config || !selfRect || !matrix) {
       transformerTargetCacheRef.current = null;
-      return null;
-    }
-    const config = resolveTransformerCfg(registry.getConfig(targetId));
-    const selfRect = registry.getSelfRect(targetId, ignoreStroke);
-    const matrix = registry.getLocalMatrix(targetId);
-    if (!config || !selfRect || !matrix) {
-      transformerTargetCacheRef.current = null;
+      transformerTargetKeyRef.current = null;
       return null;
     }
 
-    const dragSV = registry.getDragOffset(targetId);
+    const dragOffsetSV = registry.getDragOffset(targetId);
     const scaleSV = registry.getScale(targetId);
     const rotationSV = registry.getRotation(targetId);
+    const resolvedTransformSV = registry.getResolvedTransform(targetId);
 
     const anchorDragOffsets: Partial<Record<AnchorId, SharedValue<Vector2d>>> =
       {};
@@ -112,8 +89,8 @@ export function useTransformerTarget(
       const anchorId = registry.findBySelector('#' + getHandleId(h));
       handlePart += (anchorId ?? '-') + ',';
       if (anchorId == null) continue;
-      const dragOffsetSV = registry.getDragOffset(anchorId);
-      if (dragOffsetSV) anchorDragOffsets[h] = dragOffsetSV;
+      const anchorDragOffsetSV = registry.getDragOffset(anchorId);
+      if (anchorDragOffsetSV) anchorDragOffsets[h] = anchorDragOffsetSV;
     }
 
     const transformerTargetKey =
@@ -121,11 +98,11 @@ export function useTransformerTarget(
       `${config.x},${config.y},${config.scaleX},${config.scaleY},` +
       `${config.rotation},${config.offsetX},${config.offsetY};` +
       `${selfRect.x},${selfRect.y},${selfRect.width},${selfRect.height};` +
-      `${dragSV ? 1 : 0}${scaleSV ? 1 : 0}${rotationSV ? 1 : 0};` +
+      `${dragOffsetSV ? 1 : 0}${scaleSV ? 1 : 0}${rotationSV ? 1 : 0}` +
+      `${resolvedTransformSV ? 1 : 0};` +
       handlePart;
 
     if (
-      transformerTargetCacheRef.current !== UNSET &&
       transformerTargetCacheRef.current &&
       transformerTargetKey === transformerTargetKeyRef.current
     ) {
@@ -137,21 +114,15 @@ export function useTransformerTarget(
       config,
       selfRect,
       matrix,
-      dragSV,
+      dragOffsetSV,
       scaleSV,
       rotationSV,
+      resolvedTransformSV,
       anchorDragOffsets,
     };
     transformerTargetCacheRef.current = transformerTarget;
     return transformerTarget;
-  }, [
-    registry,
-    selector,
-    ignoreStroke,
-    enabledAnchors,
-    anchorsKey,
-    getHandleId,
-  ]);
+  }, [registry, selector, ignoreStroke, enabledAnchors, getHandleId]);
 
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }

@@ -1,6 +1,6 @@
 import type { NodeConfig, NodeHandle, Vector2d } from './types';
 import { buildAffineMatrixFromConfig, type Mat } from './matrix';
-import { resolveTransform } from './transform';
+import { resolveTransform, type ResolvedTransform } from './transform';
 import {
   getSelfRect as getSelfRectFromDescriptor,
   getClientRect as getClientRectFromMatrix,
@@ -72,6 +72,10 @@ export class NodeRegistry {
   private idToDragOffsetMap = new Map<number, SharedValue<Vector2d>>();
   private idToScaleMap = new Map<number, SharedValue<Vector2d>>();
   private idToRotationMap = new Map<number, SharedValue<number>>();
+  private idToResolvedTransformMap = new Map<
+    number,
+    SharedValue<ResolvedTransform>
+  >();
   private nextId = 1;
 
   private snapshot: Snapshot = EMPTY_SNAPSHOT;
@@ -181,6 +185,20 @@ export class NodeRegistry {
   unregisterRotation(id: number): void {
     if (this.idToRotationMap.delete(id)) {
       this.idToTransformMapVersion++;
+      this.invalidateSnapshot();
+    }
+  }
+
+  registerResolvedTransform(
+    id: number,
+    ref: SharedValue<ResolvedTransform>
+  ): void {
+    this.idToResolvedTransformMap.set(id, ref);
+    this.invalidateSnapshot();
+  }
+
+  unregisterResolvedTransform(id: number): void {
+    if (this.idToResolvedTransformMap.delete(id)) {
       this.invalidateSnapshot();
     }
   }
@@ -397,6 +415,10 @@ export class NodeRegistry {
 
   getRotation(id: number): SharedValue<number> | undefined {
     return this.idToRotationMap.get(id);
+  }
+
+  getResolvedTransform(id: number): SharedValue<ResolvedTransform> | undefined {
+    return this.idToResolvedTransformMap.get(id);
   }
 
   getClientRect(id: number, ignoreStroke = false): Rect | null {

@@ -114,16 +114,16 @@ export const Transformer = memo((props: TransformerProps) => {
     },
     (offset) => {
       if (!offset || !target) return;
-      const { dragSV, scaleSV, rotationSV } = target;
+      const { dragOffsetSV, scaleSV, rotationSV } = target;
       const a = activeAnchorSV.value;
-      if (!a || !dragSV || !scaleSV || !rotationSV) return;
+      if (!a || !dragOffsetSV || !scaleSV || !rotationSV) return;
       if (a.cfgScaleX === 0 || a.cfgScaleY === 0) return;
       const result = resolveAnchorTransform(
         a,
         { x: a.startPointer.x + offset.x, y: a.startPointer.y + offset.y },
         constraints
       );
-      dragSV.value = { x: result.x - a.cfgX, y: result.y - a.cfgY };
+      dragOffsetSV.value = { x: result.x - a.cfgX, y: result.y - a.cfgY };
       scaleSV.value = {
         x: result.scaleX / a.cfgScaleX,
         y: result.scaleY / a.cfgScaleY,
@@ -204,14 +204,14 @@ export const Transformer = memo((props: TransformerProps) => {
     [activeAnchorSV, target, constraints, onTransformEnd]
   );
 
-  if (!registry || !target || !rect) return null;
+  if (!registry || !target || !rect || !target.resolvedTransformSV) return null;
 
   return (
     <Fragment>
       <TransformerBorder
         rect={rect}
-        transformerConfig={target.config}
-        dragSV={target.dragSV}
+        resolvedTransformSV={target.resolvedTransformSV}
+        dragOffsetSV={target.dragOffsetSV}
         scaleSV={target.scaleSV}
         rotationSV={target.rotationSV}
         showRotater={showRotater}
@@ -221,8 +221,8 @@ export const Transformer = memo((props: TransformerProps) => {
       />
       <TransformerHandles
         rect={rect}
-        transformerConfig={target.config}
-        dragSV={target.dragSV}
+        resolvedTransformSV={target.resolvedTransformSV}
+        dragOffsetSV={target.dragOffsetSV}
         scaleSV={target.scaleSV}
         rotationSV={target.rotationSV}
         enabledAnchors={enabledAnchors}

@@ -1,19 +1,19 @@
 import { memo } from 'react';
-import { useDerivedValue } from 'react-native-reanimated';
+import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 import { Path, Skia } from '@shopify/react-native-skia';
 import { transformLocalPoint } from '../../core/transformer';
 import type { Rect as BoundsRect } from '../../core/bounds';
+import type { ResolvedTransform } from '../../core/transform';
 import {
   computeTransform,
   DEG_TO_RAD,
   rotaterAnchorPoint,
   type TransformChannels,
-  type TransformerCfg,
 } from './utils';
 
 interface TransformerBorderProps extends TransformChannels {
   rect: BoundsRect;
-  transformerConfig: TransformerCfg;
+  resolvedTransformSV: SharedValue<ResolvedTransform>;
   showRotater: boolean;
   rotateAnchorOffset: number;
   stroke: string;
@@ -23,8 +23,8 @@ interface TransformerBorderProps extends TransformChannels {
 export const TransformerBorder = memo((props: TransformerBorderProps) => {
   const {
     rect,
-    transformerConfig,
-    dragSV,
+    resolvedTransformSV,
+    dragOffsetSV,
     scaleSV,
     rotationSV,
     showRotater,
@@ -35,13 +35,13 @@ export const TransformerBorder = memo((props: TransformerBorderProps) => {
 
   const borderPath = useDerivedValue(() => {
     const p = Skia.Path.Make();
-    const t = computeTransform(transformerConfig, {
-      dragSV,
+    const t = computeTransform(resolvedTransformSV.value, {
+      dragOffsetSV,
       scaleSV,
       rotationSV,
     });
-    const ox = transformerConfig.offsetX;
-    const oy = transformerConfig.offsetY;
+    const ox = resolvedTransformSV.value.offsetX;
+    const oy = resolvedTransformSV.value.offsetY;
     const c0 = transformLocalPoint(t, ox, oy, rect.x, rect.y);
     const c1 = transformLocalPoint(t, ox, oy, rect.x + rect.width, rect.y);
     const c2 = transformLocalPoint(
@@ -76,8 +76,8 @@ export const TransformerBorder = memo((props: TransformerBorderProps) => {
     return p;
   }, [
     rect,
-    transformerConfig,
-    dragSV,
+    resolvedTransformSV,
+    dragOffsetSV,
     scaleSV,
     rotationSV,
     showRotater,

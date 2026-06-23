@@ -1,6 +1,7 @@
 import type { SharedValue } from 'react-native-reanimated';
 import type { Mat } from '../../core/matrix';
 import type { Rect as BoundsRect } from '../../core/bounds';
+import type { ResolvedTransform } from '../../core/transform';
 import { computeResize, computeRotation } from '../../core/transformer';
 import type {
   AnchorId,
@@ -26,7 +27,7 @@ export interface TransformerCfg {
 }
 
 export interface TransformChannels {
-  dragSV?: SharedValue<Vector2d>;
+  dragOffsetSV?: SharedValue<Vector2d>;
   scaleSV?: SharedValue<Vector2d>;
   rotationSV?: SharedValue<number>;
 }
@@ -68,19 +69,19 @@ export function resolveTransformerCfg(
 }
 
 export function computeTransform(
-  transformerConfig: TransformerCfg,
+  resolvedTransform: ResolvedTransform,
   channels: TransformChannels
 ): TransformResult {
   'worklet';
-  const dO = channels.dragSV ? channels.dragSV.value : ZERO;
+  const dO = channels.dragOffsetSV ? channels.dragOffsetSV.value : ZERO;
   const sV = channels.scaleSV ? channels.scaleSV.value : UNIT;
   const rV = channels.rotationSV ? channels.rotationSV.value : 0;
   return {
-    x: transformerConfig.x + dO.x,
-    y: transformerConfig.y + dO.y,
-    scaleX: transformerConfig.scaleX * sV.x,
-    scaleY: transformerConfig.scaleY * sV.y,
-    rotation: transformerConfig.rotation + rV,
+    x: resolvedTransform.x + dO.x,
+    y: resolvedTransform.y + dO.y,
+    scaleX: resolvedTransform.scaleX * sV.x,
+    scaleY: resolvedTransform.scaleY * sV.y,
+    rotation: resolvedTransform.rotation / DEG_TO_RAD + rV,
   };
 }
 

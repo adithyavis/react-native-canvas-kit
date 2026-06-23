@@ -70,6 +70,14 @@ export const Container = memo(
       rotationSV,
     ]);
 
+    useLayoutEffect(() => {
+      if (!registry || id == null) return;
+      registry.registerResolvedTransform(id, resolvedTransformFromConfigSV);
+      return () => {
+        registry.unregisterResolvedTransform(id);
+      };
+    }, [registry, id, resolvedTransformFromConfigSV]);
+
     const staticTransform = useMemo(
       () => buildTransforms3dArray(config),
       [config]

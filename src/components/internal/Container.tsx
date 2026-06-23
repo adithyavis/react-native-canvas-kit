@@ -49,22 +49,22 @@ export const Container = memo(
       };
     }, [registry, id, draggable, dragOffsetSV, scaleSV, rotationSV]);
 
-    const resolvedTransfromFromConfig = useMemo(
+    const resolvedTransformFromConfig = useMemo(
       () => resolveTransform(config),
       [config]
     );
-    const resolvedTransfromFromConfigSV = useSharedValue(
-      resolvedTransfromFromConfig
+    const resolvedTransformFromConfigSV = useSharedValue(
+      resolvedTransformFromConfig
     );
 
     useLayoutEffect(() => {
-      resolvedTransfromFromConfigSV.value = resolvedTransfromFromConfig;
+      resolvedTransformFromConfigSV.value = resolvedTransformFromConfig;
       dragOffsetSV.value = { x: 0, y: 0 };
       scaleSV.value = { x: 1, y: 1 };
       rotationSV.value = 0;
     }, [
-      resolvedTransfromFromConfig,
-      resolvedTransfromFromConfigSV,
+      resolvedTransformFromConfig,
+      resolvedTransformFromConfigSV,
       dragOffsetSV,
       scaleSV,
       rotationSV,
@@ -76,7 +76,7 @@ export const Container = memo(
     );
 
     const animatedTransform = useDerivedValue<Transforms3d>(() => {
-      const r = resolvedTransfromFromConfigSV.value;
+      const r = resolvedTransformFromConfigSV.value;
       const offset = dragOffsetSV.value;
       const scale = scaleSV.value;
       const x = r.x + offset.x;

@@ -333,6 +333,23 @@ export class NodeRegistry {
         (getConfig().x ?? 0) + (this.idToDragOffsetMap.get(id)?.value.x ?? 0),
       getY: () =>
         (getConfig().y ?? 0) + (this.idToDragOffsetMap.get(id)?.value.y ?? 0),
+      getScaleX: () => {
+        const cfg = getConfig();
+        return (
+          (cfg.scaleX ?? cfg.scale?.x ?? 1) *
+          (this.idToScaleMap.get(id)?.value.x ?? 1)
+        );
+      },
+      getScaleY: () => {
+        const cfg = getConfig();
+        return (
+          (cfg.scaleY ?? cfg.scale?.y ?? 1) *
+          (this.idToScaleMap.get(id)?.value.y ?? 1)
+        );
+      },
+      getRotation: () =>
+        (getConfig().rotation ?? 0) +
+        (this.idToRotationMap.get(id)?.value ?? 0),
       getAbsolutePosition: () => this.getAbsolutePosition(id),
     };
   }

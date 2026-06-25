@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { Gesture, type GestureType } from 'react-native-gesture-handler';
+import { Gesture, type ComposedGesture } from 'react-native-gesture-handler';
 import {
   runOnJS,
   useSharedValue,
@@ -16,9 +16,14 @@ import {
   pointerDown,
   pointerMove,
   pointerUp,
+  pinchBegin,
+  pinchUpdate,
+  rotationUpdate,
+  pinchEnd,
   type GestureEventCallbacks,
   type LastTap,
   type PressState,
+  type PinchState,
 } from '../../core/gestures';
 import type { Vector2d } from '../../core/types';
 
@@ -28,12 +33,13 @@ export function useStageGestures(
   registry: NodeRegistry,
   rootId: number,
   enabled = true
-): GestureType {
+): ComposedGesture {
   const snapshotSV = useSharedValue<Snapshot>(EMPTY_SNAPSHOT);
   const idToDragOffsetMapSV = useSharedValue<idToSVMap<Vector2d>>({});
   const idToScaleMapSV = useSharedValue<idToSVMap<Vector2d>>({});
   const idToRotationMapSV = useSharedValue<idToSVMap<number>>({});
   const pressState = useSharedValue<PressState | null>(null);
+  const pinchState = useSharedValue<PinchState | null>(null);
   const lastTap = useSharedValue<LastTap | null>(null);
   const idToTransformMapVersionRef = useRef(-1);
 
@@ -60,29 +66,47 @@ export function useStageGestures(
     idToRotationMapSV,
   ]);
 
-  const dispatchRef = useRef((type: string, id: number) => {
-    dispatch(registry, type, id, {});
+  const dispatchRef = useRef((type: string, id: number, payload?: unknown) => {
+    dispatch(registry, type, id, payload ?? {});
   });
 
   return useMemo(() => {
     const on = dispatchRef.current;
-    return Gesture.Pan()
+    const getTransform: TransformLookup = (id) => {
+      'worklet';
+      return {
+        offset: idToDragOffsetMapSV.value[id]?.value ?? { x: 0, y: 0 },
+        scale: idToScaleMapSV.value[id]?.value ?? { x: 1, y: 1 },
+        rotation: idToRotationMapSV.value[id]?.value ?? 0,
+      };
+    };
+    const callbacks: GestureEventCallbacks = {
+      setDragOffset: (id, x, y) => {
+        'worklet';
+        const sv = idToDragOffsetMapSV.value[id];
+        if (sv) sv.value = { x, y };
+      },
+      setScale: (id, x, y) => {
+        'worklet';
+        const sv = idToScaleMapSV.value[id];
+        if (sv) sv.value = { x, y };
+      },
+      setRotation: (id, rotationDeg) => {
+        'worklet';
+        const sv = idToRotationMapSV.value[id];
+        if (sv) sv.value = rotationDeg;
+      },
+      on: (type, id, payload) => {
+        'worklet';
+        runOnJS(on)(type, id, payload);
+      },
+    };
+
+    const pan = Gesture.Pan()
       .enabled(enabled)
       .minDistance(0)
       .onBegin((e) => {
         'worklet';
-        const getTransform: TransformLookup = (id) => ({
-          offset: idToDragOffsetMapSV.value[id]?.value ?? { x: 0, y: 0 },
-          scale: idToScaleMapSV.value[id]?.value ?? { x: 1, y: 1 },
-          rotation: idToRotationMapSV.value[id]?.value ?? 0,
-        });
-        const callbacks: GestureEventCallbacks = {
-          setTransform: (id, x, y) => {
-            const sv = idToDragOffsetMapSV.value[id];
-            if (sv) sv.value = { x, y };
-          },
-          on: (type, id) => runOnJS(on)(type, id),
-        };
         pointerDown(
           snapshotSV.value,
           getTransform,
@@ -96,18 +120,7 @@ export function useStageGestures(
       })
       .onUpdate((e) => {
         'worklet';
-        const getTransform: TransformLookup = (id) => ({
-          offset: idToDragOffsetMapSV.value[id]?.value ?? { x: 0, y: 0 },
-          scale: idToScaleMapSV.value[id]?.value ?? { x: 1, y: 1 },
-          rotation: idToRotationMapSV.value[id]?.value ?? 0,
-        });
-        const callbacks: GestureEventCallbacks = {
-          setTransform: (id, x, y) => {
-            const sv = idToDragOffsetMapSV.value[id];
-            if (sv) sv.value = { x, y };
-          },
-          on: (type, id) => runOnJS(on)(type, id),
-        };
+        if (pinchState.value) return;
         pointerMove(
           snapshotSV.value,
           getTransform,
@@ -119,18 +132,6 @@ export function useStageGestures(
       })
       .onFinalize((e) => {
         'worklet';
-        const getTransform: TransformLookup = (id) => ({
-          offset: idToDragOffsetMapSV.value[id]?.value ?? { x: 0, y: 0 },
-          scale: idToScaleMapSV.value[id]?.value ?? { x: 1, y: 1 },
-          rotation: idToRotationMapSV.value[id]?.value ?? 0,
-        });
-        const callbacks: GestureEventCallbacks = {
-          setTransform: (id, x, y) => {
-            const sv = idToDragOffsetMapSV.value[id];
-            if (sv) sv.value = { x, y };
-          },
-          on: (type, id) => runOnJS(on)(type, id),
-        };
         pointerUp(
           snapshotSV.value,
           getTransform,
@@ -143,12 +144,73 @@ export function useStageGestures(
           Date.now()
         );
       });
+
+    const pinch = Gesture.Pinch()
+      .enabled(enabled)
+      .onBegin((e) => {
+        'worklet';
+        pinchBegin(
+          snapshotSV.value,
+          getTransform,
+          pinchState,
+          callbacks,
+          rootId,
+          e.focalX,
+          e.focalY
+        );
+      })
+      .onUpdate((e) => {
+        'worklet';
+        pinchUpdate(
+          snapshotSV.value,
+          getTransform,
+          pinchState,
+          callbacks,
+          e.scale
+        );
+      })
+      .onFinalize(() => {
+        'worklet';
+        pinchEnd(snapshotSV.value, getTransform, pinchState, callbacks);
+      });
+
+    const rotation = Gesture.Rotation()
+      .enabled(enabled)
+      .onBegin((e) => {
+        'worklet';
+        pinchBegin(
+          snapshotSV.value,
+          getTransform,
+          pinchState,
+          callbacks,
+          rootId,
+          e.anchorX,
+          e.anchorY
+        );
+      })
+      .onUpdate((e) => {
+        'worklet';
+        rotationUpdate(
+          snapshotSV.value,
+          getTransform,
+          pinchState,
+          callbacks,
+          e.rotation
+        );
+      })
+      .onFinalize(() => {
+        'worklet';
+        pinchEnd(snapshotSV.value, getTransform, pinchState, callbacks);
+      });
+
+    return Gesture.Simultaneous(pan, pinch, rotation);
   }, [
     snapshotSV,
     idToDragOffsetMapSV,
     idToScaleMapSV,
     idToRotationMapSV,
     pressState,
+    pinchState,
     lastTap,
     rootId,
     enabled,

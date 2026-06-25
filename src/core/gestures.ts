@@ -1,6 +1,8 @@
 import { applyTransformsToPoint, identity, invert, type Mat } from './matrix';
 import { dist } from './geometry';
+import { RAD_TO_DEG } from './transform';
 import type { SharedValue } from 'react-native-reanimated';
+import type { TransformResult } from './types';
 import {
   DEFAULT_DRAG_DISTANCE,
   findDragTarget,
@@ -14,8 +16,10 @@ export const TAP_SLOP = 5;
 export const DBL_TAP_MS = 300;
 
 export interface GestureEventCallbacks {
-  setTransform: (id: number, x: number, y: number) => void;
-  on: (type: string, id: number) => void;
+  setDragOffset: (id: number, x: number, y: number) => void;
+  setScale: (id: number, x: number, y: number) => void;
+  setRotation: (id: number, rotationDeg: number) => void;
+  on: (type: string, id: number, payload?: unknown) => void;
 }
 
 interface PressState {
@@ -35,9 +39,37 @@ interface PressState {
 
 export type { PressState };
 
+interface PinchState {
+  targetId: number; // -1 none
+  baseScaleX: number;
+  baseScaleY: number;
+  baseRotation: number; // degrees
+  activeGestures: number;
+}
+
+export type { PinchState };
+
 export interface LastTap {
   id: number;
   time: number;
+}
+
+function resolveTransformResult(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  id: number
+): TransformResult {
+  'worklet';
+  const node = snapshot.nodes[id];
+  const base = node ? node.transform : null;
+  const live = getTransform(id);
+  return {
+    x: (base?.x ?? 0) + live.offset.x,
+    y: (base?.y ?? 0) + live.offset.y,
+    scaleX: (base?.scaleX ?? 1) * live.scale.x,
+    scaleY: (base?.scaleY ?? 1) * live.scale.y,
+    rotation: (base ? base.rotation * RAD_TO_DEG : 0) + live.rotation,
+  };
 }
 
 function beginDrag(
@@ -73,6 +105,11 @@ function beginDrag(
     dragging: true,
   };
   gestureEventCallbacks.on('dragstart', id);
+  gestureEventCallbacks.on(
+    'transformstart',
+    p.dragTargetId,
+    resolveTransformResult(snapshot, getTransform, p.dragTargetId)
+  );
 }
 
 export function pointerDown(
@@ -136,8 +173,13 @@ export function pointerMove(
     const cur = applyTransformsToPoint(p2.parentInv, { x: px, y: py });
     const dx = p2.baseOffsetX + (cur.x - p2.dragStartParentX);
     const dy = p2.baseOffsetY + (cur.y - p2.dragStartParentY);
-    gestureEventCallbacks.setTransform(p2.dragTargetId, dx, dy);
+    gestureEventCallbacks.setDragOffset(p2.dragTargetId, dx, dy);
     gestureEventCallbacks.on('dragmove', p2.dragTargetId);
+    gestureEventCallbacks.on(
+      'transform',
+      p2.dragTargetId,
+      resolveTransformResult(snapshot, getTransform, p2.dragTargetId)
+    );
   }
 }
 
@@ -159,6 +201,11 @@ export function pointerUp(
 
   if (p.dragging && p.dragTargetId !== -1) {
     gestureEventCallbacks.on('dragend', p.dragTargetId);
+    gestureEventCallbacks.on(
+      'transformend',
+      p.dragTargetId,
+      resolveTransformResult(snapshot, getTransform, p.dragTargetId)
+    );
   }
 
   const target = p.hitNodeId !== -1 ? p.hitNodeId : rootId;
@@ -191,4 +238,119 @@ export function pointerUp(
   } else {
     lastTap.value = { id: tapTarget, time: now };
   }
+}
+
+export function pinchBegin(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  pinch: SharedValue<PinchState | null>,
+  gestureEventCallbacks: GestureEventCallbacks,
+  rootId: number,
+  focalX: number,
+  focalY: number
+): void {
+  'worklet';
+  const existing = pinch.value;
+  if (existing) {
+    pinch.value = { ...existing, activeGestures: existing.activeGestures + 1 };
+    return;
+  }
+  const hitNodeId = getHitNodeIdFromSnapshot(
+    snapshot,
+    getTransform,
+    rootId,
+    focalX,
+    focalY
+  );
+  const targetId = hitNodeId !== -1 ? findDragTarget(snapshot, hitNodeId) : -1;
+  if (targetId === -1) {
+    pinch.value = {
+      targetId: -1,
+      baseScaleX: 1,
+      baseScaleY: 1,
+      baseRotation: 0,
+      activeGestures: 1,
+    };
+    return;
+  }
+  const base = getTransform(targetId);
+  pinch.value = {
+    targetId,
+    baseScaleX: base.scale.x,
+    baseScaleY: base.scale.y,
+    baseRotation: base.rotation,
+    activeGestures: 1,
+  };
+  gestureEventCallbacks.on(
+    'transformstart',
+    targetId,
+    resolveTransformResult(snapshot, getTransform, targetId)
+  );
+}
+
+export function pinchUpdate(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  pinch: SharedValue<PinchState | null>,
+  gestureEventCallbacks: GestureEventCallbacks,
+  scale: number
+): void {
+  'worklet';
+  const p = pinch.value;
+  if (!p || p.targetId === -1) return;
+  gestureEventCallbacks.setScale(
+    p.targetId,
+    p.baseScaleX * scale,
+    p.baseScaleY * scale
+  );
+  gestureEventCallbacks.on(
+    'transform',
+    p.targetId,
+    resolveTransformResult(snapshot, getTransform, p.targetId)
+  );
+}
+
+export function rotationUpdate(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  pinch: SharedValue<PinchState | null>,
+  gestureEventCallbacks: GestureEventCallbacks,
+  rotationRad: number
+): void {
+  'worklet';
+  const p = pinch.value;
+  if (!p || p.targetId === -1) return;
+  gestureEventCallbacks.setRotation(
+    p.targetId,
+    p.baseRotation + rotationRad * RAD_TO_DEG
+  );
+  gestureEventCallbacks.on(
+    'transform',
+    p.targetId,
+    resolveTransformResult(snapshot, getTransform, p.targetId)
+  );
+}
+
+export function pinchEnd(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  pinch: SharedValue<PinchState | null>,
+  gestureEventCallbacks: GestureEventCallbacks
+): void {
+  'worklet';
+  const p = pinch.value;
+  if (!p) return;
+  const remaining = p.activeGestures - 1;
+  if (remaining > 0) {
+    pinch.value = { ...p, activeGestures: remaining };
+    return;
+  }
+  if (p.targetId !== -1) {
+    gestureEventCallbacks.on(
+      'transformend',
+      p.targetId,
+      resolveTransformResult(snapshot, getTransform, p.targetId)
+    );
+  }
+  pinch.value = null;
 }

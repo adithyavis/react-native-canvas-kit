@@ -46,6 +46,9 @@ export interface NodeHandle {
   getConfig: () => NodeConfig;
   getX: () => number;
   getY: () => number;
+  getScaleX: () => number;
+  getScaleY: () => number;
+  getRotation: () => number;
   getAbsolutePosition: () => Vector2d;
 }
 
@@ -109,6 +112,9 @@ export interface NodeEventHandlers {
   onDragStart?: EventListener;
   onDragMove?: EventListener;
   onDragEnd?: EventListener;
+  onTransformStart?: EventListener;
+  onTransform?: EventListener;
+  onTransformEnd?: EventListener;
 }
 
 export interface NodeConfig extends NodeEventHandlers {

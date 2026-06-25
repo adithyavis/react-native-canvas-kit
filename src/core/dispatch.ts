@@ -29,6 +29,9 @@ export const TYPE_TO_PROP_NAME: Record<string, keyof NodeEventHandlers> = {
   dragstart: 'onDragStart',
   dragmove: 'onDragMove',
   dragend: 'onDragEnd',
+  transformstart: 'onTransformStart',
+  transform: 'onTransform',
+  transformend: 'onTransformEnd',
 };
 
 export function dispatch(
@@ -81,10 +84,12 @@ export class GestureController {
       rotation: 0,
     });
     this.gestureEventCallbacks = {
-      setTransform: (id, x, y) => {
+      setDragOffset: (id, x, y) => {
         this.offsets.set(id, { x, y });
         this.host.setDragOffset(id, x, y);
       },
+      setScale: () => {},
+      setRotation: () => {},
       on: (type, id) => dispatch(this.registry, type, id, this.lastEvt),
     };
   }

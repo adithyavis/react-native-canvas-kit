@@ -9,6 +9,7 @@ import {
   buildTransforms3dArray,
   resolveTransform,
   DEG_TO_RAD,
+  type ResolvedTransform,
 } from '../../core/transform';
 import type { HitTestDescriptor } from '../../core/hitTestDescriptor';
 import type { NodeType } from '../../core/registry';
@@ -33,9 +34,17 @@ export const Container = memo(
     const registry = useRegistry();
     const draggable = config.draggable === true;
 
+    const resolvedTransformFromConfig = useMemo(
+      () => resolveTransform(config),
+      [config]
+    );
+
     const dragOffsetSV = useSharedValue<Vector2d>({ x: 0, y: 0 });
     const scaleSV = useSharedValue<Vector2d>({ x: 1, y: 1 });
     const rotationSV = useSharedValue<number>(0);
+    const resolvedTransformFromConfigSV = useSharedValue(
+      resolvedTransformFromConfig
+    );
 
     const id = useRegisterNode({ type, config, hitTestDescriptor });
 
@@ -51,21 +60,32 @@ export const Container = memo(
       };
     }, [registry, id, draggable, dragOffsetSV, scaleSV, rotationSV]);
 
-    const resolvedTransformFromConfig = useMemo(
-      () => resolveTransform(config),
-      [config]
-    );
-    const resolvedTransformFromConfigSV = useSharedValue(
-      resolvedTransformFromConfig
-    );
-
     useLayoutEffect(() => {
-      resolvedTransformFromConfigSV.value = resolvedTransformFromConfig;
+      const next: ResolvedTransform = {
+        x: resolvedTransformFromConfig.x,
+        y: resolvedTransformFromConfig.y,
+        rotation: resolvedTransformFromConfig.rotation,
+        scaleX: resolvedTransformFromConfig.scaleX,
+        scaleY: resolvedTransformFromConfig.scaleY,
+        skewX: resolvedTransformFromConfig.skewX,
+        skewY: resolvedTransformFromConfig.skewY,
+        offsetX: resolvedTransformFromConfig.offsetX,
+        offsetY: resolvedTransformFromConfig.offsetY,
+      };
+      resolvedTransformFromConfigSV.value = next;
       dragOffsetSV.value = { x: 0, y: 0 };
       scaleSV.value = { x: 1, y: 1 };
       rotationSV.value = 0;
     }, [
-      resolvedTransformFromConfig,
+      resolvedTransformFromConfig.x,
+      resolvedTransformFromConfig.y,
+      resolvedTransformFromConfig.rotation,
+      resolvedTransformFromConfig.scaleX,
+      resolvedTransformFromConfig.scaleY,
+      resolvedTransformFromConfig.skewX,
+      resolvedTransformFromConfig.skewY,
+      resolvedTransformFromConfig.offsetX,
+      resolvedTransformFromConfig.offsetY,
       resolvedTransformFromConfigSV,
       dragOffsetSV,
       scaleSV,

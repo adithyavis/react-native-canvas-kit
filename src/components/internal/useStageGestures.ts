@@ -24,6 +24,8 @@ import {
   pinchUpdate,
   rotationUpdate,
   pinchEnd,
+  PINCH_SCALE_SENSITIVITY,
+  ROTATION_SENSITIVITY,
   type GestureEventCallbacks,
   type LastTap,
   type PressState,
@@ -33,11 +35,22 @@ import type { Vector2d } from '../../core/types';
 
 type idToSVMap<T> = Record<number, SharedValue<T>>;
 
+export interface StageGestureOptions {
+  // User multipliers on top of the base sensitivity (default 1 = base only).
+  pinchSensitivity?: number;
+  rotationSensitivity?: number;
+}
+
 export function useStageGestures(
   registry: NodeRegistry,
   rootId: number,
-  enabled = true
+  enabled = true,
+  options: StageGestureOptions = {}
 ): ComposedGesture {
+  const pinchSensitivity =
+    PINCH_SCALE_SENSITIVITY * (options.pinchSensitivity ?? 1);
+  const rotationSensitivity =
+    ROTATION_SENSITIVITY * (options.rotationSensitivity ?? 1);
   const snapshotSV = useSharedValue<Snapshot>(EMPTY_SNAPSHOT);
   const idToDragOffsetMapSV = useSharedValue<idToSVMap<Vector2d>>({});
   const idToScaleMapSV = useSharedValue<idToSVMap<Vector2d>>({});
@@ -184,7 +197,8 @@ export function useStageGestures(
           getTransform,
           pinchState,
           callbacks,
-          e.scale
+          e.scale,
+          pinchSensitivity
         );
       })
       .onFinalize(() => {
@@ -212,7 +226,8 @@ export function useStageGestures(
           getTransform,
           pinchState,
           callbacks,
-          e.rotation
+          e.rotation,
+          rotationSensitivity
         );
       })
       .onFinalize(() => {
@@ -232,5 +247,7 @@ export function useStageGestures(
     lastTap,
     rootId,
     enabled,
+    pinchSensitivity,
+    rotationSensitivity,
   ]);
 }

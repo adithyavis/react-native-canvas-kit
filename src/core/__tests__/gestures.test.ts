@@ -129,7 +129,14 @@ describe('pinch / rotation gestures', () => {
       snapshot.rootId,
       TOUCHES_ON_SHAPE
     );
-    pinchUpdate(snapshot, getTransform, pinch, callbacks, 2);
+    pinchUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      2,
+      PINCH_SCALE_SENSITIVITY
+    );
 
     // The raw 2x pinch is damped toward 1 by PINCH_SCALE_SENSITIVITY.
     const damped = 1 + (2 - 1) * PINCH_SCALE_SENSITIVITY;
@@ -153,7 +160,14 @@ describe('pinch / rotation gestures', () => {
       snapshot.rootId,
       TOUCHES_ON_SHAPE
     );
-    rotationUpdate(snapshot, getTransform, pinch, callbacks, Math.PI / 2);
+    rotationUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      Math.PI / 2,
+      ROTATION_SENSITIVITY
+    );
 
     // A 90° gesture is damped by ROTATION_SENSITIVITY.
     const dampedDeg = 90 * ROTATION_SENSITIVITY;
@@ -218,7 +232,14 @@ describe('pinch / rotation gestures', () => {
       snapshot.rootId,
       TOUCHES_OFF_SHAPE
     );
-    pinchUpdate(snapshot, getTransform, pinch, callbacks, 2);
+    pinchUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      2,
+      PINCH_SCALE_SENSITIVITY
+    );
 
     expect(pinch.value?.targetId).toBe(-1);
     expect(scales).toEqual([]);
@@ -238,7 +259,14 @@ describe('pinch / rotation gestures', () => {
       snapshot.rootId,
       TOUCHES_SPLIT
     );
-    pinchUpdate(snapshot, getTransform, pinch, callbacks, 2);
+    pinchUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      2,
+      PINCH_SCALE_SENSITIVITY
+    );
 
     expect(pinch.value?.targetId).toBe(-1);
     expect(scales).toEqual([]);
@@ -253,7 +281,14 @@ describe('pinch / rotation gestures', () => {
     pinchBegin(snapshot, getTransform, pinch, callbacks, snapshot.rootId, [
       { x: 50, y: 50 },
     ]);
-    pinchUpdate(snapshot, getTransform, pinch, callbacks, 2);
+    pinchUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      2,
+      PINCH_SCALE_SENSITIVITY
+    );
 
     expect(pinch.value?.targetId).toBe(-1);
     expect(scales).toEqual([]);

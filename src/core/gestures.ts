@@ -315,12 +315,13 @@ export function pinchUpdate(
   getTransform: TransformLookup,
   pinch: SharedValue<PinchState | null>,
   gestureEventCallbacks: GestureEventCallbacks,
-  scale: number
+  scale: number,
+  sensitivity: number
 ): void {
   'worklet';
   const p = pinch.value;
   if (!p || p.targetId === -1) return;
-  const dampedScale = 1 + (scale - 1) * PINCH_SCALE_SENSITIVITY;
+  const dampedScale = 1 + (scale - 1) * sensitivity;
   gestureEventCallbacks.setScale(
     p.targetId,
     p.baseScaleX * dampedScale,
@@ -338,14 +339,15 @@ export function rotationUpdate(
   getTransform: TransformLookup,
   pinch: SharedValue<PinchState | null>,
   gestureEventCallbacks: GestureEventCallbacks,
-  rotationRad: number
+  rotationRad: number,
+  sensitivity: number
 ): void {
   'worklet';
   const p = pinch.value;
   if (!p || p.targetId === -1) return;
   gestureEventCallbacks.setRotation(
     p.targetId,
-    p.baseRotation + rotationRad * RAD_TO_DEG * ROTATION_SENSITIVITY
+    p.baseRotation + rotationRad * RAD_TO_DEG * sensitivity
   );
   gestureEventCallbacks.on(
     'transform',

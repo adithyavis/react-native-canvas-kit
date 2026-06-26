@@ -16,6 +16,8 @@ export interface StageProps {
   style?: StyleProp<ViewStyle>;
   listening?: boolean;
   gestureEnabled?: boolean;
+  pinchSensitivity?: number;
+  rotationSensitivity?: number;
   children?: ReactNode;
 }
 
@@ -26,6 +28,8 @@ export const Stage = memo(
     style,
     listening = true,
     gestureEnabled: _gestureEnabled = true,
+    pinchSensitivity,
+    rotationSensitivity,
     children,
   }: StageProps) => {
     const registryRef = useRef<NodeRegistry | null>(null);
@@ -51,7 +55,10 @@ export const Stage = memo(
     }, [registry, rootId]);
 
     const gestureEnabled = listening !== false && _gestureEnabled !== false;
-    const gesture = useStageGestures(registry, rootId, gestureEnabled);
+    const gesture = useStageGestures(registry, rootId, gestureEnabled, {
+      pinchSensitivity,
+      rotationSensitivity,
+    });
 
     const canvas = (
       <Canvas

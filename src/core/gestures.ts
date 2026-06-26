@@ -2,7 +2,7 @@ import { applyTransformsToPoint, identity, invert, type Mat } from './matrix';
 import { dist } from './geometry';
 import { RAD_TO_DEG } from './transform';
 import type { SharedValue } from 'react-native-reanimated';
-import type { TransformResult } from './types';
+import type { TransformResult, Vector2d } from './types';
 import {
   DEFAULT_DRAG_DISTANCE,
   findDragTarget,
@@ -73,6 +73,33 @@ function resolveTransformResult(
     scaleY: (base?.scaleY ?? 1) * live.scale.y,
     rotation: (base ? base.rotation * RAD_TO_DEG : 0) + live.rotation,
   };
+}
+
+function getMultiTouchTarget(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  rootId: number,
+  touches: Vector2d[]
+): number {
+  'worklet';
+  if (touches.length < 2) return -1;
+  let target = -1;
+  for (let i = 0; i < touches.length; i++) {
+    const touch = touches[i]!;
+    const hitNodeId = getHitNodeIdFromSnapshot(
+      snapshot,
+      getTransform,
+      rootId,
+      touch.x,
+      touch.y
+    );
+    const dragTargetId =
+      hitNodeId !== -1 ? findDragTarget(snapshot, hitNodeId) : -1;
+    if (dragTargetId === -1) return -1;
+    if (target === -1) target = dragTargetId;
+    else if (dragTargetId !== target) return -1;
+  }
+  return target;
 }
 
 function beginDrag(
@@ -249,8 +276,7 @@ export function pinchBegin(
   pinch: SharedValue<PinchState | null>,
   gestureEventCallbacks: GestureEventCallbacks,
   rootId: number,
-  focalX: number,
-  focalY: number
+  touches: Vector2d[]
 ): void {
   'worklet';
   const existing = pinch.value;
@@ -258,14 +284,7 @@ export function pinchBegin(
     pinch.value = { ...existing, activeGestures: existing.activeGestures + 1 };
     return;
   }
-  const hitNodeId = getHitNodeIdFromSnapshot(
-    snapshot,
-    getTransform,
-    rootId,
-    focalX,
-    focalY
-  );
-  const targetId = hitNodeId !== -1 ? findDragTarget(snapshot, hitNodeId) : -1;
+  const targetId = getMultiTouchTarget(snapshot, getTransform, rootId, touches);
   if (targetId === -1) {
     pinch.value = {
       targetId: -1,

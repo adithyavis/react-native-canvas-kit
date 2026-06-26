@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { Gesture, type ComposedGesture } from 'react-native-gesture-handler';
+import {
+  Gesture,
+  type ComposedGesture,
+  type GestureTouchEvent,
+} from 'react-native-gesture-handler';
 import {
   runOnJS,
   useSharedValue,
@@ -40,6 +44,7 @@ export function useStageGestures(
   const idToRotationMapSV = useSharedValue<idToSVMap<number>>({});
   const pressState = useSharedValue<PressState | null>(null);
   const pinchState = useSharedValue<PinchState | null>(null);
+  const touchesSV = useSharedValue<Vector2d[]>([]);
   const lastTap = useSharedValue<LastTap | null>(null);
   const idToTransformMapVersionRef = useRef(-1);
 
@@ -102,9 +107,23 @@ export function useStageGestures(
       },
     };
 
+    const syncTouches = (e: GestureTouchEvent) => {
+      'worklet';
+      const touches: Vector2d[] = [];
+      for (let i = 0; i < e.allTouches.length; i++) {
+        const touch = e.allTouches[i]!;
+        touches.push({ x: touch.x, y: touch.y });
+      }
+      touchesSV.value = touches;
+    };
+
     const pan = Gesture.Pan()
       .enabled(enabled)
       .minDistance(0)
+      .onTouchesDown(syncTouches)
+      .onTouchesMove(syncTouches)
+      .onTouchesUp(syncTouches)
+      .onTouchesCancelled(syncTouches)
       .onBegin((e) => {
         'worklet';
         pointerDown(
@@ -147,7 +166,7 @@ export function useStageGestures(
 
     const pinch = Gesture.Pinch()
       .enabled(enabled)
-      .onBegin((e) => {
+      .onBegin(() => {
         'worklet';
         pinchBegin(
           snapshotSV.value,
@@ -155,8 +174,7 @@ export function useStageGestures(
           pinchState,
           callbacks,
           rootId,
-          e.focalX,
-          e.focalY
+          touchesSV.value
         );
       })
       .onUpdate((e) => {
@@ -176,7 +194,7 @@ export function useStageGestures(
 
     const rotation = Gesture.Rotation()
       .enabled(enabled)
-      .onBegin((e) => {
+      .onBegin(() => {
         'worklet';
         pinchBegin(
           snapshotSV.value,
@@ -184,8 +202,7 @@ export function useStageGestures(
           pinchState,
           callbacks,
           rootId,
-          e.anchorX,
-          e.anchorY
+          touchesSV.value
         );
       })
       .onUpdate((e) => {
@@ -211,6 +228,7 @@ export function useStageGestures(
     idToRotationMapSV,
     pressState,
     pinchState,
+    touchesSV,
     lastTap,
     rootId,
     enabled,

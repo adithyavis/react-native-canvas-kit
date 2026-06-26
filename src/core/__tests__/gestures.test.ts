@@ -9,6 +9,8 @@ import {
   pinchUpdate,
   rotationUpdate,
   pinchEnd,
+  PINCH_SCALE_SENSITIVITY,
+  ROTATION_SENSITIVITY,
   type GestureEventCallbacks,
   type PinchState,
 } from '../gestures';
@@ -116,11 +118,13 @@ describe('pinch / rotation gestures', () => {
     );
     pinchUpdate(snapshot, getTransform, pinch, callbacks, 2);
 
-    expect(scales).toEqual([[group, 2, 2]]);
+    // The raw 2x pinch is damped toward 1 by PINCH_SCALE_SENSITIVITY.
+    const damped = 1 + (2 - 1) * PINCH_SCALE_SENSITIVITY;
+    expect(scales).toEqual([[group, damped, damped]]);
     const transform = events.find(([type]) => type === 'transform');
     expect(transform?.[1]).toBe(group);
-    expect(transform?.[2]?.scaleX).toBeCloseTo(2);
-    expect(transform?.[2]?.scaleY).toBeCloseTo(2);
+    expect(transform?.[2]?.scaleX).toBeCloseTo(damped);
+    expect(transform?.[2]?.scaleY).toBeCloseTo(damped);
   });
 
   it('rotates the target by the gesture angle in degrees', () => {
@@ -139,11 +143,13 @@ describe('pinch / rotation gestures', () => {
     );
     rotationUpdate(snapshot, getTransform, pinch, callbacks, Math.PI / 2);
 
+    // A 90° gesture is damped by ROTATION_SENSITIVITY.
+    const dampedDeg = 90 * ROTATION_SENSITIVITY;
     expect(rotations).toHaveLength(1);
     expect(rotations[0]![0]).toBe(group);
-    expect(rotations[0]![1]).toBeCloseTo(90);
+    expect(rotations[0]![1]).toBeCloseTo(dampedDeg);
     const transform = events.find(([type]) => type === 'transform');
-    expect(transform?.[2]?.rotation).toBeCloseTo(90);
+    expect(transform?.[2]?.rotation).toBeCloseTo(dampedDeg);
   });
 
   it('shares one target across pinch + rotation and ends only when both finish', () => {

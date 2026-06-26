@@ -2,7 +2,7 @@ import { describe, it, expect } from '@jest/globals';
 import type { SharedValue } from 'react-native-reanimated';
 import { NodeRegistry } from '../registry';
 import { boxHitTestDescriptor } from '../hitTestDescriptor';
-import type { NodeConfig, TransformResult } from '../types';
+import type { NodeConfig, TransformResult, Vector2d } from '../types';
 import type { Transform, TransformLookup } from '../snapshot';
 import {
   pinchBegin,
@@ -81,8 +81,23 @@ function makeHarness() {
   return { getTransform, callbacks, scales, rotations, events };
 }
 
+// The scene's shape is a 100x100 box at the group's origin. Two fingers both
+// inside it resolve to the draggable group; off-box or split fingers do not.
+const TOUCHES_ON_SHAPE: Vector2d[] = [
+  { x: 40, y: 40 },
+  { x: 60, y: 60 },
+];
+const TOUCHES_OFF_SHAPE: Vector2d[] = [
+  { x: 500, y: 500 },
+  { x: 510, y: 510 },
+];
+const TOUCHES_SPLIT: Vector2d[] = [
+  { x: 40, y: 40 },
+  { x: 500, y: 500 },
+];
+
 describe('pinch / rotation gestures', () => {
-  it('targets the draggable ancestor under the focal point and fires transformstart', () => {
+  it('targets the draggable ancestor both fingers land on and fires transformstart', () => {
     const { snapshot, group } = buildScene();
     const pinch = sharedValue<PinchState | null>(null);
     const { getTransform, callbacks, events } = makeHarness();
@@ -93,8 +108,7 @@ describe('pinch / rotation gestures', () => {
       pinch,
       callbacks,
       snapshot.rootId,
-      50,
-      50
+      TOUCHES_ON_SHAPE
     );
 
     expect(pinch.value?.targetId).toBe(group);
@@ -113,8 +127,7 @@ describe('pinch / rotation gestures', () => {
       pinch,
       callbacks,
       snapshot.rootId,
-      50,
-      50
+      TOUCHES_ON_SHAPE
     );
     pinchUpdate(snapshot, getTransform, pinch, callbacks, 2);
 
@@ -138,8 +151,7 @@ describe('pinch / rotation gestures', () => {
       pinch,
       callbacks,
       snapshot.rootId,
-      50,
-      50
+      TOUCHES_ON_SHAPE
     );
     rotationUpdate(snapshot, getTransform, pinch, callbacks, Math.PI / 2);
 
@@ -165,8 +177,7 @@ describe('pinch / rotation gestures', () => {
       pinch,
       callbacks,
       snapshot.rootId,
-      50,
-      50
+      TOUCHES_ON_SHAPE
     );
     pinchBegin(
       snapshot,
@@ -174,8 +185,7 @@ describe('pinch / rotation gestures', () => {
       pinch,
       callbacks,
       snapshot.rootId,
-      50,
-      50
+      TOUCHES_ON_SHAPE
     );
     expect(pinch.value?.activeGestures).toBe(2);
     expect(events.filter(([type]) => type === 'transformstart')).toHaveLength(
@@ -195,7 +205,7 @@ describe('pinch / rotation gestures', () => {
     ]);
   });
 
-  it('is a no-op when the focal point misses any draggable node', () => {
+  it('is a no-op when both fingers miss any draggable node', () => {
     const { snapshot } = buildScene();
     const pinch = sharedValue<PinchState | null>(null);
     const { getTransform, callbacks, scales, events } = makeHarness();
@@ -206,13 +216,46 @@ describe('pinch / rotation gestures', () => {
       pinch,
       callbacks,
       snapshot.rootId,
-      500,
-      500
+      TOUCHES_OFF_SHAPE
     );
     pinchUpdate(snapshot, getTransform, pinch, callbacks, 2);
 
     expect(pinch.value?.targetId).toBe(-1);
     expect(scales).toEqual([]);
     expect(events).toEqual([]);
+  });
+
+  it('is a no-op when only one finger hits the target', () => {
+    const { snapshot } = buildScene();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks, scales, events } = makeHarness();
+
+    pinchBegin(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      snapshot.rootId,
+      TOUCHES_SPLIT
+    );
+    pinchUpdate(snapshot, getTransform, pinch, callbacks, 2);
+
+    expect(pinch.value?.targetId).toBe(-1);
+    expect(scales).toEqual([]);
+    expect(events).toEqual([]);
+  });
+
+  it('is a no-op with fewer than two touches', () => {
+    const { snapshot } = buildScene();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks, scales } = makeHarness();
+
+    pinchBegin(snapshot, getTransform, pinch, callbacks, snapshot.rootId, [
+      { x: 50, y: 50 },
+    ]);
+    pinchUpdate(snapshot, getTransform, pinch, callbacks, 2);
+
+    expect(pinch.value?.targetId).toBe(-1);
+    expect(scales).toEqual([]);
   });
 });

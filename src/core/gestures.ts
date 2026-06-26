@@ -15,6 +15,9 @@ import {
 export const TAP_SLOP = 5;
 export const DBL_TAP_MS = 300;
 
+export const PINCH_SCALE_SENSITIVITY = 0.25;
+export const ROTATION_SENSITIVITY = 0.25;
+
 export interface GestureEventCallbacks {
   setDragOffset: (id: number, x: number, y: number) => void;
   setScale: (id: number, x: number, y: number) => void;
@@ -298,10 +301,11 @@ export function pinchUpdate(
   'worklet';
   const p = pinch.value;
   if (!p || p.targetId === -1) return;
+  const dampedScale = 1 + (scale - 1) * PINCH_SCALE_SENSITIVITY;
   gestureEventCallbacks.setScale(
     p.targetId,
-    p.baseScaleX * scale,
-    p.baseScaleY * scale
+    p.baseScaleX * dampedScale,
+    p.baseScaleY * dampedScale
   );
   gestureEventCallbacks.on(
     'transform',
@@ -322,7 +326,7 @@ export function rotationUpdate(
   if (!p || p.targetId === -1) return;
   gestureEventCallbacks.setRotation(
     p.targetId,
-    p.baseRotation + rotationRad * RAD_TO_DEG
+    p.baseRotation + rotationRad * RAD_TO_DEG * ROTATION_SENSITIVITY
   );
   gestureEventCallbacks.on(
     'transform',

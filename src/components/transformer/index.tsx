@@ -30,7 +30,7 @@ import { useGetHandleId, useOnTransform, useTransformerTarget } from './hooks';
 import { DEG_TO_RAD } from '../../core/transform';
 
 export interface TransformerProps {
-  node: string;
+  node: string | null;
   enabledAnchors?: AnchorId[];
   keepRatio?: boolean;
   centeredScaling?: boolean;

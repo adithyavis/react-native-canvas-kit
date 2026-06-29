@@ -42,7 +42,7 @@ export interface TransformerTarget {
 
 export function useTransformerTarget(
   registry: NodeRegistry | null,
-  selector: string,
+  selector: string | null,
   ignoreStroke: boolean,
   enabledAnchors: AnchorId[],
   getHandleId: (h: AnchorId) => string
@@ -57,7 +57,7 @@ export function useTransformerTarget(
   );
 
   const getSnapshot = useCallback((): TransformerTarget | null => {
-    if (!registry) {
+    if (!registry || !selector) {
       transformerTargetCacheRef.current = null;
       transformerTargetKeyRef.current = null;
       return null;

@@ -15,8 +15,8 @@ import {
 export const TAP_SLOP = 5;
 export const DBL_TAP_MS = 300;
 
-export const PINCH_SCALE_SENSITIVITY = 0.25;
-export const ROTATION_SENSITIVITY = 0.25;
+export const PINCH_SCALE_SENSITIVITY = 1;
+export const ROTATION_SENSITIVITY = 1;
 
 export interface GestureEventCallbacks {
   setDragOffset: (id: number, x: number, y: number) => void;

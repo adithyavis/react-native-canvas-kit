@@ -9,7 +9,12 @@ import {
   regularPolygonVertices,
   starVertices,
 } from '../hitTest';
-import { hitStrokePad } from '../hitTestDescriptor';
+import {
+  hitStrokePad,
+  boxHitTestDescriptor,
+  getIsHitTestSuccessful,
+  MULTI_TOUCH_HIT_SLOP,
+} from '../hitTestDescriptor';
 
 describe('rectHit', () => {
   it('tests a plain box', () => {
@@ -103,5 +108,23 @@ describe('hitStrokePad', () => {
   });
   it('prefers explicit hitStrokeWidth', () => {
     expect(hitStrokePad({ stroke: 'red', hitStrokeWidth: 20 })).toBe(10);
+  });
+});
+
+describe('getIsHitTestSuccessful extraPad', () => {
+  const box = boxHitTestDescriptor(0, 0, 100, 100, 0);
+  const hit = (px: number, py: number, extraPad?: number) =>
+    getIsHitTestSuccessful(box.shape, box.params, box.points, px, py, extraPad);
+
+  it('rejects a point outside the shape with no extra pad', () => {
+    expect(hit(120, 50)).toBe(false);
+  });
+  it('accepts that same point once the extra pad reaches it', () => {
+    expect(hit(120, 50, MULTI_TOUCH_HIT_SLOP)).toBe(true);
+  });
+  it('still rejects points beyond the extra pad', () => {
+    expect(hit(100 + MULTI_TOUCH_HIT_SLOP + 1, 50, MULTI_TOUCH_HIT_SLOP)).toBe(
+      false
+    );
   });
 });

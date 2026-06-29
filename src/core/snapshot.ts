@@ -147,7 +147,8 @@ export function getHitNodeIdFromSnapshot(
   getTransform: TransformLookup,
   id: number,
   px: number,
-  py: number
+  py: number,
+  extraPad: number = 0
 ): number {
   'worklet';
   const node = snapshot.nodes[id];
@@ -162,7 +163,8 @@ export function getHitNodeIdFromSnapshot(
         getTransform,
         children[i]!,
         px,
-        py
+        py,
+        extraPad
       );
       if (hitNodeId !== -1) return hitNodeId;
     }
@@ -184,7 +186,8 @@ export function getHitNodeIdFromSnapshot(
         node.hitTestDescriptor.params,
         node.hitTestDescriptor.points,
         lp.x,
-        lp.y
+        lp.y,
+        extraPad
       )
     ) {
       return id;

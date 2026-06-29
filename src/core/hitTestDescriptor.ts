@@ -18,6 +18,8 @@ export interface HitTestDescriptor {
   points?: number[];
 }
 
+export const MULTI_TOUCH_HIT_SLOP = 20;
+
 export function hitStrokePad(c: ShapeConfig): number {
   if (c.hitStrokeWidth != null) {
     return c.hitStrokeWidth / 2;
@@ -116,7 +118,8 @@ export function getIsHitTestSuccessful(
   params: number[],
   points: number[] | undefined,
   px: number,
-  py: number
+  py: number,
+  extraPad: number = 0
 ): boolean {
   'worklet';
   switch (shape) {
@@ -124,7 +127,7 @@ export function getIsHitTestSuccessful(
       const w = params[0]!;
       const h = params[1]!;
       const cornerRadius = params[2]!;
-      const pad = params[3]!;
+      const pad = params[3]! + extraPad;
       return pointInRoundedRectangle(
         px + pad,
         py + pad,
@@ -134,12 +137,12 @@ export function getIsHitTestSuccessful(
       );
     }
     case HitShape.Circle: {
-      const r = params[0]! + params[1]!;
+      const r = params[0]! + params[1]! + extraPad;
       return px * px + py * py <= r * r;
     }
     case HitShape.Ellipse: {
-      const ax = params[0]! + params[2]!;
-      const ay = params[1]! + params[2]!;
+      const ax = params[0]! + params[2]! + extraPad;
+      const ay = params[1]! + params[2]! + extraPad;
       if (ax <= 0 || ay <= 0) return false;
       const nx = px / ax;
       const ny = py / ay;
@@ -150,7 +153,7 @@ export function getIsHitTestSuccessful(
       const y0 = params[1]!;
       const w = params[2]!;
       const h = params[3]!;
-      const pad = params[4]!;
+      const pad = params[4]! + extraPad;
       return (
         px >= x0 - pad &&
         px <= x0 + w + pad &&
@@ -159,11 +162,11 @@ export function getIsHitTestSuccessful(
       );
     }
     case HitShape.Segment: {
-      const halfWidth = params[0]!;
+      const halfWidth = params[0]! + extraPad;
       return points ? minSegmentDist(points, px, py) <= halfWidth : false;
     }
     case HitShape.Polygon: {
-      const pad = params[0]!;
+      const pad = params[0]! + extraPad;
       const verts = points ?? [];
       if (pointInPolygon(verts, px, py)) return true;
       if (pad > 0 && verts.length >= 4) {

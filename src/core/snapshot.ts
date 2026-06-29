@@ -11,6 +11,7 @@ import { ZERO_VECTOR } from './geometry';
 import {
   getIsHitTestSuccessful,
   getHitTestDescriptorRect,
+  MULTI_TOUCH_HIT_SLOP,
   type HitTestDescriptor,
 } from './hitTestDescriptor';
 import type { Vector2d } from './types';
@@ -37,6 +38,7 @@ export interface SnapshotNode {
   listening: boolean;
   draggable: boolean;
   gestureEnabled: boolean;
+  multiTouchEnabled: boolean;
   dragDistance: number;
   hitTestDescriptor: HitTestDescriptor | null;
 }
@@ -149,7 +151,7 @@ export function getHitNodeIdFromSnapshot(
   id: number,
   px: number,
   py: number,
-  extraPad: number = 0
+  forMultiTouch: boolean = false
 ): number {
   'worklet';
   const node = snapshot.nodes[id];
@@ -165,7 +167,7 @@ export function getHitNodeIdFromSnapshot(
         children[i]!,
         px,
         py,
-        extraPad
+        forMultiTouch
       );
       if (hitNodeId !== -1) return hitNodeId;
     }
@@ -174,6 +176,7 @@ export function getHitNodeIdFromSnapshot(
   if (
     node.type === SnapshotNodeType.Shape &&
     (node.gestureEnabled || node.draggable) &&
+    (!forMultiTouch || node.multiTouchEnabled) &&
     node.hitTestDescriptor
   ) {
     const inv = invert(
@@ -188,7 +191,7 @@ export function getHitNodeIdFromSnapshot(
         node.hitTestDescriptor.points,
         lp.x,
         lp.y,
-        extraPad
+        forMultiTouch ? MULTI_TOUCH_HIT_SLOP : 0
       )
     ) {
       return id;

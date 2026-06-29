@@ -278,6 +278,7 @@ export class NodeRegistry {
       listening: cfg.listening !== false,
       draggable: cfg.draggable === true,
       gestureEnabled: cfg.gestureEnabled === true,
+      multiTouchEnabled: cfg.multiTouchEnabled !== false,
       dragDistance: cfg.dragDistance ?? DEFAULT_DRAG_DISTANCE,
       hitTestDescriptor: node.getHitTestDescriptor?.() ?? null,
     };

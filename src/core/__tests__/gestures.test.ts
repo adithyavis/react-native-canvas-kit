@@ -384,6 +384,43 @@ describe('pinch / rotation gestures', () => {
     expect(after.y).toBeCloseTo(before.y);
   });
 
+  it('skips multiTouchEnabled=false nodes, falling through to the one behind', () => {
+    // Two overlapping draggable boxes; the top one opts out of multi-touch.
+    // Both fingers land on the overlap: a pinch should target the lower box.
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const behind = reg.register({
+      parentId: stage,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({ draggable: true }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const front = reg.register({
+      parentId: stage,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({
+        draggable: true,
+        multiTouchEnabled: false,
+      }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks } = makeHarness();
+
+    pinchBegin(snapshot, getTransform, pinch, callbacks, snapshot.rootId, [
+      { x: 40, y: 40 },
+      { x: 60, y: 60 },
+    ]);
+
+    expect(pinch.value?.targetId).toBe(behind);
+    expect(pinch.value?.targetId).not.toBe(front);
+  });
+
   it('is a no-op with fewer than two touches', () => {
     const { snapshot } = buildScene();
     const pinch = sharedValue<PinchState | null>(null);

@@ -18,7 +18,6 @@ import {
   type TransformLookup,
   type Snapshot,
 } from './snapshot';
-import { MULTI_TOUCH_HIT_SLOP } from './hitTestDescriptor';
 
 export const TAP_SLOP = 5;
 export const DBL_TAP_MS = 300;
@@ -106,7 +105,7 @@ function getMultiTouchTarget(
       rootId,
       touch.x,
       touch.y,
-      MULTI_TOUCH_HIT_SLOP
+      true
     );
     const dragTargetId =
       hitNodeId !== -1 ? findDragTarget(snapshot, hitNodeId) : -1;

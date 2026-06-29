@@ -143,6 +143,7 @@ export interface NodeConfig extends NodeEventHandlers {
   draggable?: boolean;
   dragDistance?: number;
   listening?: boolean;
+  multiTouchEnabled?: boolean;
 
   children?: ReactNode;
 }

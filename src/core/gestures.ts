@@ -116,6 +116,54 @@ function getMultiTouchTarget(
   return target;
 }
 
+function linearPart(
+  rotationRad: number,
+  skewX: number,
+  skewY: number,
+  scaleX: number,
+  scaleY: number
+): Mat {
+  'worklet';
+  const cos = Math.cos(rotationRad);
+  const sin = Math.sin(rotationRad);
+  let m: Mat = [cos, sin, -sin, cos, 0, 0];
+  if (skewX !== 0) m = multiply(m, [1, 0, skewX, 1, 0, 0]);
+  if (skewY !== 0) m = multiply(m, [1, skewY, 0, 1, 0, 0]);
+  m = multiply(m, [scaleX, 0, 0, 1, 0, 0]);
+  m = multiply(m, [1, 0, 0, scaleY, 0, 0]);
+  return m;
+}
+
+function applyCenterPivot(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  pinch: SharedValue<PinchState | null>,
+  gestureEventCallbacks: GestureEventCallbacks
+): void {
+  'worklet';
+  const p = pinch.value;
+  if (!p || p.targetId === -1) return;
+  if (p.pivotX === 0 && p.pivotY === 0) return;
+  const node = snapshot.nodes[p.targetId];
+  if (!node) return;
+  const base = node.transform;
+  const live = getTransform(p.targetId);
+  const a = linearPart(
+    base.rotation + live.rotation * DEG_TO_RAD,
+    base.skewX,
+    base.skewY,
+    base.scaleX * live.scale.x,
+    base.scaleY * live.scale.y
+  );
+  const centerX = a[0] * p.pivotX + a[2] * p.pivotY;
+  const centerY = a[1] * p.pivotX + a[3] * p.pivotY;
+  gestureEventCallbacks.setDragOffset(
+    p.targetId,
+    p.startOffsetX + p.startCenterX - centerX,
+    p.startOffsetY + p.startCenterY - centerY
+  );
+}
+
 function beginDrag(
   snapshot: Snapshot,
   getTransform: TransformLookup,
@@ -284,56 +332,6 @@ export function pointerUp(
   }
 }
 
-function linearPart(
-  rotationRad: number,
-  skewX: number,
-  skewY: number,
-  scaleX: number,
-  scaleY: number
-): Mat {
-  'worklet';
-  const cos = Math.cos(rotationRad);
-  const sin = Math.sin(rotationRad);
-  let m: Mat = [cos, sin, -sin, cos, 0, 0];
-  if (skewX !== 0) m = multiply(m, [1, 0, skewX, 1, 0, 0]);
-  if (skewY !== 0) m = multiply(m, [1, skewY, 0, 1, 0, 0]);
-  m = multiply(m, [scaleX, 0, 0, 1, 0, 0]);
-  m = multiply(m, [1, 0, 0, scaleY, 0, 0]);
-  return m;
-}
-
-function applyCenterPivot(
-  snapshot: Snapshot,
-  getTransform: TransformLookup,
-  pinch: SharedValue<PinchState | null>,
-  gestureEventCallbacks: GestureEventCallbacks
-): void {
-  'worklet';
-  const p = pinch.value;
-  if (!p || p.targetId === -1) return;
-  // Centre coincides with the origin (e.g. circles, or no descriptor) — the
-  // origin pivot already keeps it fixed, nothing to compensate.
-  if (p.pivotX === 0 && p.pivotY === 0) return;
-  const node = snapshot.nodes[p.targetId];
-  if (!node) return;
-  const base = node.transform;
-  const live = getTransform(p.targetId);
-  const a = linearPart(
-    base.rotation + live.rotation * DEG_TO_RAD,
-    base.skewX,
-    base.skewY,
-    base.scaleX * live.scale.x,
-    base.scaleY * live.scale.y
-  );
-  const centerX = a[0] * p.pivotX + a[2] * p.pivotY;
-  const centerY = a[1] * p.pivotX + a[3] * p.pivotY;
-  gestureEventCallbacks.setDragOffset(
-    p.targetId,
-    p.startOffsetX + p.startCenterX - centerX,
-    p.startOffsetY + p.startCenterY - centerY
-  );
-}
-
 export function pinchBegin(
   snapshot: Snapshot,
   getTransform: TransformLookup,
@@ -425,29 +423,6 @@ export function pinchUpdate(
   );
 }
 
-export function rotationUpdate(
-  snapshot: Snapshot,
-  getTransform: TransformLookup,
-  pinch: SharedValue<PinchState | null>,
-  gestureEventCallbacks: GestureEventCallbacks,
-  rotationRad: number,
-  sensitivity: number
-): void {
-  'worklet';
-  const p = pinch.value;
-  if (!p || p.targetId === -1) return;
-  gestureEventCallbacks.setRotation(
-    p.targetId,
-    p.baseRotation + rotationRad * RAD_TO_DEG * sensitivity
-  );
-  applyCenterPivot(snapshot, getTransform, pinch, gestureEventCallbacks);
-  gestureEventCallbacks.on(
-    'transform',
-    p.targetId,
-    resolveTransformResult(snapshot, getTransform, p.targetId)
-  );
-}
-
 export function pinchEnd(
   snapshot: Snapshot,
   getTransform: TransformLookup,
@@ -470,4 +445,27 @@ export function pinchEnd(
     );
   }
   pinch.value = null;
+}
+
+export function rotationUpdate(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  pinch: SharedValue<PinchState | null>,
+  gestureEventCallbacks: GestureEventCallbacks,
+  rotationRad: number,
+  sensitivity: number
+): void {
+  'worklet';
+  const p = pinch.value;
+  if (!p || p.targetId === -1) return;
+  gestureEventCallbacks.setRotation(
+    p.targetId,
+    p.baseRotation + rotationRad * RAD_TO_DEG * sensitivity
+  );
+  applyCenterPivot(snapshot, getTransform, pinch, gestureEventCallbacks);
+  gestureEventCallbacks.on(
+    'transform',
+    p.targetId,
+    resolveTransformResult(snapshot, getTransform, p.targetId)
+  );
 }

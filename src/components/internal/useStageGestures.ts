@@ -152,7 +152,7 @@ export function useStageGestures(
       })
       .onUpdate((e) => {
         'worklet';
-        if (touchesSV.value.length >= 2 || pinchState.value) return;
+        if (e.numberOfPointers >= 2) return;
         pointerMove(
           snapshotSV.value,
           getTransform,

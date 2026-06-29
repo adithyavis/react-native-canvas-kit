@@ -260,6 +260,7 @@ export const Transformer = memo((props: TransformerProps) => {
               y={c.y}
               radius={anchorSize / 2}
               fill="transparent"
+              hitStrokeWidth={anchorSize * 2}
               draggable
               gestureEnabled
               onDragStart={onHandleDragStart(anchor)}
@@ -275,6 +276,7 @@ export const Transformer = memo((props: TransformerProps) => {
             y={c.y - anchorSize / 2}
             width={anchorSize}
             height={anchorSize}
+            hitStrokeWidth={anchorSize * 2}
             fill="transparent"
             draggable
             gestureEnabled

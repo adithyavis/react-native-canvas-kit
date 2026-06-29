@@ -1,6 +1,12 @@
-import { applyTransformsToPoint, identity, invert, type Mat } from './matrix';
+import {
+  applyTransformsToPoint,
+  identity,
+  invert,
+  multiply,
+  type Mat,
+} from './matrix';
 import { dist } from './geometry';
-import { RAD_TO_DEG } from './transform';
+import { DEG_TO_RAD, RAD_TO_DEG } from './transform';
 import type { SharedValue } from 'react-native-reanimated';
 import type { TransformResult, Vector2d } from './types';
 import {
@@ -8,6 +14,7 @@ import {
   findDragTarget,
   getAbsoluteMatrixFromSnapshot,
   getHitNodeIdFromSnapshot,
+  getNodeContentCenter,
   type TransformLookup,
   type Snapshot,
 } from './snapshot';
@@ -49,6 +56,12 @@ interface PinchState {
   baseScaleY: number;
   baseRotation: number; // degrees
   activeGestures: number;
+  pivotX: number;
+  pivotY: number;
+  startOffsetX: number;
+  startOffsetY: number;
+  startCenterX: number;
+  startCenterY: number;
 }
 
 export type { PinchState };
@@ -272,6 +285,56 @@ export function pointerUp(
   }
 }
 
+function linearPart(
+  rotationRad: number,
+  skewX: number,
+  skewY: number,
+  scaleX: number,
+  scaleY: number
+): Mat {
+  'worklet';
+  const cos = Math.cos(rotationRad);
+  const sin = Math.sin(rotationRad);
+  let m: Mat = [cos, sin, -sin, cos, 0, 0];
+  if (skewX !== 0) m = multiply(m, [1, 0, skewX, 1, 0, 0]);
+  if (skewY !== 0) m = multiply(m, [1, skewY, 0, 1, 0, 0]);
+  m = multiply(m, [scaleX, 0, 0, 1, 0, 0]);
+  m = multiply(m, [1, 0, 0, scaleY, 0, 0]);
+  return m;
+}
+
+function applyCenterPivot(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  pinch: SharedValue<PinchState | null>,
+  gestureEventCallbacks: GestureEventCallbacks
+): void {
+  'worklet';
+  const p = pinch.value;
+  if (!p || p.targetId === -1) return;
+  // Centre coincides with the origin (e.g. circles, or no descriptor) — the
+  // origin pivot already keeps it fixed, nothing to compensate.
+  if (p.pivotX === 0 && p.pivotY === 0) return;
+  const node = snapshot.nodes[p.targetId];
+  if (!node) return;
+  const base = node.transform;
+  const live = getTransform(p.targetId);
+  const a = linearPart(
+    base.rotation + live.rotation * DEG_TO_RAD,
+    base.skewX,
+    base.skewY,
+    base.scaleX * live.scale.x,
+    base.scaleY * live.scale.y
+  );
+  const centerX = a[0] * p.pivotX + a[2] * p.pivotY;
+  const centerY = a[1] * p.pivotX + a[3] * p.pivotY;
+  gestureEventCallbacks.setDragOffset(
+    p.targetId,
+    p.startOffsetX + p.startCenterX - centerX,
+    p.startOffsetY + p.startCenterY - centerY
+  );
+}
+
 export function pinchBegin(
   snapshot: Snapshot,
   getTransform: TransformLookup,
@@ -294,16 +357,42 @@ export function pinchBegin(
       baseScaleY: 1,
       baseRotation: 0,
       activeGestures: 1,
+      pivotX: 0,
+      pivotY: 0,
+      startOffsetX: 0,
+      startOffsetY: 0,
+      startCenterX: 0,
+      startCenterY: 0,
     };
     return;
   }
   const base = getTransform(targetId);
+  const node = snapshot.nodes[targetId]!;
+  const bt = node.transform;
+  const center = getNodeContentCenter(snapshot, getTransform, targetId);
+  const pivotX = center.x - bt.offsetX;
+  const pivotY = center.y - bt.offsetY;
+  const a0 = linearPart(
+    bt.rotation + base.rotation * DEG_TO_RAD,
+    bt.skewX,
+    bt.skewY,
+    bt.scaleX * base.scale.x,
+    bt.scaleY * base.scale.y
+  );
+  const startCenterX = a0[0] * pivotX + a0[2] * pivotY;
+  const startCenterY = a0[1] * pivotX + a0[3] * pivotY;
   pinch.value = {
     targetId,
     baseScaleX: base.scale.x,
     baseScaleY: base.scale.y,
     baseRotation: base.rotation,
     activeGestures: 1,
+    pivotX,
+    pivotY,
+    startOffsetX: base.offset.x,
+    startOffsetY: base.offset.y,
+    startCenterX,
+    startCenterY,
   };
   gestureEventCallbacks.on(
     'transformstart',
@@ -329,6 +418,7 @@ export function pinchUpdate(
     p.baseScaleX * dampedScale,
     p.baseScaleY * dampedScale
   );
+  applyCenterPivot(snapshot, getTransform, pinch, gestureEventCallbacks);
   gestureEventCallbacks.on(
     'transform',
     p.targetId,
@@ -351,6 +441,7 @@ export function rotationUpdate(
     p.targetId,
     p.baseRotation + rotationRad * RAD_TO_DEG * sensitivity
   );
+  applyCenterPivot(snapshot, getTransform, pinch, gestureEventCallbacks);
   gestureEventCallbacks.on(
     'transform',
     p.targetId,

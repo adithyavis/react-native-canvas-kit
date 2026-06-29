@@ -10,6 +10,7 @@ import { type ResolvedTransform, DEG_TO_RAD } from './transform';
 import { ZERO_VECTOR } from './geometry';
 import {
   getIsHitTestSuccessful,
+  getHitTestDescriptorRect,
   type HitTestDescriptor,
 } from './hitTestDescriptor';
 import type { Vector2d } from './types';
@@ -194,4 +195,69 @@ export function getHitNodeIdFromSnapshot(
     }
   }
   return -1;
+}
+
+export function getNodeContentCenter(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  id: number
+): Vector2d {
+  'worklet';
+  const node = snapshot.nodes[id];
+  if (!node) return ZERO_VECTOR;
+  if (node.hitTestDescriptor) {
+    const r = getHitTestDescriptorRect(node.hitTestDescriptor);
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  }
+  const origin = { x: node.transform.offsetX, y: node.transform.offsetY };
+  const invNode = invert(
+    getAbsoluteMatrixFromSnapshot(snapshot, getTransform, id)
+  );
+  if (!invNode) return origin;
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let found = false;
+  const stack: number[] = [];
+  const roots = snapshot.children[id];
+  if (roots) for (let i = 0; i < roots.length; i++) stack.push(roots[i]!);
+  while (stack.length > 0) {
+    const childId = stack.pop()!;
+    const child = snapshot.nodes[childId];
+    if (!child) continue;
+    if (child.hitTestDescriptor) {
+      const r = getHitTestDescriptorRect(child.hitTestDescriptor);
+      const toLocal = multiply(
+        invNode,
+        getAbsoluteMatrixFromSnapshot(snapshot, getTransform, childId)
+      );
+      const corners = [
+        applyTransformsToPoint(toLocal, { x: r.x, y: r.y }),
+        applyTransformsToPoint(toLocal, { x: r.x + r.width, y: r.y }),
+        applyTransformsToPoint(toLocal, {
+          x: r.x + r.width,
+          y: r.y + r.height,
+        }),
+        applyTransformsToPoint(toLocal, { x: r.x, y: r.y + r.height }),
+      ];
+      for (let i = 0; i < corners.length; i++) {
+        const c = corners[i]!;
+        if (c.x < minX) minX = c.x;
+        if (c.y < minY) minY = c.y;
+        if (c.x > maxX) maxX = c.x;
+        if (c.y > maxY) maxY = c.y;
+      }
+      found = true;
+    }
+    const grandchildren = snapshot.children[childId];
+    if (grandchildren) {
+      for (let i = 0; i < grandchildren.length; i++) {
+        stack.push(grandchildren[i]!);
+      }
+    }
+  }
+  if (!found) return origin;
+  return { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
 }

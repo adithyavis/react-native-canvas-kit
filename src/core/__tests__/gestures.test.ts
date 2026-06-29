@@ -2,6 +2,8 @@ import { describe, it, expect } from '@jest/globals';
 import type { SharedValue } from 'react-native-reanimated';
 import { NodeRegistry } from '../registry';
 import { boxHitTestDescriptor } from '../hitTestDescriptor';
+import { getAbsoluteMatrixFromSnapshot } from '../snapshot';
+import { applyTransformsToPoint } from '../matrix';
 import type { NodeConfig, TransformResult, Vector2d } from '../types';
 import type { Transform, TransformLookup } from '../snapshot';
 import {
@@ -271,6 +273,115 @@ describe('pinch / rotation gestures', () => {
     expect(pinch.value?.targetId).toBe(-1);
     expect(scales).toEqual([]);
     expect(events).toEqual([]);
+  });
+
+  it('keeps the shape centre fixed when rotating about it', () => {
+    // A draggable 100x100 box at the origin: the multi-touch target is the
+    // shape itself, so it carries hit geometry and the centre pivot applies.
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const shape = reg.register({
+      parentId: stage,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({ draggable: true }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks } = makeHarness();
+
+    const center: Vector2d = { x: 50, y: 50 };
+    const centerBefore = applyTransformsToPoint(
+      getAbsoluteMatrixFromSnapshot(snapshot, getTransform, shape),
+      center
+    );
+
+    pinchBegin(snapshot, getTransform, pinch, callbacks, snapshot.rootId, [
+      { x: 40, y: 40 },
+      { x: 60, y: 60 },
+    ]);
+    rotationUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      Math.PI / 2,
+      ROTATION_SENSITIVITY
+    );
+
+    // A 90° rotation about the corner would fling the centre to (-50, 50);
+    // the compensating drag offset should pin it back to where it started.
+    const centerAfter = applyTransformsToPoint(
+      getAbsoluteMatrixFromSnapshot(snapshot, getTransform, shape),
+      center
+    );
+    expect(centerAfter.x).toBeCloseTo(centerBefore.x);
+    expect(centerAfter.y).toBeCloseTo(centerBefore.y);
+    expect(getTransform(shape).offset.x).toBeCloseTo(100);
+    expect(getTransform(shape).offset.y).toBeCloseTo(0);
+  });
+
+  it('keeps a group centre fixed using its descendants union', () => {
+    // The draggable group has no hit geometry; its centre comes from the two
+    // child shapes. A 50x50 box at (0,0) plus a 50x50 box at (50,50) span
+    // (0,0)-(100,100), so the group centre is (50,50).
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const group = reg.register({
+      parentId: stage,
+      type: 'group',
+      getConfig: (): NodeConfig => ({ draggable: true }),
+    });
+    reg.register({
+      parentId: group,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({ gestureEnabled: true }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 50, 50, 0),
+    });
+    reg.register({
+      parentId: group,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({ gestureEnabled: true }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(50, 50, 50, 50, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks } = makeHarness();
+
+    const center: Vector2d = { x: 50, y: 50 };
+    const before = applyTransformsToPoint(
+      getAbsoluteMatrixFromSnapshot(snapshot, getTransform, group),
+      center
+    );
+
+    pinchBegin(snapshot, getTransform, pinch, callbacks, snapshot.rootId, [
+      { x: 10, y: 10 },
+      { x: 90, y: 90 },
+    ]);
+    expect(pinch.value?.targetId).toBe(group);
+    rotationUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      Math.PI / 2,
+      ROTATION_SENSITIVITY
+    );
+
+    const after = applyTransformsToPoint(
+      getAbsoluteMatrixFromSnapshot(snapshot, getTransform, group),
+      center
+    );
+    expect(after.x).toBeCloseTo(before.x);
+    expect(after.y).toBeCloseTo(before.y);
   });
 
   it('is a no-op with fewer than two touches', () => {

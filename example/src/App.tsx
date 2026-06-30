@@ -25,8 +25,8 @@ const FONT_URL =
   'https://cdn.jsdelivr.net/npm/@expo-google-fonts/inter/Inter_700Bold.ttf';
 
 const LABEL = 'react-native-canvas-kit';
-const FONT_SIZE = 20;
-const PADDING = 10;
+const FONT_SIZE = 24;
+const PADDING = 8;
 
 const CHIP = '#chip';
 const STICKER_SIZE = 76;
@@ -60,12 +60,12 @@ const STICKERS: Sticker[] = [
   { id: 'sparkles', src: require('./assets/stickers/sparkles.png'), fx: 0.16, fy: 0.44, scale: 0.9, rotation: -6 }, // prettier-ignore
   { id: 'ring', src: require('./assets/stickers/ring.png'), fx: 0.42, fy: 0.42, scale: 1.05, rotation: 18 }, // prettier-ignore
   { id: 'crown', src: require('./assets/stickers/crown.png'), fx: 0.66, fy: 0.46, scale: 1.15, rotation: -12 }, // prettier-ignore
-  { id: 'fire', src: require('./assets/stickers/fire.png'), fx: 0.87, fy: 0.5, scale: 1.0, rotation: 10 }, // prettier-ignore
+  { id: 'fire', src: require('./assets/stickers/fire.png'), fx: 0.25, fy: 0.75, scale: 1.0, rotation: 10 }, // prettier-ignore
   { id: 'rainbow', src: require('./assets/stickers/rainbow.png'), fx: 0.012, fy: 0.62, scale: 1.1, rotation: -18 }, // prettier-ignore
   { id: 'fox', src: require('./assets/stickers/fox.png'), fx: 0.38, fy: 0.6, scale: 1.2, rotation: 14 }, // prettier-ignore
-  { id: 'panda', src: require('./assets/stickers/panda.png'), fx: 0.63, fy: 0.64, scale: 1.25, rotation: -8 }, // prettier-ignore
+  { id: 'panda', src: require('./assets/stickers/panda.png'), fx: 0.63, fy: 0.84, scale: 1.25, rotation: -8 }, // prettier-ignore
   { id: 'ghost', src: require('./assets/stickers/ghost.png'), fx: 0.85, fy: 0.66, scale: 1.0, rotation: 20 }, // prettier-ignore
-  { id: 'dragon', src: require('./assets/stickers/dragon.png'), fx: 0.15, fy: 0.75, scale: 1.3, rotation: -22 }, // prettier-ignore
+  { id: 'dragon', src: require('./assets/stickers/dragon.png'), fx: 0.35, fy: 0.9, scale: 1.3, rotation: -22 }, // prettier-ignore
   { id: 'balloon', src: require('./assets/stickers/balloon.png'), fx: 0.75, fy: 0.19, scale: 1.1, rotation: 24 }, // prettier-ignore
 ];
 
@@ -86,8 +86,8 @@ function buildInitialTransforms(
     };
   }
   out[CHIP] = {
-    x: Math.round(w * 0.15),
-    y: Math.round(h * 0.85),
+    x: Math.round(w * 0.1),
+    y: Math.round(h * 0.5),
     scaleX: 1,
     scaleY: 1,
     rotation: 0,
@@ -118,8 +118,10 @@ export default function App() {
   const textWidth = font ? font.measureText(LABEL).width : 0;
   const metrics = font ? font.getMetrics() : null;
   const textHeight = metrics ? metrics.descent - metrics.ascent : FONT_SIZE;
-  const chipWidth = textWidth + PADDING * 2;
-  const chipHeight = textHeight + PADDING * 2;
+  const chipInnerWidth = textWidth + PADDING * 4;
+  const chipInnerHeight = textHeight + PADDING * 4;
+  const chipWidth = chipInnerWidth + PADDING;
+  const chipHeight = chipInnerHeight + PADDING;
   const chip = transforms[CHIP]!;
 
   return (
@@ -171,13 +173,22 @@ export default function App() {
                   width={chipWidth}
                   height={chipHeight}
                   cornerRadius={10}
+                  fill="#fff"
+                  gestureEnabled
+                />
+                <Rect
+                  x={0.5 * PADDING}
+                  y={0.5 * PADDING}
+                  width={chipInnerWidth}
+                  height={chipInnerHeight}
+                  cornerRadius={10}
                   fill="#1b0030"
                   gestureEnabled
                 />
                 <Text
                   text={LABEL}
-                  x={PADDING}
-                  y={PADDING}
+                  x={2.5 * PADDING}
+                  y={2.5 * PADDING}
                   font={font}
                   fill="#ffffff"
                 />

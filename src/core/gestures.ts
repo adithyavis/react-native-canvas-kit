@@ -96,24 +96,23 @@ function getMultiTouchTarget(
 ): number {
   'worklet';
   if (touches.length < 2) return -1;
-  let target = -1;
+  let sumX = 0;
+  let sumY = 0;
   for (let i = 0; i < touches.length; i++) {
-    const touch = touches[i]!;
-    const hitNodeId = getHitNodeIdFromSnapshot(
-      snapshot,
-      getTransform,
-      rootId,
-      touch.x,
-      touch.y,
-      true
-    );
-    const dragTargetId =
-      hitNodeId !== -1 ? findDragTarget(snapshot, hitNodeId) : -1;
-    if (dragTargetId === -1) return -1;
-    if (target === -1) target = dragTargetId;
-    else if (dragTargetId !== target) return -1;
+    sumX += touches[i]!.x;
+    sumY += touches[i]!.y;
   }
-  return target;
+  const cx = sumX / touches.length;
+  const cy = sumY / touches.length;
+  const hitNodeId = getHitNodeIdFromSnapshot(
+    snapshot,
+    getTransform,
+    rootId,
+    cx,
+    cy,
+    true
+  );
+  return hitNodeId !== -1 ? findDragTarget(snapshot, hitNodeId) : -1;
 }
 
 function linearPart(

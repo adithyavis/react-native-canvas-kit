@@ -421,6 +421,33 @@ describe('pinch / rotation gestures', () => {
     expect(pinch.value?.targetId).not.toBe(front);
   });
 
+  it('resolves the pinch target from the touch centroid, not every finger', () => {
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const box = reg.register({
+      parentId: stage,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({ draggable: true }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks } = makeHarness();
+
+    // One finger on the box, the other well outside it (beyond the multi-touch
+    // slop). Their centroid (50, -25) still lands on the box, so the pinch
+    // targets it — where the old "every finger must agree" rule would abort.
+    pinchBegin(snapshot, getTransform, pinch, callbacks, snapshot.rootId, [
+      { x: 50, y: 50 },
+      { x: 50, y: -100 },
+    ]);
+    expect(pinch.value?.targetId).toBe(box);
+  });
+
   it('is a no-op with fewer than two touches', () => {
     const { snapshot } = buildScene();
     const pinch = sharedValue<PinchState | null>(null);

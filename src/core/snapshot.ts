@@ -41,6 +41,7 @@ export interface SnapshotNode {
   multiTouchEnabled: boolean;
   dragDistance: number;
   hitTestDescriptor: HitTestDescriptor | null;
+  hitTargetId: number;
 }
 
 export interface Snapshot {
@@ -151,7 +152,8 @@ export function getHitNodeIdFromSnapshot(
   id: number,
   px: number,
   py: number,
-  forMultiTouch: boolean = false
+  forMultiTouch: boolean = false,
+  applyHitRedirect: boolean = false
 ): number {
   'worklet';
   const node = snapshot.nodes[id];
@@ -167,15 +169,18 @@ export function getHitNodeIdFromSnapshot(
         children[i]!,
         px,
         py,
-        forMultiTouch
+        forMultiTouch,
+        applyHitRedirect
       );
       if (hitNodeId !== -1) return hitNodeId;
     }
   }
 
+  const isProxy = node.hitTargetId !== -1;
   if (
     (node.gestureEnabled || node.draggable) &&
     (!forMultiTouch || node.multiTouchEnabled) &&
+    (applyHitRedirect || !isProxy) &&
     node.hitTestDescriptor
   ) {
     const inv = invert(
@@ -193,7 +198,7 @@ export function getHitNodeIdFromSnapshot(
         forMultiTouch ? MULTI_TOUCH_HIT_SLOP : 0
       )
     ) {
-      return id;
+      return isProxy ? node.hitTargetId : id;
     }
   }
   return -1;

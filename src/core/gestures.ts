@@ -110,6 +110,7 @@ function getMultiTouchTarget(
     rootId,
     cx,
     cy,
+    true,
     true
   );
   return hitNodeId !== -1 ? findDragTarget(snapshot, hitNodeId) : -1;
@@ -221,8 +222,17 @@ export function pointerDown(
     px,
     py
   );
+  const dragHitNodeId = getHitNodeIdFromSnapshot(
+    snapshot,
+    getTransform,
+    rootId,
+    px,
+    py,
+    false,
+    true
+  );
   const dragTargetId =
-    hitNodeId !== -1 ? findDragTarget(snapshot, hitNodeId) : -1;
+    dragHitNodeId !== -1 ? findDragTarget(snapshot, dragHitNodeId) : -1;
   const dragNode = dragTargetId !== -1 ? snapshot.nodes[dragTargetId] : null;
   const dragDistance = dragNode ? dragNode.dragDistance : DEFAULT_DRAG_DISTANCE;
   press.value = {

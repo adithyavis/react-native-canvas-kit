@@ -144,6 +144,7 @@ export interface NodeConfig extends NodeEventHandlers {
   dragDistance?: number;
   listening?: boolean;
   multiTouchEnabled?: boolean;
+  hitTargetId?: number;
 
   children?: ReactNode;
 }

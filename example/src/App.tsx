@@ -254,7 +254,12 @@ export default function App() {
     <GestureHandlerRootView style={styles.root}>
       <View style={styles.root}>
         <Stage width={width} height={height} style={styles.stage}>
-          <Layer>
+          <Layer
+            onTap={() => setSelected(null)}
+            width={width}
+            height={height}
+            gestureEnabled
+          >
             {STICKERS.map((s) => {
               const t = transforms[sel(s.id)]!;
               return (
@@ -269,9 +274,11 @@ export default function App() {
                   rotation={t.rotation}
                   width={STICKER_SIZE}
                   height={STICKER_SIZE}
-                  gestureEnabled
                   draggable
-                  onTap={() => setSelected(sel(s.id))}
+                  onTap={(e) => {
+                    setSelected(sel(s.id));
+                    e.cancelBubble = true;
+                  }}
                   onTransformEnd={(e: EventObject) =>
                     commit(sel(s.id), e.evt as TransformResult)
                   }
@@ -288,7 +295,10 @@ export default function App() {
                 scaleY={chip.scaleY}
                 rotation={chip.rotation}
                 draggable
-                onTap={() => setSelected(CHIP)}
+                onTap={(e) => {
+                  setSelected(CHIP);
+                  e.cancelBubble = true;
+                }}
                 onTransformEnd={(e: EventObject) =>
                   commit(CHIP, e.evt as TransformResult)
                 }
@@ -300,7 +310,6 @@ export default function App() {
                   height={chipHeight}
                   cornerRadius={10}
                   fill="#fff"
-                  gestureEnabled
                 />
                 <Rect
                   x={0.5 * PADDING}
@@ -309,7 +318,6 @@ export default function App() {
                   height={chipInnerHeight}
                   cornerRadius={10}
                   fill="#1b0030"
-                  gestureEnabled
                 />
                 <Text
                   text={LABEL}

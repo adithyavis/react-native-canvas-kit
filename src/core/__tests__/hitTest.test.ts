@@ -13,7 +13,6 @@ import {
   hitStrokePad,
   boxHitTestDescriptor,
   getIsHitTestSuccessful,
-  MULTI_TOUCH_HIT_SLOP,
 } from '../hitTestDescriptor';
 
 describe('rectHit', () => {
@@ -120,11 +119,9 @@ describe('getIsHitTestSuccessful extraPad', () => {
     expect(hit(120, 50)).toBe(false);
   });
   it('accepts that same point once the extra pad reaches it', () => {
-    expect(hit(120, 50, MULTI_TOUCH_HIT_SLOP)).toBe(true);
+    expect(hit(120, 50, 30)).toBe(true);
   });
   it('still rejects points beyond the extra pad', () => {
-    expect(hit(100 + MULTI_TOUCH_HIT_SLOP + 1, 50, MULTI_TOUCH_HIT_SLOP)).toBe(
-      false
-    );
+    expect(hit(131, 50, 30)).toBe(false);
   });
 });

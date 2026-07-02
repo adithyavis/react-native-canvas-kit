@@ -457,12 +457,12 @@ describe('pinch / rotation gestures', () => {
     const pinch = sharedValue<PinchState | null>(null);
     const { getTransform, callbacks } = makeHarness();
 
-    // One finger on the box, the other well outside it (beyond the multi-touch
-    // slop). Their centroid (50, -25) still lands on the box, so the pinch
-    // targets it — where the old "every finger must agree" rule would abort.
+    // One finger on the box, the other outside it. Their centroid (50, 5) still
+    // lands on the box, so the pinch targets it — where the old "every finger
+    // must agree" rule would have aborted.
     pinchBegin(snapshot, getTransform, pinch, callbacks, snapshot.rootId, [
       { x: 50, y: 50 },
-      { x: 50, y: -100 },
+      { x: 50, y: -40 },
     ]);
     expect(pinch.value?.targetId).toBe(box);
   });

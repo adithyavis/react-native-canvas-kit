@@ -1,9 +1,16 @@
 import { describe, it, expect } from '@jest/globals';
 import { NodeRegistry } from '../registry';
 import { boxHitTestDescriptor } from '../hitTestDescriptor';
+import { getHitNodeIdFromSnapshot, type TransformLookup } from '../snapshot';
 import type { NodeConfig, Vector2d } from '../types';
 import type { SharedValue } from 'react-native-reanimated';
 import { createSharedValue } from '../reanimated';
+
+const NO_LIVE_TRANSFORM: TransformLookup = () => ({
+  offset: { x: 0, y: 0 },
+  scale: { x: 1, y: 1 },
+  rotation: 0,
+});
 
 /** Register a shape positioned at (x,y) covering a w×h box from its origin. */
 function addShape(
@@ -115,6 +122,38 @@ describe('NodeRegistry hit-testing', () => {
     });
     addShape(reg, layer, { x: 0, y: 0 }, 50, 50);
     expect(reg.getHitNodeId({ x: 150, y: 150 }, stage)).toBeNull();
+  });
+
+  it('redirects drag/pinch hits on a hitTargetId proxy but stays transparent to taps', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const layer = addContainer(reg, stage, 'layer');
+    // Bottom: the real target. Middle: an occluding shape. Top: an invisible
+    // proxy (like a Transformer grab region) that redirects to the target.
+    const target = addShape(reg, layer, { x: 0, y: 0, draggable: true }, 100, 100); // prettier-ignore
+    const occluder = addShape(reg, layer, { x: 0, y: 0 }, 100, 100); // on top of target
+    addShape(reg, layer, { x: 0, y: 0, hitTargetId: target }, 100, 100); // proxy on top
+    const snap = reg.getSnapshot();
+
+    // Drag/pinch (applyHitRedirect=true): the front-most proxy reports the
+    // target it stands in for.
+    expect(
+      getHitNodeIdFromSnapshot(
+        snap,
+        NO_LIVE_TRANSFORM,
+        stage,
+        50,
+        50,
+        false,
+        true
+      )
+    ).toBe(target);
+    // Tap (applyHitRedirect=false, the default): the proxy is transparent, so
+    // the physical shape under the finger — the occluder — wins.
+    expect(
+      getHitNodeIdFromSnapshot(snap, NO_LIVE_TRANSFORM, stage, 50, 50)
+    ).toBe(occluder);
+    expect(reg.getHitNodeId({ x: 50, y: 50 }, stage)).toBe(occluder);
   });
 
   it('applies accumulated container transforms to local hit-testing', () => {

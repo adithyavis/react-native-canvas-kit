@@ -18,7 +18,7 @@ export interface HitTestDescriptor {
   points?: number[];
 }
 
-export const MULTI_TOUCH_HIT_SLOP = 60;
+export const MULTI_TOUCH_HIT_SLOP = 0;
 
 export function hitStrokePad(c: ShapeConfig): number {
   if (c.hitStrokeWidth != null) {

@@ -187,7 +187,8 @@ export function useStageGestures(
           pinchState,
           callbacks,
           rootId,
-          touchesSV.value
+          touchesSV.value,
+          pressState
         );
       })
       .onUpdate((e) => {
@@ -216,7 +217,8 @@ export function useStageGestures(
           pinchState,
           callbacks,
           rootId,
-          touchesSV.value
+          touchesSV.value,
+          pressState
         );
       })
       .onUpdate((e) => {

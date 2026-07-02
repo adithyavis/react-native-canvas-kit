@@ -337,7 +337,8 @@ export function pinchBegin(
   pinch: SharedValue<PinchState | null>,
   gestureEventCallbacks: GestureEventCallbacks,
   rootId: number,
-  touches: Vector2d[]
+  touches: Vector2d[],
+  press?: SharedValue<PressState | null>
 ): void {
   'worklet';
   const existing = pinch.value;
@@ -345,7 +346,20 @@ export function pinchBegin(
     pinch.value = { ...existing, activeGestures: existing.activeGestures + 1 };
     return;
   }
-  const targetId = getMultiTouchTarget(snapshot, getTransform, rootId, touches);
+  const activePress = press?.value;
+  const draggingId =
+    activePress && activePress.dragging ? activePress.dragTargetId : -1;
+  const targetId =
+    draggingId !== -1
+      ? draggingId
+      : getMultiTouchTarget(snapshot, getTransform, rootId, touches);
+
+  const transformContinues = draggingId !== -1;
+  if (draggingId !== -1) {
+    gestureEventCallbacks.on('dragend', draggingId);
+  }
+  if (press) press.value = null;
+
   if (targetId === -1) {
     pinch.value = {
       targetId: -1,
@@ -390,11 +404,13 @@ export function pinchBegin(
     startCenterX,
     startCenterY,
   };
-  gestureEventCallbacks.on(
-    'transformstart',
-    targetId,
-    resolveTransformResult(snapshot, getTransform, targetId)
-  );
+  if (!transformContinues) {
+    gestureEventCallbacks.on(
+      'transformstart',
+      targetId,
+      resolveTransformResult(snapshot, getTransform, targetId)
+    );
+  }
 }
 
 export function pinchUpdate(

@@ -86,6 +86,37 @@ describe('NodeRegistry hit-testing', () => {
     expect(reg.getHitNodeId({ x: 500, y: 500 }, stage)).toBeNull();
   });
 
+  it('hits a sized, gestureEnabled container on empty gaps; children win', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const layer = reg.register({
+      parentId: stage,
+      type: 'layer',
+      getConfig: () => ({ gestureEnabled: true }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 200, 200, 0),
+    });
+    const shape = addShape(reg, layer, { x: 0, y: 0 }, 50, 50);
+    // Over the child → the child takes priority over its container.
+    expect(reg.getHitNodeId({ x: 25, y: 25 }, stage)).toBe(shape);
+    // Empty gap inside the layer's box → the layer itself is hit.
+    expect(reg.getHitNodeId({ x: 150, y: 150 }, stage)).toBe(layer);
+    // Outside the layer's box → nothing.
+    expect(reg.getHitNodeId({ x: 500, y: 500 }, stage)).toBeNull();
+  });
+
+  it('a sized container without gestureEnabled stays non-interactive', () => {
+    const reg = new NodeRegistry();
+    const stage = addContainer(reg, null, 'stage');
+    const layer = reg.register({
+      parentId: stage,
+      type: 'layer',
+      getConfig: () => ({}),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 200, 200, 0),
+    });
+    addShape(reg, layer, { x: 0, y: 0 }, 50, 50);
+    expect(reg.getHitNodeId({ x: 150, y: 150 }, stage)).toBeNull();
+  });
+
   it('applies accumulated container transforms to local hit-testing', () => {
     const reg = new NodeRegistry();
     const stage = addContainer(reg, null, 'stage');

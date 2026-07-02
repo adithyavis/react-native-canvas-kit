@@ -174,7 +174,6 @@ export function getHitNodeIdFromSnapshot(
   }
 
   if (
-    node.type === SnapshotNodeType.Shape &&
     (node.gestureEnabled || node.draggable) &&
     (!forMultiTouch || node.multiTouchEnabled) &&
     node.hitTestDescriptor

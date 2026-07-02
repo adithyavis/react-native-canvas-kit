@@ -15,7 +15,26 @@ import {
   ROTATION_SENSITIVITY,
   type GestureEventCallbacks,
   type PinchState,
+  type PressState,
 } from '../gestures';
+
+// A dragging single-finger press on the given node, mid-drag.
+function draggingPress(dragTargetId: number): SharedValue<PressState | null> {
+  return sharedValue<PressState | null>({
+    startX: 50,
+    startY: 50,
+    startTime: 0,
+    hitNodeId: dragTargetId,
+    dragTargetId,
+    dragDistance: 3,
+    dragging: true,
+    parentInv: null,
+    dragStartParentX: 0,
+    dragStartParentY: 0,
+    baseOffsetX: 0,
+    baseOffsetY: 0,
+  });
+}
 
 // Minimal SharedValue stand-in; the gesture worklets only touch `.value`.
 function sharedValue<T>(initial: T): SharedValue<T> {
@@ -446,6 +465,64 @@ describe('pinch / rotation gestures', () => {
       { x: 50, y: -100 },
     ]);
     expect(pinch.value?.targetId).toBe(box);
+  });
+
+  it('hands a drag off to a pinch on the same node (one transform lifecycle)', () => {
+    const { snapshot, group } = buildScene();
+    const pinch = sharedValue<PinchState | null>(null);
+    const press = draggingPress(group);
+    const { getTransform, callbacks, events } = makeHarness();
+
+    pinchBegin(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      snapshot.rootId,
+      TOUCHES_ON_SHAPE,
+      press
+    );
+
+    // The single-finger press is superseded and the drag closed out.
+    expect(press.value).toBeNull();
+    expect(events.filter(([t]) => t === 'dragend')).toEqual([
+      ['dragend', group],
+    ]);
+    // Same node → the pinch continues the drag's transform: no new
+    // transformstart, and no premature transformend.
+    expect(events.some(([t]) => t === 'transformstart')).toBe(false);
+    expect(events.some(([t]) => t === 'transformend')).toBe(false);
+    expect(pinch.value?.targetId).toBe(group);
+  });
+
+  it('keeps a handed-off pinch on the dragged node, ignoring the focal point', () => {
+    const { snapshot, group } = buildScene();
+    const pinch = sharedValue<PinchState | null>(null);
+    const press = draggingPress(group);
+    const { getTransform, callbacks, events } = makeHarness();
+
+    // Focal point is off every shape, but a drag was underway on the group —
+    // the second finger extends THAT manipulation rather than grabbing nothing
+    // (or, worse, a different node). The pinch stays on the dragged group.
+    pinchBegin(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      snapshot.rootId,
+      TOUCHES_OFF_SHAPE,
+      press
+    );
+
+    expect(press.value).toBeNull();
+    expect(pinch.value?.targetId).toBe(group);
+    // Continuous manipulation: drag closed out, transform neither re-started
+    // nor prematurely ended.
+    expect(events.filter(([t]) => t === 'dragend')).toEqual([
+      ['dragend', group],
+    ]);
+    expect(events.some(([t]) => t === 'transformstart')).toBe(false);
+    expect(events.some(([t]) => t === 'transformend')).toBe(false);
   });
 
   it('is a no-op with fewer than two touches', () => {

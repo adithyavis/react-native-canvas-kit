@@ -6,6 +6,7 @@ import {
 } from 'react-native-reanimated';
 import { Rect } from '../shapes/Rect';
 import { Circle } from '../shapes/Circle';
+import { Group } from '../Group';
 import { useRegistry } from '../internal/NodeContext';
 import { applyTransformsToPoint } from '../../core/matrix';
 import { inflateRect } from '../../core/bounds';
@@ -223,6 +224,28 @@ export const Transformer = memo((props: TransformerProps) => {
 
   return (
     <Fragment>
+      <Group
+        x={target.config.x}
+        y={target.config.y}
+        rotation={target.config.rotation / DEG_TO_RAD}
+        scaleX={target.config.scaleX}
+        scaleY={target.config.scaleY}
+        skewX={target.config.skewX}
+        skewY={target.config.skewY}
+        offsetX={target.config.offsetX}
+        offsetY={target.config.offsetY}
+      >
+        <Rect
+          x={rect.x}
+          y={rect.y}
+          width={rect.width}
+          height={rect.height}
+          fill="#000000"
+          opacity={0}
+          hitTargetId={target.id}
+        />
+      </Group>
+
       <TransformerBorder
         rect={rect}
         resolvedTransformSV={target.resolvedTransformSV}

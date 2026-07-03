@@ -23,16 +23,16 @@ export interface BrushStyle {
 
 export const BRUSHES: Record<BrushTool, BrushStyle> = {
   pen: {
-    color: '#1b0030',
+    color: '#000000',
     strokeWidth: 4,
     opacity: 1,
     cap: 'round',
     join: 'round',
-    tension: 0.5,
+    tension: 1,
   },
   pencil: {
-    color: '#3a3a3a',
-    strokeWidth: 2,
+    color: '#000000',
+    strokeWidth: 1,
     opacity: 0.9,
     cap: 'round',
     join: 'round',
@@ -45,7 +45,7 @@ export const BRUSHES: Record<BrushTool, BrushStyle> = {
     blendMode: 'multiply' as SkiaBlendMode,
     cap: 'round',
     join: 'round',
-    tension: 0.5,
+    tension: 1,
   },
   highlighter: {
     color: '#eaff00',

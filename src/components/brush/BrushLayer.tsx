@@ -29,7 +29,7 @@ export const BrushLayer = memo(
 
     const commitBrushStrokeRef = useRef((points: number[]) => {
       const currentTool = toolRef.current;
-      if (currentTool !== null && points.length >= 4) {
+      if (currentTool !== null && points.length >= 2) {
         onStrokeEndRef.current?.({ points, tool: currentTool });
       }
       setLiveVisible(false);

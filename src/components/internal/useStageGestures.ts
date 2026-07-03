@@ -59,7 +59,9 @@ export function useStageGestures(
   const pinchState = useSharedValue<PinchState | null>(null);
   const touchesSV = useSharedValue<Vector2d[]>([]);
   const lastTap = useSharedValue<LastTap | null>(null);
+  const brushPointsSV = useSharedValue<SharedValue<number[]> | null>(null);
   const idToTransformMapVersionRef = useRef(-1);
+  const brushToolVersionRef = useRef(-1);
 
   useEffect(() => {
     const syncSnapshot = () => {
@@ -72,6 +74,10 @@ export function useStageGestures(
         idToScaleMapSV.value = registry.getIdToScaleMap();
         idToRotationMapSV.value = registry.getIdToRotationMap();
       }
+      if (registry.brushToolVersion !== brushToolVersionRef.current) {
+        brushToolVersionRef.current = registry.brushToolVersion;
+        brushPointsSV.value = registry.getBrushTool()?.activePointsSV ?? null;
+      }
     };
     const unsubscribe = registry.subscribeToChanges(syncSnapshot);
     syncSnapshot();
@@ -82,14 +88,20 @@ export function useStageGestures(
     idToDragOffsetMapSV,
     idToScaleMapSV,
     idToRotationMapSV,
+    brushPointsSV,
   ]);
 
   const dispatchRef = useRef((type: string, id: number, payload?: unknown) => {
     dispatch(registry, type, id, payload ?? {});
   });
 
+  const commitBrushStrokeRef = useRef((points: number[]) => {
+    registry.getBrushTool()?.commit(points);
+  });
+
   return useMemo(() => {
     const on = dispatchRef.current;
+    const commitBrushStroke = commitBrushStrokeRef.current;
     const getTransform: TransformLookup = (id) => {
       'worklet';
       return {
@@ -139,6 +151,11 @@ export function useStageGestures(
       .onTouchesCancelled(syncTouches)
       .onBegin((e) => {
         'worklet';
+        const brushPoints = brushPointsSV.value;
+        if (brushPoints) {
+          brushPoints.value = [e.x, e.y];
+          return;
+        }
         pointerDown(
           snapshotSV.value,
           getTransform,
@@ -153,6 +170,11 @@ export function useStageGestures(
       .onUpdate((e) => {
         'worklet';
         if (e.numberOfPointers >= 2) return;
+        const brushPoints = brushPointsSV.value;
+        if (brushPoints) {
+          brushPoints.value = [...brushPoints.value, e.x, e.y];
+          return;
+        }
         pointerMove(
           snapshotSV.value,
           getTransform,
@@ -164,6 +186,11 @@ export function useStageGestures(
       })
       .onFinalize((e) => {
         'worklet';
+        const brushPoints = brushPointsSV.value;
+        if (brushPoints) {
+          runOnJS(commitBrushStroke)(brushPoints.value);
+          return;
+        }
         pointerUp(
           snapshotSV.value,
           getTransform,
@@ -181,6 +208,7 @@ export function useStageGestures(
       .enabled(enabled)
       .onBegin(() => {
         'worklet';
+        if (brushPointsSV.value) return;
         pinchBegin(
           snapshotSV.value,
           getTransform,
@@ -211,6 +239,7 @@ export function useStageGestures(
       .enabled(enabled)
       .onBegin(() => {
         'worklet';
+        if (brushPointsSV.value) return;
         pinchBegin(
           snapshotSV.value,
           getTransform,
@@ -247,6 +276,7 @@ export function useStageGestures(
     pinchState,
     touchesSV,
     lastTap,
+    brushPointsSV,
     rootId,
     enabled,
     pinchSensitivity,

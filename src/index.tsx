@@ -27,6 +27,27 @@ export type { ImageProps } from './components/shapes/Image';
 export { Transformer } from './components/transformer';
 export type { TransformerProps } from './components/transformer';
 
+export {
+  BrushLayer,
+  Pen,
+  Pencil,
+  Marker,
+  Highlighter,
+  Tape,
+  Eraser,
+  BRUSH_PATHS,
+  BRUSHES,
+} from './components/brush';
+export type {
+  BrushLayerProps,
+  BrushStrokeEvent,
+  BrushProps,
+  BrushTool,
+  BrushStyle,
+  StrokeCap,
+  StrokeJoin,
+} from './components/brush';
+
 export type {
   Vector2d,
   NodeConfig,

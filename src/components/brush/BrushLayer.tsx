@@ -11,7 +11,7 @@ export interface BrushStrokeEvent {
 }
 
 export interface BrushLayerProps {
-  tool: BrushTool | 'off';
+  tool: BrushTool | null;
   onStrokeEnd?: (stroke: BrushStrokeEvent) => void;
   children?: ReactNode;
 }
@@ -28,7 +28,7 @@ export const BrushLayer = memo(
 
     const commitBrushStrokeRef = useRef((points: number[]) => {
       const currentTool = toolRef.current;
-      if (currentTool !== 'off' && points.length >= 4) {
+      if (currentTool !== null && points.length >= 4) {
         onStrokeEndRef.current?.({ points, tool: currentTool });
       }
 
@@ -42,7 +42,7 @@ export const BrushLayer = memo(
 
     useEffect(() => {
       if (!registry) return;
-      if (tool === 'off') {
+      if (tool === null) {
         registry.unregisterBrushTool();
         activePointsSV.value = [];
         return;
@@ -54,7 +54,7 @@ export const BrushLayer = memo(
       return () => registry.unregisterBrushTool();
     }, [registry, tool, activePointsSV]);
 
-    const activeStyle = tool === 'off' ? null : BRUSHES[tool];
+    const activeStyle = tool === null ? null : BRUSHES[tool];
     const activeTension = activeStyle?.tension ?? 0.5;
 
     const activePath = useDerivedValue(

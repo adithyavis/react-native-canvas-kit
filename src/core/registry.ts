@@ -51,6 +51,11 @@ interface ChildList {
   unsorted: boolean;
 }
 
+export interface RegisterBrushTool {
+  activePointsSV: SharedValue<number[]>;
+  commit: (points: number[]) => void;
+}
+
 function getSnapshotNodeType(type: NodeType): SnapshotNodeType {
   switch (type) {
     case 'stage':
@@ -80,9 +85,12 @@ export class NodeRegistry {
   private isSnapshotStale = true;
   private rootId = -1;
 
+  private brushTool: RegisterBrushTool | null = null;
+
   private listeners = new Set<() => void>();
   private flushScheduled = false;
   idToTransformMapVersion = 0;
+  brushToolVersion = 0;
 
   private getTransform: TransformLookup = (id) => ({
     offset: this.idToDragOffsetMap.get(id)?.value ?? ZERO_VECTOR,
@@ -217,6 +225,24 @@ export class NodeRegistry {
     const byId: Record<number, SharedValue<number>> = {};
     for (const [id, ref] of this.idToRotationMap) byId[id] = ref;
     return byId;
+  }
+
+  registerBrushTool(tool: RegisterBrushTool): void {
+    this.brushTool = tool;
+    this.brushToolVersion++;
+    this.invalidateSnapshot();
+  }
+
+  unregisterBrushTool(): void {
+    if (this.brushTool) {
+      this.brushTool = null;
+      this.brushToolVersion++;
+      this.invalidateSnapshot();
+    }
+  }
+
+  getBrushTool(): RegisterBrushTool | null {
+    return this.brushTool;
   }
 
   subscribeToChanges(listener: () => void): () => void {

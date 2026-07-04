@@ -28,7 +28,7 @@ export const BRUSHES: Record<BrushTool, BrushStyle> = {
     opacity: 1,
     cap: 'round',
     join: 'round',
-    tension: 1,
+    tension: 0.6,
   },
   pencil: {
     color: '#000000',

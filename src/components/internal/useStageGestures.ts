@@ -55,10 +55,10 @@ export function useStageGestures(
   const idToDragOffsetMapSV = useSharedValue<idToSVMap<Vector2d>>({});
   const idToScaleMapSV = useSharedValue<idToSVMap<Vector2d>>({});
   const idToRotationMapSV = useSharedValue<idToSVMap<number>>({});
-  const pressState = useSharedValue<PressState | null>(null);
-  const pinchState = useSharedValue<PinchState | null>(null);
+  const pressStateSV = useSharedValue<PressState | null>(null);
+  const pinchStateSV = useSharedValue<PinchState | null>(null);
   const touchesSV = useSharedValue<Vector2d[]>([]);
-  const lastTap = useSharedValue<LastTap | null>(null);
+  const lastTapSV = useSharedValue<LastTap | null>(null);
   const brushPointsSV = useSharedValue<SharedValue<number[]> | null>(null);
   const brushAbortedSV = useSharedValue(false);
   const idToTransformMapVersionRef = useRef(-1);
@@ -172,7 +172,7 @@ export function useStageGestures(
         pointerDown(
           snapshotSV.value,
           getTransform,
-          pressState,
+          pressStateSV,
           callbacks,
           rootId,
           e.x,
@@ -192,7 +192,7 @@ export function useStageGestures(
         pointerMove(
           snapshotSV.value,
           getTransform,
-          pressState,
+          pressStateSV,
           callbacks,
           e.x,
           e.y
@@ -212,8 +212,8 @@ export function useStageGestures(
         pointerUp(
           snapshotSV.value,
           getTransform,
-          pressState,
-          lastTap,
+          pressStateSV,
+          lastTapSV,
           callbacks,
           rootId,
           e.x,
@@ -230,11 +230,11 @@ export function useStageGestures(
         pinchBegin(
           snapshotSV.value,
           getTransform,
-          pinchState,
+          pinchStateSV,
           callbacks,
           rootId,
           touchesSV.value,
-          pressState
+          pressStateSV
         );
       })
       .onUpdate((e) => {
@@ -242,7 +242,7 @@ export function useStageGestures(
         pinchUpdate(
           snapshotSV.value,
           getTransform,
-          pinchState,
+          pinchStateSV,
           callbacks,
           e.scale,
           pinchSensitivity
@@ -250,7 +250,7 @@ export function useStageGestures(
       })
       .onFinalize(() => {
         'worklet';
-        pinchEnd(snapshotSV.value, getTransform, pinchState, callbacks);
+        pinchEnd(snapshotSV.value, getTransform, pinchStateSV, callbacks);
       });
 
     const rotation = Gesture.Rotation()
@@ -261,11 +261,11 @@ export function useStageGestures(
         pinchBegin(
           snapshotSV.value,
           getTransform,
-          pinchState,
+          pinchStateSV,
           callbacks,
           rootId,
           touchesSV.value,
-          pressState
+          pressStateSV
         );
       })
       .onUpdate((e) => {
@@ -273,7 +273,7 @@ export function useStageGestures(
         rotationUpdate(
           snapshotSV.value,
           getTransform,
-          pinchState,
+          pinchStateSV,
           callbacks,
           e.rotation,
           rotationSensitivity
@@ -281,7 +281,7 @@ export function useStageGestures(
       })
       .onFinalize(() => {
         'worklet';
-        pinchEnd(snapshotSV.value, getTransform, pinchState, callbacks);
+        pinchEnd(snapshotSV.value, getTransform, pinchStateSV, callbacks);
       });
 
     return Gesture.Simultaneous(pan, pinch, rotation);
@@ -290,10 +290,10 @@ export function useStageGestures(
     idToDragOffsetMapSV,
     idToScaleMapSV,
     idToRotationMapSV,
-    pressState,
-    pinchState,
+    pressStateSV,
+    pinchStateSV,
     touchesSV,
-    lastTap,
+    lastTapSV,
     brushPointsSV,
     brushAbortedSV,
     rootId,

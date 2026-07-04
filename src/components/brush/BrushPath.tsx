@@ -65,10 +65,7 @@ export const Eraser = memo((props: BrushProps) => (
   <StyledBrush tool="eraser" {...props} />
 ));
 
-export const BRUSH_PATHS: Record<
-  BrushTool,
-  React.MemoExoticComponent<(props: BrushProps) => JSX.Element>
-> = {
+export const BRUSH_PATHS: Record<BrushTool, React.ComponentType<BrushProps>> = {
   pen: Pen,
   pencil: Pencil,
   marker: Marker,

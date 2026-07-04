@@ -60,6 +60,7 @@ export function useStageGestures(
   const touchesSV = useSharedValue<Vector2d[]>([]);
   const lastTap = useSharedValue<LastTap | null>(null);
   const brushPointsSV = useSharedValue<SharedValue<number[]> | null>(null);
+  const brushAbortedSV = useSharedValue(false);
   const idToTransformMapVersionRef = useRef(-1);
   const brushToolVersionRef = useRef(-1);
 
@@ -140,6 +141,12 @@ export function useStageGestures(
         touches.push({ x: touch.x, y: touch.y });
       }
       touchesSV.value = touches;
+
+      const brushPoints = brushPointsSV.value;
+      if (brushPoints && e.allTouches.length >= 2) {
+        brushAbortedSV.value = true;
+        brushPoints.value = [];
+      }
     };
 
     const pan = Gesture.Pan()
@@ -153,6 +160,12 @@ export function useStageGestures(
         'worklet';
         const brushPoints = brushPointsSV.value;
         if (brushPoints) {
+          if (e.numberOfPointers >= 2) {
+            brushAbortedSV.value = true;
+            brushPoints.value = [];
+            return;
+          }
+          brushAbortedSV.value = false;
           brushPoints.value = [e.x, e.y];
           return;
         }
@@ -172,6 +185,7 @@ export function useStageGestures(
         if (e.numberOfPointers >= 2) return;
         const brushPoints = brushPointsSV.value;
         if (brushPoints) {
+          if (brushAbortedSV.value) return;
           brushPoints.value = [...brushPoints.value, e.x, e.y];
           return;
         }
@@ -188,6 +202,10 @@ export function useStageGestures(
         'worklet';
         const brushPoints = brushPointsSV.value;
         if (brushPoints) {
+          if (brushAbortedSV.value) {
+            brushAbortedSV.value = false;
+            return;
+          }
           runOnJS(commitBrushStroke)(brushPoints.value);
           return;
         }
@@ -277,6 +295,7 @@ export function useStageGestures(
     touchesSV,
     lastTap,
     brushPointsSV,
+    brushAbortedSV,
     rootId,
     enabled,
     pinchSensitivity,

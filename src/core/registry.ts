@@ -306,7 +306,6 @@ export class NodeRegistry {
       scalable: cfg.scalable === true,
       rotatable: cfg.rotatable === true,
       gestureEnabled: cfg.gestureEnabled === true,
-      multiTouchEnabled: cfg.multiTouchEnabled !== false,
       dragDistance: cfg.dragDistance ?? DEFAULT_DRAG_DISTANCE,
       hitTestDescriptor: node.getHitTestDescriptor?.() ?? null,
       hitTargetId: cfg.hitTargetId ?? -1,

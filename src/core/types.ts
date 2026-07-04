@@ -145,7 +145,6 @@ export interface NodeConfig extends NodeEventHandlers {
   rotatable?: boolean;
   dragDistance?: number;
   listening?: boolean;
-  multiTouchEnabled?: boolean;
   hitTargetId?: number;
 
   children?: ReactNode;

@@ -407,9 +407,10 @@ describe('pinch / rotation gestures', () => {
     expect(after.y).toBeCloseTo(before.y);
   });
 
-  it('skips multiTouchEnabled=false nodes, falling through to the one behind', () => {
-    // Two overlapping scalable boxes; the top one opts out of multi-touch.
-    // Both fingers land on the overlap: a pinch should target the lower box.
+  it('passes a pinch through a non-transformable node to the target behind', () => {
+    // A plain (gesture-only) box sits on top of a scalable box, both under the
+    // fingers. The front box can't be transformed, so the pinch falls through
+    // to the scalable box behind it rather than grabbing nothing.
     const reg = new NodeRegistry();
     const stage = reg.register({
       parentId: null,
@@ -425,10 +426,7 @@ describe('pinch / rotation gestures', () => {
     const front = reg.register({
       parentId: stage,
       type: 'shape',
-      getConfig: (): NodeConfig => ({
-        scalable: true,
-        multiTouchEnabled: false,
-      }),
+      getConfig: (): NodeConfig => ({ gestureEnabled: true }),
       getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
     });
     const snapshot = reg.getSnapshot();

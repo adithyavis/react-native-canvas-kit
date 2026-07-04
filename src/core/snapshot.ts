@@ -40,7 +40,6 @@ export interface SnapshotNode {
   scalable: boolean;
   rotatable: boolean;
   gestureEnabled: boolean;
-  multiTouchEnabled: boolean;
   dragDistance: number;
   hitTestDescriptor: HitTestDescriptor | null;
   hitTargetId: number;
@@ -195,7 +194,6 @@ export function getHitNodeIdFromSnapshot(
       node.draggable ||
       node.scalable ||
       node.rotatable) &&
-    (!forMultiTouch || node.multiTouchEnabled) &&
     (applyHitRedirect || !isProxy) &&
     node.hitTestDescriptor
   ) {

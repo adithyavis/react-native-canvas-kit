@@ -16,7 +16,6 @@ interface TransformerHandlesProps extends TransformChannels {
   resolvedTransformSV: SharedValue<ResolvedTransform>;
   enabledAnchors: AnchorId[];
   anchorSize: number;
-  anchorCornerRadius: number;
   rotateAnchorOffset: number;
   fill: string;
   stroke: string;
@@ -32,7 +31,6 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
     rotationSV,
     enabledAnchors,
     anchorSize,
-    anchorCornerRadius,
     rotateAnchorOffset,
     fill,
     stroke,
@@ -69,12 +67,7 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
       }
       const local = anchorLocalPoint(rect, anchor);
       const c = transformLocalPoint(t, ox, oy, local.x, local.y);
-      const r = Skia.XYWHRect(c.x - half, c.y - half, anchorSize, anchorSize);
-      if (anchorCornerRadius > 0) {
-        p.addRRect(Skia.RRectXY(r, anchorCornerRadius, anchorCornerRadius));
-      } else {
-        p.addRect(r);
-      }
+      p.addCircle(c.x, c.y, half);
     }
     return p;
   }, [
@@ -85,7 +78,6 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
     rotationSV,
     enabledAnchors,
     anchorSize,
-    anchorCornerRadius,
     rotateAnchorOffset,
   ]);
 

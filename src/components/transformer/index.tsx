@@ -44,7 +44,6 @@ export interface TransformerProps {
   anchorStroke?: string;
   anchorStrokeWidth?: number;
   anchorSize?: number;
-  anchorCornerRadius?: number;
   borderStroke?: string;
   borderStrokeWidth?: number;
   onTransformStart?: TransformEventListener;
@@ -67,7 +66,6 @@ export const Transformer = memo((props: TransformerProps) => {
     anchorStroke = 'rgb(0, 161, 255)',
     anchorStrokeWidth = 1,
     anchorSize = 10,
-    anchorCornerRadius = 0,
     borderStroke = 'rgb(0, 161, 255)',
     borderStrokeWidth = 1,
     onTransformStart,
@@ -265,7 +263,6 @@ export const Transformer = memo((props: TransformerProps) => {
         rotationSV={target.rotationSV}
         enabledAnchors={enabledAnchors}
         anchorSize={anchorSize}
-        anchorCornerRadius={anchorCornerRadius}
         rotateAnchorOffset={rotateAnchorOffset}
         fill={anchorFill}
         stroke={anchorStroke}
@@ -274,31 +271,13 @@ export const Transformer = memo((props: TransformerProps) => {
 
       {enabledAnchors.map((anchor) => {
         const c = handleCenterAnchor(anchor);
-        if (anchor === 'rotater') {
-          return (
-            <Circle
-              key={anchor}
-              id={getHandleId(anchor)}
-              x={c.x}
-              y={c.y}
-              radius={anchorSize / 2}
-              fill="transparent"
-              hitStrokeWidth={anchorSize * 2}
-              draggable={target.rotatable}
-              gestureEnabled
-              onDragStart={onHandleDragStart(anchor)}
-              onDragEnd={onHandleDragEnd(anchor)}
-            />
-          );
-        }
         return (
-          <Rect
+          <Circle
             key={anchor}
             id={getHandleId(anchor)}
-            x={c.x - anchorSize / 2}
-            y={c.y - anchorSize / 2}
-            width={anchorSize}
-            height={anchorSize}
+            x={c.x}
+            y={c.y}
+            radius={anchorSize / 2}
             hitStrokeWidth={anchorSize * 2}
             fill="transparent"
             draggable={target.scalable}

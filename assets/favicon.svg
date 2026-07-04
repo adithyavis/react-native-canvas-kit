@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="React Native Canvas Kit">
+  <rect width="512" height="512" rx="112" fill="#0B0B0F"/>
+  <path d="M70 295C90.8 268.3 165 125 195 135C225 145 221.7 352.5 250 355C278.3 357.5 340 149.2 365 150C390 150.8 385.8 332.5 400 360C414.2 387.5 441.7 322.5 450 315"
+    transform="translate(256 256) scale(1.06) translate(-260 -256)"
+    fill="none" stroke="#FFFFFF" stroke-width="60" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

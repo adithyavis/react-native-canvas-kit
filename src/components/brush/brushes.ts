@@ -42,7 +42,6 @@ export const BRUSHES: Record<BrushTool, BrushStyle> = {
     color: '#e0218a',
     strokeWidth: 16,
     opacity: 1,
-    blendMode: 'multiply' as SkiaBlendMode,
     cap: 'round',
     join: 'round',
     tension: 1,

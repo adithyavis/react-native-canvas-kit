@@ -407,23 +407,24 @@ describe('pinch / rotation gestures', () => {
     expect(after.y).toBeCloseTo(before.y);
   });
 
-  it('passes a pinch through a non-transformable node to the target behind', () => {
+  it('is a no-op when the topmost hit node is not a transform target', () => {
     // A plain (gesture-only) box sits on top of a scalable box, both under the
-    // fingers. The front box can't be transformed, so the pinch falls through
-    // to the scalable box behind it rather than grabbing nothing.
+    // fingers. The multi-touch target is the topmost hit node; since it is not
+    // scalable/rotatable, the pinch grabs nothing — it does not fall through to
+    // the scalable box behind it.
     const reg = new NodeRegistry();
     const stage = reg.register({
       parentId: null,
       type: 'stage',
       getConfig: () => ({}),
     });
-    const behind = reg.register({
+    reg.register({
       parentId: stage,
       type: 'shape',
       getConfig: (): NodeConfig => ({ scalable: true }),
       getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
     });
-    const front = reg.register({
+    reg.register({
       parentId: stage,
       type: 'shape',
       getConfig: (): NodeConfig => ({ gestureEnabled: true }),
@@ -438,8 +439,7 @@ describe('pinch / rotation gestures', () => {
       { x: 60, y: 60 },
     ]);
 
-    expect(pinch.value?.targetId).toBe(behind);
-    expect(pinch.value?.targetId).not.toBe(front);
+    expect(pinch.value?.targetId).toBe(-1);
   });
 
   it('resolves the pinch target from the touch centroid, not every finger', () => {

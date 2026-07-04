@@ -37,6 +37,8 @@ export interface SnapshotNode {
   visible: boolean;
   listening: boolean;
   draggable: boolean;
+  scalable: boolean;
+  rotatable: boolean;
   gestureEnabled: boolean;
   multiTouchEnabled: boolean;
   dragDistance: number;
@@ -146,6 +148,17 @@ export function findDragTarget(snapshot: Snapshot, id: number): number {
   return -1;
 }
 
+export function findTransformTarget(snapshot: Snapshot, id: number): number {
+  'worklet';
+  let cur = id;
+  while (cur !== -1 && snapshot.nodes[cur]) {
+    const node = snapshot.nodes[cur]!;
+    if (node.scalable || node.rotatable) return cur;
+    cur = node.parentId;
+  }
+  return -1;
+}
+
 export function getHitNodeIdFromSnapshot(
   snapshot: Snapshot,
   getTransform: TransformLookup,
@@ -178,7 +191,10 @@ export function getHitNodeIdFromSnapshot(
 
   const isProxy = node.hitTargetId !== -1;
   if (
-    (node.gestureEnabled || node.draggable) &&
+    (node.gestureEnabled ||
+      node.draggable ||
+      node.scalable ||
+      node.rotatable) &&
     (!forMultiTouch || node.multiTouchEnabled) &&
     (applyHitRedirect || !isProxy) &&
     node.hitTestDescriptor

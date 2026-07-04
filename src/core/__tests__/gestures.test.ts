@@ -51,7 +51,11 @@ function buildScene() {
   const group = reg.register({
     parentId: stage,
     type: 'group',
-    getConfig: (): NodeConfig => ({ draggable: true }),
+    getConfig: (): NodeConfig => ({
+      draggable: true,
+      scalable: true,
+      rotatable: true,
+    }),
   });
   const shape = reg.register({
     parentId: group,
@@ -103,7 +107,7 @@ function makeHarness() {
 }
 
 // The scene's shape is a 100x100 box at the group's origin. Two fingers both
-// inside it resolve to the draggable group; off-box or split fingers do not.
+// inside it resolve to the transformable group; off-box or split fingers do not.
 const TOUCHES_ON_SHAPE: Vector2d[] = [
   { x: 40, y: 40 },
   { x: 60, y: 60 },
@@ -118,7 +122,7 @@ const TOUCHES_SPLIT: Vector2d[] = [
 ];
 
 describe('pinch / rotation gestures', () => {
-  it('targets the draggable ancestor both fingers land on and fires transformstart', () => {
+  it('targets the transformable ancestor both fingers land on and fires transformstart', () => {
     const { snapshot, group } = buildScene();
     const pinch = sharedValue<PinchState | null>(null);
     const { getTransform, callbacks, events } = makeHarness();
@@ -240,7 +244,7 @@ describe('pinch / rotation gestures', () => {
     ]);
   });
 
-  it('is a no-op when both fingers miss any draggable node', () => {
+  it('is a no-op when both fingers miss any transformable node', () => {
     const { snapshot } = buildScene();
     const pinch = sharedValue<PinchState | null>(null);
     const { getTransform, callbacks, scales, events } = makeHarness();
@@ -295,7 +299,7 @@ describe('pinch / rotation gestures', () => {
   });
 
   it('keeps the shape centre fixed when rotating about it', () => {
-    // A draggable 100x100 box at the origin: the multi-touch target is the
+    // A rotatable 100x100 box at the origin: the multi-touch target is the
     // shape itself, so it carries hit geometry and the centre pivot applies.
     const reg = new NodeRegistry();
     const stage = reg.register({
@@ -306,7 +310,7 @@ describe('pinch / rotation gestures', () => {
     const shape = reg.register({
       parentId: stage,
       type: 'shape',
-      getConfig: (): NodeConfig => ({ draggable: true }),
+      getConfig: (): NodeConfig => ({ scalable: true, rotatable: true }),
       getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
     });
     const snapshot = reg.getSnapshot();
@@ -345,7 +349,7 @@ describe('pinch / rotation gestures', () => {
   });
 
   it('keeps a group centre fixed using its descendants union', () => {
-    // The draggable group has no hit geometry; its centre comes from the two
+    // The transformable group has no hit geometry; its centre comes from the two
     // child shapes. A 50x50 box at (0,0) plus a 50x50 box at (50,50) span
     // (0,0)-(100,100), so the group centre is (50,50).
     const reg = new NodeRegistry();
@@ -357,7 +361,7 @@ describe('pinch / rotation gestures', () => {
     const group = reg.register({
       parentId: stage,
       type: 'group',
-      getConfig: (): NodeConfig => ({ draggable: true }),
+      getConfig: (): NodeConfig => ({ scalable: true, rotatable: true }),
     });
     reg.register({
       parentId: group,
@@ -404,7 +408,7 @@ describe('pinch / rotation gestures', () => {
   });
 
   it('skips multiTouchEnabled=false nodes, falling through to the one behind', () => {
-    // Two overlapping draggable boxes; the top one opts out of multi-touch.
+    // Two overlapping scalable boxes; the top one opts out of multi-touch.
     // Both fingers land on the overlap: a pinch should target the lower box.
     const reg = new NodeRegistry();
     const stage = reg.register({
@@ -415,14 +419,14 @@ describe('pinch / rotation gestures', () => {
     const behind = reg.register({
       parentId: stage,
       type: 'shape',
-      getConfig: (): NodeConfig => ({ draggable: true }),
+      getConfig: (): NodeConfig => ({ scalable: true }),
       getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
     });
     const front = reg.register({
       parentId: stage,
       type: 'shape',
       getConfig: (): NodeConfig => ({
-        draggable: true,
+        scalable: true,
         multiTouchEnabled: false,
       }),
       getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
@@ -450,7 +454,7 @@ describe('pinch / rotation gestures', () => {
     const box = reg.register({
       parentId: stage,
       type: 'shape',
-      getConfig: (): NodeConfig => ({ draggable: true }),
+      getConfig: (): NodeConfig => ({ scalable: true }),
       getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
     });
     const snapshot = reg.getSnapshot();

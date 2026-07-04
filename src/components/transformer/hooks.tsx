@@ -31,6 +31,8 @@ export const useGetHandleId = () => {
 export interface TransformerTarget {
   id: number;
   config: ResolvedTransform;
+  scalable: boolean;
+  rotatable: boolean;
   selfRect: Rect;
   matrix: Mat;
   dragOffsetSV?: SharedValue<Vector2d>;
@@ -66,6 +68,8 @@ export function useTransformerTarget(
     const rawConfig =
       targetId != null ? registry.getConfig(targetId) : undefined;
     const config = rawConfig ? resolveTransform(rawConfig) : null;
+    const scalable = rawConfig?.scalable === true;
+    const rotatable = rawConfig?.rotatable === true;
     const selfRect =
       targetId != null ? registry.getSelfRect(targetId, ignoreStroke) : null;
     const matrix = targetId != null ? registry.getLocalMatrix(targetId) : null;
@@ -93,6 +97,7 @@ export function useTransformerTarget(
 
     const transformerTargetKey =
       `${targetId};` +
+      `${scalable ? 1 : 0}${rotatable ? 1 : 0};` +
       `${config.x},${config.y},${config.scaleX},${config.scaleY},` +
       `${config.rotation},${config.offsetX},${config.offsetY};` +
       `${selfRect.x},${selfRect.y},${selfRect.width},${selfRect.height};` +
@@ -110,6 +115,8 @@ export function useTransformerTarget(
     const transformerTarget: TransformerTarget = {
       id: targetId,
       config,
+      scalable,
+      rotatable,
       selfRect,
       matrix,
       dragOffsetSV,

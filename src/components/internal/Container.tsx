@@ -32,7 +32,10 @@ export const Container = memo(
     }, [_config, type]);
 
     const registry = useRegistry();
-    const draggable = config.draggable === true;
+    const transformable =
+      config.draggable === true ||
+      config.scalable === true ||
+      config.rotatable === true;
 
     const resolvedTransformFromConfig = useMemo(
       () => resolveTransform(config),
@@ -49,7 +52,7 @@ export const Container = memo(
     const id = useRegisterNode({ type, config, hitTestDescriptor });
 
     useLayoutEffect(() => {
-      if (!registry || id == null || !draggable) return;
+      if (!registry || id == null || !transformable) return;
       registry.registerDragOffset(id, dragOffsetSV);
       registry.registerScale(id, scaleSV);
       registry.registerRotation(id, rotationSV);
@@ -58,7 +61,7 @@ export const Container = memo(
         registry.unregisterScale(id);
         registry.unregisterRotation(id);
       };
-    }, [registry, id, draggable, dragOffsetSV, scaleSV, rotationSV]);
+    }, [registry, id, transformable, dragOffsetSV, scaleSV, rotationSV]);
 
     useLayoutEffect(() => {
       const next: ResolvedTransform = {
@@ -128,8 +131,8 @@ export const Container = memo(
     }, []);
 
     const transform = useMemo(
-      () => (draggable ? animatedTransform : staticTransform),
-      [animatedTransform, draggable, staticTransform]
+      () => (transformable ? animatedTransform : staticTransform),
+      [animatedTransform, transformable, staticTransform]
     );
 
     if (config.visible === false) {

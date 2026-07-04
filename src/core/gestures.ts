@@ -12,6 +12,7 @@ import type { TransformResult, Vector2d } from './types';
 import {
   DEFAULT_DRAG_DISTANCE,
   findDragTarget,
+  findTransformTarget,
   getAbsoluteMatrixFromSnapshot,
   getHitNodeIdFromSnapshot,
   getNodeContentCenter,
@@ -51,6 +52,8 @@ export type { PressState };
 
 interface PinchState {
   targetId: number; // -1 none
+  scalable: boolean;
+  rotatable: boolean;
   baseScaleX: number;
   baseScaleY: number;
   baseRotation: number; // degrees
@@ -113,7 +116,7 @@ function getMultiTouchTarget(
     true,
     true
   );
-  return hitNodeId !== -1 ? findDragTarget(snapshot, hitNodeId) : -1;
+  return hitNodeId !== -1 ? findTransformTarget(snapshot, hitNodeId) : -1;
 }
 
 function linearPart(
@@ -373,6 +376,8 @@ export function pinchBegin(
   if (targetId === -1) {
     pinch.value = {
       targetId: -1,
+      scalable: false,
+      rotatable: false,
       baseScaleX: 1,
       baseScaleY: 1,
       baseRotation: 0,
@@ -403,6 +408,8 @@ export function pinchBegin(
   const startCenterY = a0[1] * pivotX + a0[3] * pivotY;
   pinch.value = {
     targetId,
+    scalable: node.scalable,
+    rotatable: node.rotatable,
     baseScaleX: base.scale.x,
     baseScaleY: base.scale.y,
     baseRotation: base.rotation,
@@ -433,7 +440,7 @@ export function pinchUpdate(
 ): void {
   'worklet';
   const p = pinch.value;
-  if (!p || p.targetId === -1) return;
+  if (!p || p.targetId === -1 || !p.scalable) return;
   const dampedScale = 1 + (scale - 1) * sensitivity;
   gestureEventCallbacks.setScale(
     p.targetId,
@@ -482,7 +489,7 @@ export function rotationUpdate(
 ): void {
   'worklet';
   const p = pinch.value;
-  if (!p || p.targetId === -1) return;
+  if (!p || p.targetId === -1 || !p.rotatable) return;
   gestureEventCallbacks.setRotation(
     p.targetId,
     p.baseRotation + rotationRad * RAD_TO_DEG * sensitivity

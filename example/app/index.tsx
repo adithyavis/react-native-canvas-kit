@@ -79,6 +79,8 @@ export default function ShapesScreen() {
                 width={STICKER_SIZE}
                 height={STICKER_SIZE}
                 draggable
+                scalable
+                rotatable
                 onTap={(e) => {
                   setSelected(sel(s.id));
                   e.cancelBubble = true;
@@ -99,6 +101,8 @@ export default function ShapesScreen() {
               scaleY={chip.scaleY}
               rotation={chip.rotation}
               draggable
+              scalable
+              rotatable
               onTap={(e) => {
                 setSelected(CHIP);
                 e.cancelBubble = true;

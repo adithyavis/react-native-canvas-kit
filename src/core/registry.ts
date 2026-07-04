@@ -303,6 +303,8 @@ export class NodeRegistry {
       visible: cfg.visible !== false,
       listening: cfg.listening !== false,
       draggable: cfg.draggable === true,
+      scalable: cfg.scalable === true,
+      rotatable: cfg.rotatable === true,
       gestureEnabled: cfg.gestureEnabled === true,
       multiTouchEnabled: cfg.multiTouchEnabled !== false,
       dragDistance: cfg.dragDistance ?? DEFAULT_DRAG_DISTANCE,

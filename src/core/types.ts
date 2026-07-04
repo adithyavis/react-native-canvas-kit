@@ -141,6 +141,8 @@ export interface NodeConfig extends NodeEventHandlers {
 
   gestureEnabled?: boolean;
   draggable?: boolean;
+  scalable?: boolean;
+  rotatable?: boolean;
   dragDistance?: number;
   listening?: boolean;
   multiTouchEnabled?: boolean;

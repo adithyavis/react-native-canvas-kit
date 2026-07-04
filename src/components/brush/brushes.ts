@@ -41,7 +41,7 @@ export const BRUSHES: Record<BrushTool, BrushStyle> = {
   marker: {
     color: '#e0218a',
     strokeWidth: 16,
-    opacity: 0.55,
+    opacity: 1,
     blendMode: 'multiply' as SkiaBlendMode,
     cap: 'round',
     join: 'round',
@@ -50,7 +50,7 @@ export const BRUSHES: Record<BrushTool, BrushStyle> = {
   highlighter: {
     color: '#eaff00',
     strokeWidth: 22,
-    opacity: 0.35,
+    opacity: 0.3,
     blendMode: 'multiply' as SkiaBlendMode,
     cap: 'square',
     join: 'bevel',
@@ -59,7 +59,7 @@ export const BRUSHES: Record<BrushTool, BrushStyle> = {
   tape: {
     color: '#9fe7ff',
     strokeWidth: 26,
-    opacity: 0.4,
+    opacity: 1,
     cap: 'butt',
     join: 'miter',
     tension: 0,

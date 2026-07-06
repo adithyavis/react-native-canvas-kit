@@ -75,9 +75,6 @@ export default function HomepageFeatures(): React.JSX.Element {
     <section className={styles.features}>
       <div className="container">
         <div className={styles.sectionHead}>
-          <Heading as="h2" className={styles.sectionTitle}>
-            Batteries-included 2D canvas kit
-          </Heading>
           <p className={styles.sectionSubtitle}>
             Comes with pre-built shapes, support for gestures and interactivity,
             transformers, and freehand brushes, so that you don't have to

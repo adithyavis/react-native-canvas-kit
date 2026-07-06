@@ -28,7 +28,7 @@ function HomepageHero() {
             {siteConfig.title}
           </Heading>
           <p className={styles.heroTagline}>
-            A declarative 2D scene-graph canvas for React Native.
+            Batteries-included 2D canvas kit for React Native
           </p>
           <div className={styles.heroButtons}>
             <Link

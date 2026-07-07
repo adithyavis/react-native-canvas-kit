@@ -28,10 +28,11 @@ export type PortalPointerEvents = 'none' | 'auto' | 'box-none' | 'box-only';
 
 export interface PortalEntry {
   id: number;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   style?: StyleProp<ViewStyle>;
   pointerEvents?: PortalPointerEvents;
+  onLayout: (width: number, height: number) => void;
   resolvedTransform: SharedValue<ResolvedTransform>;
   dragOffset: SharedValue<Vector2d>;
   scale: SharedValue<Vector2d>;
@@ -130,6 +131,7 @@ function PortalView({
     height,
     style,
     pointerEvents = 'none',
+    onLayout,
     resolvedTransform,
     dragOffset,
     scale,
@@ -173,6 +175,9 @@ function PortalView({
   return (
     <Animated.View
       pointerEvents={pointerEvents}
+      onLayout={(e) =>
+        onLayout(e.nativeEvent.layout.width, e.nativeEvent.layout.height)
+      }
       style={[styles.portal, { width, height }, style, animatedStyle]}
     >
       {children}

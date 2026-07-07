@@ -1,4 +1,11 @@
-import { memo, useLayoutEffect, useMemo, type ReactNode } from 'react';
+import {
+  memo,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import type { NodeConfig, Vector2d } from '../core/types';
@@ -8,8 +15,8 @@ import { useRegisterNode, useRegistry } from './internal/NodeContext';
 import { usePortal, type PortalPointerEvents } from './internal/portal';
 
 export interface PortalProps extends NodeConfig {
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   style?: StyleProp<ViewStyle>;
   pointerEvents?: PortalPointerEvents;
   children?: ReactNode;
@@ -44,9 +51,28 @@ export const Portal = memo(
       [config]
     );
 
+    const [measured, setMeasured] = useState<{
+      width: number;
+      height: number;
+    } | null>(null);
+
+    const onMeasure = useCallback(
+      (layoutWidth: number, layoutHeight: number) => {
+        setMeasured((prev) =>
+          prev && prev.width === layoutWidth && prev.height === layoutHeight
+            ? prev
+            : { width: layoutWidth, height: layoutHeight }
+        );
+      },
+      []
+    );
+
+    const hitWidth = width ?? measured?.width ?? 0;
+    const hitHeight = height ?? measured?.height ?? 0;
+
     const hitTestDescriptor = useMemo(
-      () => boxHitTestDescriptor(0, 0, width, height),
-      [width, height]
+      () => boxHitTestDescriptor(0, 0, hitWidth, hitHeight),
+      [hitWidth, hitHeight]
     );
 
     const id = useRegisterNode({
@@ -106,6 +132,7 @@ export const Portal = memo(
         height,
         style,
         pointerEvents,
+        onLayout: onMeasure,
         resolvedTransform: resolvedTransformSV,
         dragOffset: dragOffsetSV,
         scale: scaleSV,
@@ -115,6 +142,7 @@ export const Portal = memo(
     }, [
       portal,
       id,
+      onMeasure,
       width,
       height,
       style,

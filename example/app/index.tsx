@@ -1,14 +1,11 @@
 import { useState } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import {
   Stage,
   Layer,
-  Group,
-  Rect,
   Image,
-  Text,
   Transformer,
-  useFont,
+  Portal,
   type EventObject,
   type TransformEvent,
   type TransformResult,
@@ -16,10 +13,7 @@ import {
 import { DrawerButton } from '../src/DrawerButton';
 import {
   CHIP,
-  FONT_SIZE,
-  FONT_URL,
   LABEL,
-  PADDING,
   STICKER_SIZE,
   STICKERS,
   buildInitialTransforms,
@@ -32,7 +26,6 @@ export default function ShapesScreen() {
   const [transforms, setTransforms] = useState(() =>
     buildInitialTransforms(width, height)
   );
-  const font = useFont(FONT_URL, FONT_SIZE);
 
   const commit = (selector: string, t: TransformResult) =>
     setTransforms((prev) => ({
@@ -46,13 +39,6 @@ export default function ShapesScreen() {
       },
     }));
 
-  const textWidth = font ? font.measureText(LABEL).width : 0;
-  const metrics = font ? font.getMetrics() : null;
-  const textHeight = metrics ? metrics.descent - metrics.ascent : FONT_SIZE;
-  const chipInnerWidth = textWidth + PADDING * 4;
-  const chipInnerHeight = textHeight + PADDING * 4;
-  const chipWidth = chipInnerWidth + PADDING;
-  const chipHeight = chipInnerHeight + PADDING;
   const chip = transforms[CHIP]!;
 
   return (
@@ -92,50 +78,31 @@ export default function ShapesScreen() {
             );
           })}
 
-          {font && (
-            <Group
-              id="chip"
-              x={chip.x}
-              y={chip.y}
-              scaleX={chip.scaleX}
-              scaleY={chip.scaleY}
-              rotation={chip.rotation}
-              draggable
-              scalable
-              rotatable
-              onTap={(e) => {
-                setSelected(CHIP);
-                e.cancelBubble = true;
-              }}
-              onTransformEnd={(e: EventObject) =>
-                commit(CHIP, e.evt as TransformResult)
-              }
-            >
-              <Rect
-                x={0}
-                y={0}
-                width={chipWidth}
-                height={chipHeight}
-                cornerRadius={10}
-                fill="#fff"
-              />
-              <Rect
-                x={0.5 * PADDING}
-                y={0.5 * PADDING}
-                width={chipInnerWidth}
-                height={chipInnerHeight}
-                cornerRadius={10}
-                fill="#1b0030"
-              />
-              <Text
-                text={LABEL}
-                x={2.5 * PADDING}
-                y={2.5 * PADDING}
-                font={font}
-                fill="#ffffff"
-              />
-            </Group>
-          )}
+          <Portal
+            x={chip.x}
+            y={chip.y}
+            scaleX={chip.scaleX}
+            scaleY={chip.scaleY}
+            rotation={chip.rotation}
+            draggable
+            scalable
+            rotatable
+            onTap={(e) => {
+              setSelected(CHIP);
+              e.cancelBubble = true;
+            }}
+            onTransformEnd={(e: EventObject) =>
+              commit(CHIP, e.evt as TransformResult)
+            }
+          >
+            <View style={styles.chipOuter}>
+              <View style={styles.chipInner}>
+                <Text numberOfLines={1} style={styles.chipLabel}>
+                  {LABEL}
+                </Text>
+              </View>
+            </View>
+          </Portal>
 
           <Transformer
             node={selected}
@@ -153,4 +120,22 @@ export default function ShapesScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   stage: { backgroundColor: '#e9ffc4' },
+  chipOuter: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 4,
+  },
+  chipInner: {
+    backgroundColor: '#1b0030',
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  chipLabel: {
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: '700',
+  },
 });

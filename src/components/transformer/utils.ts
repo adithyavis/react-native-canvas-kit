@@ -4,7 +4,13 @@ import type { Rect as BoundsRect } from '../../core/bounds';
 import { type ResolvedTransform, DEG_TO_RAD } from '../../core/transform';
 import { computeResize, computeRotation } from '../../core/transformer';
 import { ZERO_VECTOR, UNIT_VECTOR } from '../../core/geometry';
-import type { AnchorId, TransformResult, Vector2d } from '../../core/types';
+import { clampTransformResult } from '../../core/nodeBounds';
+import type {
+  AnchorId,
+  NodeBounds,
+  TransformResult,
+  Vector2d,
+} from '../../core/types';
 
 const MIN_SIZE = 1;
 
@@ -33,6 +39,7 @@ export interface TransformConstraints {
   centeredScaling: boolean;
   rotationSnaps?: number[];
   rotationSnapTolerance: number;
+  bounds: NodeBounds;
 }
 
 export function computeTransform(
@@ -71,32 +78,38 @@ export function resolveAnchorTransform(
 ): TransformResult {
   'worklet';
   if (a.anchor === 'rotater') {
-    return computeRotation({
+    return clampTransformResult(
+      computeRotation({
+        rect: a.rect,
+        matrix: a.matrix,
+        rotationDeg: a.cfgRotation,
+        offsetX: a.offsetX,
+        offsetY: a.offsetY,
+        scaleX: a.cfgScaleX,
+        scaleY: a.cfgScaleY,
+        startPointer: a.startPointer,
+        pointer,
+        snaps: c.rotationSnaps,
+        snapTolerance: c.rotationSnapTolerance,
+      }),
+      c.bounds
+    );
+  }
+  return clampTransformResult(
+    computeResize({
       rect: a.rect,
       matrix: a.matrix,
+      anchor: a.anchor,
+      pointer,
       rotationDeg: a.cfgRotation,
       offsetX: a.offsetX,
       offsetY: a.offsetY,
-      scaleX: a.cfgScaleX,
-      scaleY: a.cfgScaleY,
-      startPointer: a.startPointer,
-      pointer,
-      snaps: c.rotationSnaps,
-      snapTolerance: c.rotationSnapTolerance,
-    });
-  }
-  return computeResize({
-    rect: a.rect,
-    matrix: a.matrix,
-    anchor: a.anchor,
-    pointer,
-    rotationDeg: a.cfgRotation,
-    offsetX: a.offsetX,
-    offsetY: a.offsetY,
-    startScaleX: a.cfgScaleX,
-    startScaleY: a.cfgScaleY,
-    keepRatio: c.keepRatio,
-    centeredScaling: c.centeredScaling,
-    minSize: MIN_SIZE,
-  });
+      startScaleX: a.cfgScaleX,
+      startScaleY: a.cfgScaleY,
+      keepRatio: c.keepRatio,
+      centeredScaling: c.centeredScaling,
+      minSize: MIN_SIZE,
+    }),
+    c.bounds
+  );
 }

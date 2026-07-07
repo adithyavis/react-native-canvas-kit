@@ -23,6 +23,7 @@ import {
 } from './snapshot';
 import type { SharedValue } from 'react-native-reanimated';
 import { ZERO_VECTOR, UNIT_VECTOR } from './geometry';
+import { resolveNodeBounds } from './nodeBounds';
 
 export type NodeType = 'stage' | 'layer' | 'group' | 'shape';
 
@@ -309,6 +310,7 @@ export class NodeRegistry {
       dragDistance: cfg.dragDistance ?? DEFAULT_DRAG_DISTANCE,
       hitTestDescriptor: node.getHitTestDescriptor?.() ?? null,
       hitTargetId: cfg.hitTargetId ?? -1,
+      bounds: resolveNodeBounds(cfg),
     };
   }
 

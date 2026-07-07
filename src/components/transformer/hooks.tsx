@@ -2,6 +2,7 @@ import { useCallback, useId, useRef, useSyncExternalStore } from 'react';
 import type { SharedValue } from 'react-native-reanimated';
 import type {
   AnchorId,
+  NodeBounds,
   TransformEvent,
   TransformEventListener,
   Vector2d,
@@ -10,6 +11,7 @@ import type { NodeRegistry } from '../../core/registry';
 import type { Mat } from '../../core/matrix';
 import type { Rect } from '../../core/bounds';
 import { resolveTransform, type ResolvedTransform } from '../../core/transform';
+import { resolveNodeBounds } from '../../core/nodeBounds';
 
 export const useOnTransform = (
   onTransform: TransformEventListener | undefined
@@ -33,6 +35,7 @@ export interface TransformerTarget {
   config: ResolvedTransform;
   scalable: boolean;
   rotatable: boolean;
+  bounds: NodeBounds;
   selfRect: Rect;
   matrix: Mat;
   dragOffsetSV?: SharedValue<Vector2d>;
@@ -70,6 +73,7 @@ export function useTransformerTarget(
     const config = rawConfig ? resolveTransform(rawConfig) : null;
     const scalable = rawConfig?.scalable === true;
     const rotatable = rawConfig?.rotatable === true;
+    const bounds = resolveNodeBounds(rawConfig ?? {});
     const selfRect =
       targetId != null ? registry.getSelfRect(targetId, ignoreStroke) : null;
     const matrix = targetId != null ? registry.getLocalMatrix(targetId) : null;
@@ -103,6 +107,9 @@ export function useTransformerTarget(
       `${selfRect.x},${selfRect.y},${selfRect.width},${selfRect.height};` +
       `${dragOffsetSV ? 1 : 0}${scaleSV ? 1 : 0}${rotationSV ? 1 : 0}` +
       `${resolvedTransformSV ? 1 : 0};` +
+      `${bounds.minX},${bounds.maxX},${bounds.minY},${bounds.maxY},` +
+      `${bounds.minScaleX},${bounds.maxScaleX},${bounds.minScaleY},` +
+      `${bounds.maxScaleY},${bounds.minRotation},${bounds.maxRotation};` +
       handlePart;
 
     if (
@@ -117,6 +124,7 @@ export function useTransformerTarget(
       config,
       scalable,
       rotatable,
+      bounds,
       selfRect,
       matrix,
       dragOffsetSV,

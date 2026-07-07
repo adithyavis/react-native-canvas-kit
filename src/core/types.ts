@@ -117,7 +117,20 @@ export interface NodeEventHandlers {
   onTransformEnd?: EventListener;
 }
 
-export interface NodeConfig extends NodeEventHandlers {
+export interface NodeBounds {
+  minX?: number;
+  maxX?: number;
+  minY?: number;
+  maxY?: number;
+  minScaleX?: number;
+  maxScaleX?: number;
+  minScaleY?: number;
+  maxScaleY?: number;
+  minRotation?: number; // degrees
+  maxRotation?: number; // degrees
+}
+
+export interface NodeConfig extends NodeEventHandlers, NodeBounds {
   x?: number;
   y?: number;
   width?: number;

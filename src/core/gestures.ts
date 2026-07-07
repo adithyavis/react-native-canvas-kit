@@ -7,6 +7,7 @@ import {
 } from './matrix';
 import { dist } from './geometry';
 import { DEG_TO_RAD, RAD_TO_DEG } from './transform';
+import { clampToBounds } from './nodeBounds';
 import type { SharedValue } from 'react-native-reanimated';
 import type { TransformResult, Vector2d } from './types';
 import {
@@ -275,8 +276,16 @@ export function pointerMove(
   const p2 = press.value!;
   if (p2.dragging && p2.parentInv) {
     const cur = applyTransformsToPoint(p2.parentInv, { x: px, y: py });
-    const dx = p2.baseOffsetX + (cur.x - p2.dragStartParentX);
-    const dy = p2.baseOffsetY + (cur.y - p2.dragStartParentY);
+    let dx = p2.baseOffsetX + (cur.x - p2.dragStartParentX);
+    let dy = p2.baseOffsetY + (cur.y - p2.dragStartParentY);
+    const node = snapshot.nodes[p2.dragTargetId];
+    if (node) {
+      const b = node.bounds;
+      dx =
+        clampToBounds(node.transform.x + dx, b.minX, b.maxX) - node.transform.x;
+      dy =
+        clampToBounds(node.transform.y + dy, b.minY, b.maxY) - node.transform.y;
+    }
     gestureEventCallbacks.setDragOffset(p2.dragTargetId, dx, dy);
     gestureEventCallbacks.on('dragmove', p2.dragTargetId);
     gestureEventCallbacks.on(
@@ -442,11 +451,25 @@ export function pinchUpdate(
   const p = pinch.value;
   if (!p || p.targetId === -1 || !p.scalable) return;
   const dampedScale = 1 + (scale - 1) * sensitivity;
-  gestureEventCallbacks.setScale(
-    p.targetId,
-    p.baseScaleX * dampedScale,
-    p.baseScaleY * dampedScale
-  );
+  let liveScaleX = p.baseScaleX * dampedScale;
+  let liveScaleY = p.baseScaleY * dampedScale;
+  const node = snapshot.nodes[p.targetId];
+  if (node) {
+    const b = node.bounds;
+    const baseScaleX = node.transform.scaleX;
+    const baseScaleY = node.transform.scaleY;
+    if (baseScaleX !== 0) {
+      liveScaleX =
+        clampToBounds(baseScaleX * liveScaleX, b.minScaleX, b.maxScaleX) /
+        baseScaleX;
+    }
+    if (baseScaleY !== 0) {
+      liveScaleY =
+        clampToBounds(baseScaleY * liveScaleY, b.minScaleY, b.maxScaleY) /
+        baseScaleY;
+    }
+  }
+  gestureEventCallbacks.setScale(p.targetId, liveScaleX, liveScaleY);
   applyCenterPivot(snapshot, getTransform, pinch, gestureEventCallbacks);
   gestureEventCallbacks.on(
     'transform',
@@ -490,10 +513,19 @@ export function rotationUpdate(
   'worklet';
   const p = pinch.value;
   if (!p || p.targetId === -1 || !p.rotatable) return;
-  gestureEventCallbacks.setRotation(
-    p.targetId,
-    p.baseRotation + rotationRad * RAD_TO_DEG * sensitivity
-  );
+  let liveRotationDeg = p.baseRotation + rotationRad * RAD_TO_DEG * sensitivity;
+  const node = snapshot.nodes[p.targetId];
+  if (node) {
+    const b = node.bounds;
+    const baseRotationDeg = node.transform.rotation * RAD_TO_DEG;
+    liveRotationDeg =
+      clampToBounds(
+        baseRotationDeg + liveRotationDeg,
+        b.minRotation,
+        b.maxRotation
+      ) - baseRotationDeg;
+  }
+  gestureEventCallbacks.setRotation(p.targetId, liveRotationDeg);
   applyCenterPivot(snapshot, getTransform, pinch, gestureEventCallbacks);
   gestureEventCallbacks.on(
     'transform',

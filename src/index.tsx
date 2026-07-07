@@ -53,6 +53,7 @@ export type {
 export type {
   Vector2d,
   NodeConfig,
+  NodeBounds,
   ShapeConfig,
   LineCap,
   LineJoin,

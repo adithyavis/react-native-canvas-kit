@@ -11,6 +11,7 @@ import { useRegistry } from '../internal/NodeContext';
 import { applyTransformsToPoint } from '../../core/matrix';
 import { inflateRect } from '../../core/bounds';
 import { anchorLocalPoint } from '../../core/transformer';
+import { EMPTY_BOUNDS } from '../../core/nodeBounds';
 import { TransformerBorder } from './TransformerBorder';
 import { TransformerHandles } from './TransformerHandles';
 import {
@@ -100,8 +101,9 @@ export const Transformer = memo((props: TransformerProps) => {
       centeredScaling,
       rotationSnaps,
       rotationSnapTolerance,
+      bounds: target?.bounds ?? EMPTY_BOUNDS,
     }),
-    [keepRatio, centeredScaling, rotationSnaps, rotationSnapTolerance]
+    [keepRatio, centeredScaling, rotationSnaps, rotationSnapTolerance, target]
   );
 
   useAnimatedReaction(

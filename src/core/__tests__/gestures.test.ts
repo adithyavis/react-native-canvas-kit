@@ -11,6 +11,7 @@ import {
   pinchUpdate,
   rotationUpdate,
   pinchEnd,
+  pointerMove,
   PINCH_SCALE_SENSITIVITY,
   ROTATION_SENSITIVITY,
   type GestureEventCallbacks,
@@ -546,5 +547,150 @@ describe('pinch / rotation gestures', () => {
 
     expect(pinch.value?.targetId).toBe(-1);
     expect(scales).toEqual([]);
+  });
+});
+
+function pressBeforeDrag(dragTargetId: number): SharedValue<PressState | null> {
+  return sharedValue<PressState | null>({
+    startX: 10,
+    startY: 10,
+    startTime: 0,
+    hitNodeId: dragTargetId,
+    dragTargetId,
+    dragDistance: 3,
+    dragging: false,
+    parentInv: null,
+    dragStartParentX: 0,
+    dragStartParentY: 0,
+    baseOffsetX: 0,
+    baseOffsetY: 0,
+  });
+}
+
+describe('bounds', () => {
+  it('clamps a drag to minX/maxX and minY/maxY', () => {
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const shape = reg.register({
+      parentId: stage,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({
+        draggable: true,
+        x: 0,
+        y: 0,
+        minX: 0,
+        maxX: 50,
+        minY: 0,
+        maxY: 40,
+      }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const press = pressBeforeDrag(shape);
+    const { getTransform, callbacks } = makeHarness();
+
+    // Drag far past the max corner; the offset should stop at the bound.
+    pointerMove(snapshot, getTransform, press, callbacks, 1000, 1000);
+    expect(getTransform(shape).offset).toEqual({ x: 50, y: 40 });
+
+    // Drag far past the min corner; clamps to the min.
+    pointerMove(snapshot, getTransform, press, callbacks, -1000, -1000);
+    expect(getTransform(shape).offset).toEqual({ x: 0, y: 0 });
+  });
+
+  it('clamps a pinch to maxScaleX / maxScaleY', () => {
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const group = reg.register({
+      parentId: stage,
+      type: 'group',
+      getConfig: (): NodeConfig => ({
+        scalable: true,
+        maxScaleX: 1.5,
+        maxScaleY: 1.5,
+      }),
+    });
+    reg.register({
+      parentId: group,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({ gestureEnabled: true }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks } = makeHarness();
+
+    pinchBegin(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      snapshot.rootId,
+      TOUCHES_ON_SHAPE
+    );
+    pinchUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      5,
+      PINCH_SCALE_SENSITIVITY
+    );
+
+    expect(getTransform(group).scale).toEqual({ x: 1.5, y: 1.5 });
+  });
+
+  it('clamps a rotation to minRotation / maxRotation', () => {
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const group = reg.register({
+      parentId: stage,
+      type: 'group',
+      getConfig: (): NodeConfig => ({
+        rotatable: true,
+        minRotation: -45,
+        maxRotation: 45,
+      }),
+    });
+    reg.register({
+      parentId: group,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({ gestureEnabled: true }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks } = makeHarness();
+
+    pinchBegin(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      snapshot.rootId,
+      TOUCHES_ON_SHAPE
+    );
+    // Rotate well past the max (in radians); clamps to 45 degrees.
+    rotationUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      Math.PI,
+      ROTATION_SENSITIVITY
+    );
+    expect(getTransform(group).rotation).toBe(45);
   });
 });

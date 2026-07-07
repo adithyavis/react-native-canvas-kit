@@ -694,3 +694,139 @@ describe('bounds', () => {
     expect(getTransform(group).rotation).toBe(45);
   });
 });
+
+describe('snapping', () => {
+  it('snaps a dragged edge to xEdgeSnaps within tolerance', () => {
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const shape = reg.register({
+      parentId: stage,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({
+        draggable: true,
+        x: 0,
+        y: 0,
+        xEdgeSnaps: [100],
+        snapTolerance: 5,
+      }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const { getTransform, callbacks } = makeHarness();
+
+    // Drag so the left edge lands at x=98 (within 5 of the snap at 100).
+    pointerMove(
+      snapshot,
+      getTransform,
+      pressBeforeDrag(shape),
+      callbacks,
+      108,
+      10
+    );
+    expect(getTransform(shape).offset.x).toBe(100);
+
+    // A fresh drag far from any snap gets no adjustment.
+    const other = makeHarness();
+    pointerMove(
+      snapshot,
+      other.getTransform,
+      pressBeforeDrag(shape),
+      other.callbacks,
+      210,
+      10
+    );
+    expect(other.getTransform(shape).offset.x).toBe(200);
+  });
+
+  it('snaps a rotation to rotationSnaps within tolerance', () => {
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const group = reg.register({
+      parentId: stage,
+      type: 'group',
+      getConfig: (): NodeConfig => ({
+        rotatable: true,
+        rotationSnaps: [90],
+        rotationSnapTolerance: 5,
+      }),
+    });
+    reg.register({
+      parentId: group,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({ gestureEnabled: true }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks } = makeHarness();
+
+    pinchBegin(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      snapshot.rootId,
+      TOUCHES_ON_SHAPE
+    );
+    // 88 degrees is within 5 of the 90 snap.
+    rotationUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      88 * (Math.PI / 180),
+      ROTATION_SENSITIVITY
+    );
+    expect(getTransform(group).rotation).toBe(90);
+  });
+
+  it('snaps a pinch-scale so the nearest edge lands on an xSnap', () => {
+    const reg = new NodeRegistry();
+    const stage = reg.register({
+      parentId: null,
+      type: 'stage',
+      getConfig: () => ({}),
+    });
+    const shape = reg.register({
+      parentId: stage,
+      type: 'shape',
+      getConfig: (): NodeConfig => ({
+        scalable: true,
+        xEdgeSnaps: [150],
+        snapTolerance: 5,
+      }),
+      getHitTestDescriptor: () => boxHitTestDescriptor(0, 0, 100, 100, 0),
+    });
+    const snapshot = reg.getSnapshot();
+    const pinch = sharedValue<PinchState | null>(null);
+    const { getTransform, callbacks } = makeHarness();
+
+    pinchBegin(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      snapshot.rootId,
+      TOUCHES_ON_SHAPE
+    );
+    // A 100x100 box centered at (50,50) scaled by 1.98 puts the right edge at
+    // 149; the snap at 150 pulls the scale to 2 so the edge lands exactly.
+    pinchUpdate(
+      snapshot,
+      getTransform,
+      pinch,
+      callbacks,
+      1.98,
+      PINCH_SCALE_SENSITIVITY
+    );
+    expect(getTransform(shape).scale.x).toBeCloseTo(2, 4);
+  });
+});

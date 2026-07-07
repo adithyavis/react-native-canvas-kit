@@ -87,10 +87,6 @@ export default function ShapesScreen() {
             draggable
             scalable
             rotatable
-            onTap={(e) => {
-              setSelected(CHIP);
-              e.cancelBubble = true;
-            }}
             onTransformEnd={(e: EventObject) =>
               commit(CHIP, e.evt as TransformResult)
             }

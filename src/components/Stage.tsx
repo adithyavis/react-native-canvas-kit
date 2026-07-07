@@ -1,13 +1,33 @@
-import { memo, useLayoutEffect, useRef, type ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import {
+  memo,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
-import { GestureDetector } from 'react-native-gesture-handler';
+import {
+  Gesture,
+  GestureDetector,
+  type ComposedGesture,
+  type GestureType,
+} from 'react-native-gesture-handler';
 import { NodeRegistry } from '../core/registry';
 import {
   RegistryContext,
   ParentContext,
   OrderedChildren,
 } from './internal/NodeContext';
+import {
+  PortalContext,
+  PortalHost,
+  useTransformLookup,
+  type PortalContextValue,
+  type PortalEntry,
+} from './internal/portal';
 import { useStageGestures } from './internal/useStageGestures';
 
 export interface StageProps {
@@ -18,6 +38,10 @@ export interface StageProps {
   gestureEnabled?: boolean;
   pinchSensitivity?: number;
   rotationSensitivity?: number;
+  simultaneousGesture?:
+    | ComposedGesture
+    | GestureType
+    | Array<ComposedGesture | GestureType>;
   children?: ReactNode;
 }
 
@@ -30,6 +54,7 @@ export const Stage = memo(
     gestureEnabled: _gestureEnabled = true,
     pinchSensitivity,
     rotationSensitivity,
+    simultaneousGesture,
     children,
   }: StageProps) => {
     const registryRef = useRef<NodeRegistry | null>(null);
@@ -60,24 +85,82 @@ export const Stage = memo(
       rotationSensitivity,
     });
 
-    const canvas = (
-      <Canvas
-        style={[{ width, height }, style]}
-        pointerEvents={gestureEnabled ? 'auto' : 'none'}
-      >
-        <RegistryContext.Provider value={registry}>
-          <ParentContext.Provider value={rootId}>
-            <OrderedChildren>{children}</OrderedChildren>
-          </ParentContext.Provider>
-        </RegistryContext.Provider>
-      </Canvas>
+    const composedGesture = useMemo(() => {
+      if (!simultaneousGesture) return gesture;
+      const otherGestures = Array.isArray(simultaneousGesture)
+        ? simultaneousGesture
+        : [simultaneousGesture];
+      return Gesture.Simultaneous(gesture, ...otherGestures);
+    }, [gesture, simultaneousGesture]);
+
+    const [portalEntries, setPortalEntries] = useState<PortalEntry[]>([]);
+    const { snapshotSV, getTransform } = useTransformLookup(registry);
+
+    const registerPortal = useCallback((entry: PortalEntry) => {
+      setPortalEntries((prev) => [
+        ...prev.filter((e) => e.id !== entry.id),
+        entry,
+      ]);
+      return () => {
+        setPortalEntries((prev) => prev.filter((e) => e.id !== entry.id));
+      };
+    }, []);
+
+    const portalContext = useMemo<PortalContextValue>(
+      () => ({ registerPortal }),
+      [registerPortal]
     );
 
-    if (!gestureEnabled) {
-      return canvas;
-    }
+    const canvas = useMemo(
+      () => (
+        <Canvas
+          style={[{ width, height }, style]}
+          pointerEvents={
+            gestureEnabled || simultaneousGesture != null ? 'auto' : 'none'
+          }
+        >
+          <RegistryContext.Provider value={registry}>
+            <ParentContext.Provider value={rootId}>
+              <PortalContext.Provider value={portalContext}>
+                <OrderedChildren>{children}</OrderedChildren>
+              </PortalContext.Provider>
+            </ParentContext.Provider>
+          </RegistryContext.Provider>
+        </Canvas>
+      ),
+      [
+        children,
+        gestureEnabled,
+        height,
+        portalContext,
+        registry,
+        rootId,
+        simultaneousGesture,
+        style,
+        width,
+      ]
+    );
 
-    return <GestureDetector gesture={gesture}>{canvas}</GestureDetector>;
+    const canvasWithGestureDetector = useMemo(
+      () =>
+        !gestureEnabled && !simultaneousGesture ? (
+          canvas
+        ) : (
+          <GestureDetector gesture={composedGesture}>{canvas}</GestureDetector>
+        ),
+      [canvas, composedGesture, gestureEnabled, simultaneousGesture]
+    );
+
+    return (
+      <View style={{ width, height }}>
+        {canvasWithGestureDetector}
+        <PortalHost
+          entries={portalEntries}
+          snapshotSV={snapshotSV}
+          getTransform={getTransform}
+        />
+      </View>
+    );
   }
 );
 Stage.displayName = 'Stage';

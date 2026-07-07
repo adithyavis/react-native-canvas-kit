@@ -79,3 +79,8 @@ export function applyTransformsToPoint(m: Mat, p: Vector2d): Vector2d {
     y: m[1] * p.x + m[3] * p.y + m[5],
   };
 }
+
+export function matToRNMatrix(m: Mat): number[] {
+  'worklet';
+  return [m[0], m[1], 0, 0, m[2], m[3], 0, 0, 0, 0, 1, 0, m[4], m[5], 0, 1];
+}

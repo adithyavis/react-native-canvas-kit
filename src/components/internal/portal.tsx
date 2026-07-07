@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   type ReactNode,
 } from 'react';
@@ -139,6 +140,16 @@ function PortalView({
     children,
   } = entry;
 
+  const viewRef = useRef<View>(null);
+
+  useLayoutEffect(() => {
+    viewRef.current?.measure((_x, _y, measuredWidth, measuredHeight) => {
+      if (measuredWidth > 0 && measuredHeight > 0) {
+        onLayout(measuredWidth, measuredHeight);
+      }
+    });
+  }, [onLayout]);
+
   const animatedStyle = useAnimatedStyle(() => {
     const snapshot = snapshotSV.value;
     const node = snapshot.nodes[id];
@@ -174,6 +185,7 @@ function PortalView({
 
   return (
     <Animated.View
+      ref={viewRef}
       pointerEvents={pointerEvents}
       onLayout={(e) =>
         onLayout(e.nativeEvent.layout.width, e.nativeEvent.layout.height)

@@ -26,6 +26,8 @@ export { Image } from './components/shapes/Image';
 export type { ImageProps } from './components/shapes/Image';
 export { Transformer } from './components/transformer';
 export type { TransformerProps } from './components/transformer';
+export { Portal } from './components/Portal';
+export type { PortalProps } from './components/Portal';
 
 export {
   BrushLayer,

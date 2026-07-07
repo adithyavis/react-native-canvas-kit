@@ -3,6 +3,7 @@ import type { SharedValue } from 'react-native-reanimated';
 import type {
   AnchorId,
   NodeBounds,
+  NodeSnaps,
   TransformEvent,
   TransformEventListener,
   Vector2d,
@@ -12,6 +13,7 @@ import type { Mat } from '../../core/matrix';
 import type { Rect } from '../../core/bounds';
 import { resolveTransform, type ResolvedTransform } from '../../core/transform';
 import { resolveNodeBounds } from '../../core/nodeBounds';
+import { resolveNodeSnaps } from '../../core/nodeSnaps';
 
 export const useOnTransform = (
   onTransform: TransformEventListener | undefined
@@ -36,6 +38,7 @@ export interface TransformerTarget {
   scalable: boolean;
   rotatable: boolean;
   bounds: NodeBounds;
+  snaps: NodeSnaps;
   selfRect: Rect;
   matrix: Mat;
   dragOffsetSV?: SharedValue<Vector2d>;
@@ -74,6 +77,7 @@ export function useTransformerTarget(
     const scalable = rawConfig?.scalable === true;
     const rotatable = rawConfig?.rotatable === true;
     const bounds = resolveNodeBounds(rawConfig ?? {});
+    const snaps = resolveNodeSnaps(rawConfig ?? {});
     const selfRect =
       targetId != null ? registry.getSelfRect(targetId, ignoreStroke) : null;
     const matrix = targetId != null ? registry.getLocalMatrix(targetId) : null;
@@ -110,6 +114,11 @@ export function useTransformerTarget(
       `${bounds.minX},${bounds.maxX},${bounds.minY},${bounds.maxY},` +
       `${bounds.minScaleX},${bounds.maxScaleX},${bounds.minScaleY},` +
       `${bounds.maxScaleY},${bounds.minRotation},${bounds.maxRotation};` +
+      `${snaps.rotationSnaps?.join('|') ?? ''},${snaps.rotationSnapTolerance};` +
+      `${snaps.xEdgeSnaps?.join('|') ?? ''},` +
+      `${snaps.xCenterSnaps?.join('|') ?? ''},` +
+      `${snaps.yEdgeSnaps?.join('|') ?? ''},` +
+      `${snaps.yCenterSnaps?.join('|') ?? ''},${snaps.snapTolerance};` +
       handlePart;
 
     if (
@@ -125,6 +134,7 @@ export function useTransformerTarget(
       scalable,
       rotatable,
       bounds,
+      snaps,
       selfRect,
       matrix,
       dragOffsetSV,

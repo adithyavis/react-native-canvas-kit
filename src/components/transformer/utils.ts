@@ -40,6 +40,11 @@ export interface TransformConstraints {
   rotationSnaps?: number[];
   rotationSnapTolerance: number;
   bounds: NodeBounds;
+  xEdgeSnaps?: number[];
+  xCenterSnaps?: number[];
+  yEdgeSnaps?: number[];
+  yCenterSnaps?: number[];
+  snapTolerance?: number;
 }
 
 export function computeTransform(
@@ -109,6 +114,11 @@ export function resolveAnchorTransform(
       keepRatio: c.keepRatio,
       centeredScaling: c.centeredScaling,
       minSize: MIN_SIZE,
+      xEdgeSnaps: c.xEdgeSnaps,
+      xCenterSnaps: c.xCenterSnaps,
+      yEdgeSnaps: c.yEdgeSnaps,
+      yCenterSnaps: c.yCenterSnaps,
+      snapTolerance: c.snapTolerance,
     }),
     c.bounds
   );

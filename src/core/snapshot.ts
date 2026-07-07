@@ -14,7 +14,7 @@ import {
   MULTI_TOUCH_HIT_SLOP,
   type HitTestDescriptor,
 } from './hitTestDescriptor';
-import type { NodeBounds, Vector2d } from './types';
+import type { NodeBounds, NodeSnaps, Vector2d } from './types';
 
 export const DEFAULT_DRAG_DISTANCE = 3;
 
@@ -44,6 +44,7 @@ export interface SnapshotNode {
   hitTestDescriptor: HitTestDescriptor | null;
   hitTargetId: number;
   bounds: NodeBounds;
+  snaps: NodeSnaps;
 }
 
 export interface Snapshot {

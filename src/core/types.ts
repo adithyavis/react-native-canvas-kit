@@ -130,7 +130,17 @@ export interface NodeBounds {
   maxRotation?: number; // degrees
 }
 
-export interface NodeConfig extends NodeEventHandlers, NodeBounds {
+export interface NodeSnaps {
+  xEdgeSnaps?: number[];
+  xCenterSnaps?: number[];
+  yEdgeSnaps?: number[];
+  yCenterSnaps?: number[];
+  snapTolerance?: number;
+  rotationSnaps?: number[]; // degrees
+  rotationSnapTolerance?: number; // degrees
+}
+
+export interface NodeConfig extends NodeEventHandlers, NodeBounds, NodeSnaps {
   x?: number;
   y?: number;
   width?: number;

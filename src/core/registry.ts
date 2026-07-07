@@ -24,6 +24,7 @@ import {
 import type { SharedValue } from 'react-native-reanimated';
 import { ZERO_VECTOR, UNIT_VECTOR } from './geometry';
 import { resolveNodeBounds } from './nodeBounds';
+import { resolveNodeSnaps } from './nodeSnaps';
 
 export type NodeType = 'stage' | 'layer' | 'group' | 'shape';
 
@@ -311,6 +312,7 @@ export class NodeRegistry {
       hitTestDescriptor: node.getHitTestDescriptor?.() ?? null,
       hitTargetId: cfg.hitTargetId ?? -1,
       bounds: resolveNodeBounds(cfg),
+      snaps: resolveNodeSnaps(cfg),
     };
   }
 

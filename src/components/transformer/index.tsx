@@ -99,9 +99,15 @@ export const Transformer = memo((props: TransformerProps) => {
     () => ({
       keepRatio,
       centeredScaling,
-      rotationSnaps,
-      rotationSnapTolerance,
+      rotationSnaps: target?.snaps.rotationSnaps ?? rotationSnaps,
+      rotationSnapTolerance:
+        target?.snaps.rotationSnapTolerance ?? rotationSnapTolerance,
       bounds: target?.bounds ?? EMPTY_BOUNDS,
+      xEdgeSnaps: target?.snaps.xEdgeSnaps,
+      xCenterSnaps: target?.snaps.xCenterSnaps,
+      yEdgeSnaps: target?.snaps.yEdgeSnaps,
+      yCenterSnaps: target?.snaps.yCenterSnaps,
+      snapTolerance: target?.snaps.snapTolerance,
     }),
     [keepRatio, centeredScaling, rotationSnaps, rotationSnapTolerance, target]
   );

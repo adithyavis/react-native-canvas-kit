@@ -8,8 +8,11 @@ import {
 import { dist } from './geometry';
 import { DEG_TO_RAD, RAD_TO_DEG } from './transform';
 import { clampToBounds } from './nodeBounds';
+import { snapAxis, DEFAULT_SNAP_TOLERANCE } from './nodeSnaps';
+import { applyRotationSnap } from './transformer';
+import { getHitTestDescriptorRect } from './hitTestDescriptor';
 import type { SharedValue } from 'react-native-reanimated';
-import type { TransformResult, Vector2d } from './types';
+import type { NodeSnaps, TransformResult, Vector2d } from './types';
 import {
   DEFAULT_DRAG_DISTANCE,
   findDragTarget,
@@ -168,6 +171,97 @@ function applyCenterPivot(
   );
 }
 
+function computePinchSnapFactor(
+  snapshot: Snapshot,
+  getTransform: TransformLookup,
+  p: PinchState,
+  snaps: NodeSnaps
+): number {
+  'worklet';
+  const node = snapshot.nodes[p.targetId];
+  if (!node || !node.hitTestDescriptor) return 1;
+  const xEdgeSnaps = snaps.xEdgeSnaps;
+  const xCenterSnaps = snaps.xCenterSnaps;
+  const yEdgeSnaps = snaps.yEdgeSnaps;
+  const yCenterSnaps = snaps.yCenterSnaps;
+  const hasX =
+    (xEdgeSnaps != null && xEdgeSnaps.length > 0) ||
+    (xCenterSnaps != null && xCenterSnaps.length > 0);
+  const hasY =
+    (yEdgeSnaps != null && yEdgeSnaps.length > 0) ||
+    (yCenterSnaps != null && yCenterSnaps.length > 0);
+  if (!hasX && !hasY) return 1;
+
+  const absMatrix = getAbsoluteMatrixFromSnapshot(
+    snapshot,
+    getTransform,
+    p.targetId
+  );
+  const rect = getHitTestDescriptorRect(node.hitTestDescriptor);
+  const c1 = applyTransformsToPoint(absMatrix, { x: rect.x, y: rect.y });
+  const c2 = applyTransformsToPoint(absMatrix, {
+    x: rect.x + rect.width,
+    y: rect.y,
+  });
+  const c3 = applyTransformsToPoint(absMatrix, {
+    x: rect.x,
+    y: rect.y + rect.height,
+  });
+  const c4 = applyTransformsToPoint(absMatrix, {
+    x: rect.x + rect.width,
+    y: rect.y + rect.height,
+  });
+  const left = Math.min(c1.x, c2.x, c3.x, c4.x);
+  const right = Math.max(c1.x, c2.x, c3.x, c4.x);
+  const top = Math.min(c1.y, c2.y, c3.y, c4.y);
+  const bottom = Math.max(c1.y, c2.y, c3.y, c4.y);
+  const pivot = applyTransformsToPoint(
+    absMatrix,
+    getNodeContentCenter(snapshot, getTransform, p.targetId)
+  );
+  const tolerance = snaps.snapTolerance ?? DEFAULT_SNAP_TOLERANCE;
+
+  const refs: number[] = [];
+  const pivots: number[] = [];
+  const targets: (number[] | undefined)[] = [];
+  if (xEdgeSnaps) {
+    refs.push(left, right);
+    pivots.push(pivot.x, pivot.x);
+    targets.push(xEdgeSnaps, xEdgeSnaps);
+  }
+  if (xCenterSnaps) {
+    refs.push((left + right) / 2);
+    pivots.push(pivot.x);
+    targets.push(xCenterSnaps);
+  }
+  if (yEdgeSnaps) {
+    refs.push(top, bottom);
+    pivots.push(pivot.y, pivot.y);
+    targets.push(yEdgeSnaps, yEdgeSnaps);
+  }
+  if (yCenterSnaps) {
+    refs.push((top + bottom) / 2);
+    pivots.push(pivot.y);
+    targets.push(yCenterSnaps);
+  }
+
+  let bestFactor = 1;
+  let bestDist = Infinity;
+  for (let i = 0; i < refs.length; i++) {
+    const denom = refs[i]! - pivots[i]!;
+    if (Math.abs(denom) < 1e-6) continue;
+    const snapTargets = targets[i]!;
+    for (let j = 0; j < snapTargets.length; j++) {
+      const d = Math.abs(refs[i]! - snapTargets[j]!);
+      if (d <= tolerance && d < bestDist) {
+        bestDist = d;
+        bestFactor = (snapTargets[j]! - pivots[i]!) / denom;
+      }
+    }
+  }
+  return bestFactor;
+}
+
 function beginDrag(
   snapshot: Snapshot,
   getTransform: TransformLookup,
@@ -281,10 +375,49 @@ export function pointerMove(
     const node = snapshot.nodes[p2.dragTargetId];
     if (node) {
       const b = node.bounds;
-      dx =
-        clampToBounds(node.transform.x + dx, b.minX, b.maxX) - node.transform.x;
-      dy =
-        clampToBounds(node.transform.y + dy, b.minY, b.maxY) - node.transform.y;
+      const s = node.snaps;
+      let cx = node.transform.x + dx;
+      let cy = node.transform.y + dy;
+      const hasXSnaps =
+        (s.xEdgeSnaps && s.xEdgeSnaps.length > 0) ||
+        (s.xCenterSnaps && s.xCenterSnaps.length > 0);
+      const hasYSnaps =
+        (s.yEdgeSnaps && s.yEdgeSnaps.length > 0) ||
+        (s.yCenterSnaps && s.yCenterSnaps.length > 0);
+      if (hasXSnaps || hasYSnaps) {
+        let leftOffsetX = 0;
+        let sizeX = 0;
+        let topOffsetY = 0;
+        let sizeY = 0;
+        if (node.hitTestDescriptor) {
+          const rect = getHitTestDescriptorRect(node.hitTestDescriptor);
+          leftOffsetX = rect.x * node.transform.scaleX;
+          sizeX = rect.width * node.transform.scaleX;
+          topOffsetY = rect.y * node.transform.scaleY;
+          sizeY = rect.height * node.transform.scaleY;
+        }
+        const tolerance = s.snapTolerance ?? DEFAULT_SNAP_TOLERANCE;
+        cx = snapAxis(
+          cx,
+          leftOffsetX,
+          sizeX,
+          s.xEdgeSnaps,
+          s.xCenterSnaps,
+          tolerance
+        );
+        cy = snapAxis(
+          cy,
+          topOffsetY,
+          sizeY,
+          s.yEdgeSnaps,
+          s.yCenterSnaps,
+          tolerance
+        );
+      }
+      cx = clampToBounds(cx, b.minX, b.maxX);
+      cy = clampToBounds(cy, b.minY, b.maxY);
+      dx = cx - node.transform.x;
+      dy = cy - node.transform.y;
     }
     gestureEventCallbacks.setDragOffset(p2.dragTargetId, dx, dy);
     gestureEventCallbacks.on('dragmove', p2.dragTargetId);
@@ -471,6 +604,35 @@ export function pinchUpdate(
   }
   gestureEventCallbacks.setScale(p.targetId, liveScaleX, liveScaleY);
   applyCenterPivot(snapshot, getTransform, pinch, gestureEventCallbacks);
+
+  if (node) {
+    const factor = computePinchSnapFactor(
+      snapshot,
+      getTransform,
+      p,
+      node.snaps
+    );
+    if (factor !== 1) {
+      const b = node.bounds;
+      const baseScaleX = node.transform.scaleX;
+      const baseScaleY = node.transform.scaleY;
+      let snappedScaleX = liveScaleX * factor;
+      let snappedScaleY = liveScaleY * factor;
+      if (baseScaleX !== 0) {
+        snappedScaleX =
+          clampToBounds(baseScaleX * snappedScaleX, b.minScaleX, b.maxScaleX) /
+          baseScaleX;
+      }
+      if (baseScaleY !== 0) {
+        snappedScaleY =
+          clampToBounds(baseScaleY * snappedScaleY, b.minScaleY, b.maxScaleY) /
+          baseScaleY;
+      }
+      gestureEventCallbacks.setScale(p.targetId, snappedScaleX, snappedScaleY);
+      applyCenterPivot(snapshot, getTransform, pinch, gestureEventCallbacks);
+    }
+  }
+
   gestureEventCallbacks.on(
     'transform',
     p.targetId,
@@ -517,13 +679,21 @@ export function rotationUpdate(
   const node = snapshot.nodes[p.targetId];
   if (node) {
     const b = node.bounds;
+    const s = node.snaps;
     const baseRotationDeg = node.transform.rotation * RAD_TO_DEG;
-    liveRotationDeg =
-      clampToBounds(
-        baseRotationDeg + liveRotationDeg,
-        b.minRotation,
-        b.maxRotation
-      ) - baseRotationDeg;
+    let effectiveDeg = clampToBounds(
+      baseRotationDeg + liveRotationDeg,
+      b.minRotation,
+      b.maxRotation
+    );
+    if (s.rotationSnaps && s.rotationSnaps.length > 0) {
+      effectiveDeg = applyRotationSnap(
+        effectiveDeg,
+        s.rotationSnaps,
+        s.rotationSnapTolerance ?? DEFAULT_SNAP_TOLERANCE
+      );
+    }
+    liveRotationDeg = effectiveDeg - baseRotationDeg;
   }
   gestureEventCallbacks.setRotation(p.targetId, liveRotationDeg);
   applyCenterPivot(snapshot, getTransform, pinch, gestureEventCallbacks);

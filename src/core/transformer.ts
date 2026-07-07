@@ -2,6 +2,7 @@ import { applyTransformsToPoint, type Mat } from './matrix';
 import type { Rect } from './bounds';
 import type { AnchorId, TransformResult, Vector2d } from './types';
 import { DEG_TO_RAD, RAD_TO_DEG } from './transform';
+import { snapResizeEdge, DEFAULT_SNAP_TOLERANCE } from './nodeSnaps';
 
 export function isCornerAnchor(anchor: AnchorId): boolean {
   'worklet';
@@ -135,6 +136,11 @@ export interface ResizeInput {
   keepRatio: boolean;
   centeredScaling: boolean;
   minSize: number;
+  xEdgeSnaps?: number[];
+  xCenterSnaps?: number[];
+  yEdgeSnaps?: number[];
+  yCenterSnaps?: number[];
+  snapTolerance?: number;
 }
 
 export function computeResize(input: ResizeInput): TransformResult {
@@ -152,6 +158,11 @@ export function computeResize(input: ResizeInput): TransformResult {
     keepRatio,
     centeredScaling,
     minSize,
+    xEdgeSnaps,
+    xCenterSnaps,
+    yEdgeSnaps,
+    yCenterSnaps,
+    snapTolerance,
   } = input;
 
   const theta = rotationDeg * DEG_TO_RAD;
@@ -161,9 +172,29 @@ export function computeResize(input: ResizeInput): TransformResult {
     : anchorLocalPoint(rect, oppositeAnchor(anchor));
 
   const pivotS = applyTransformsToPoint(matrix, p);
+
+  const includeCenter = !centeredScaling;
+  const tolerance = snapTolerance ?? DEFAULT_SNAP_TOLERANCE;
+  const snappedX = snapResizeEdge(
+    pointer.x,
+    pivotS.x,
+    includeCenter,
+    xEdgeSnaps,
+    xCenterSnaps,
+    tolerance
+  );
+  const snappedY = snapResizeEdge(
+    pointer.y,
+    pivotS.y,
+    includeCenter,
+    yEdgeSnaps,
+    yCenterSnaps,
+    tolerance
+  );
+
   const delta = rotateVec(-theta, {
-    x: pointer.x - pivotS.x,
-    y: pointer.y - pivotS.y,
+    x: snappedX - pivotS.x,
+    y: snappedY - pivotS.y,
   });
 
   const dx = a.x - p.x;

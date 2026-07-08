@@ -1,26 +1,105 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg" />
+    <img alt="React Native Canvas Kit" src="assets/logo.svg" width="112" height="112" />
+  </picture>
+</p>
+
 # react-native-canvas-kit
 
-Skia based canvas framework for react-native│ Skia based canvas framework for react-native
+A **batteries-included 2D canvas kit for React Native**, built on top of
+[React Native Skia](https://shopify.github.io/react-native-skia/). Canvas Kit
+layers a **scene graph** over Skia and ships with pre-built shapes, gestures and
+interactivity, a transformer, and brushes, so you don't have to compose a canvas
+experience from scratch.
+
+> React Native Canvas Kit is heavily inspired by [Konva](https://konvajs.org).
+> Full guides and API reference live in the
+> [documentation site](https://adithyavis.github.io/react-native-canvas-kit/intro).
+
+## What you get
+
+- **Shapes**: `Rect`, `Circle`, `Ellipse`, `Line`, `RegularPolygon`, `Star`,
+  `Text`, and `Image`, all sharing a common set of transform and styling props.
+- **Interactivity**: tap and press events with hierarchy-aware hit testing and
+  ancestor bubbling, plus `draggable` nodes.
+- **Multi-touch gestures**: pinch-to-scale and rotate handled on the UI thread.
+- **Transformer**: an interactive selection box with resize and rotate handles,
+  attachable to any node.
+- **Brushes**: a `BrushLayer` with UI-thread stroke capture and a set of
+  ready-made brushes (pen, pencil, marker, highlighter, tape, eraser).
 
 ## Installation
 
-
 ```sh
-npm install react-native-canvas-kit
+npm install react-native-canvas-kit @shopify/react-native-skia react-native-gesture-handler react-native-reanimated
 ```
 
+React Native Skia, Reanimated, and Gesture Handler are **peer dependencies**:
+install them alongside the library.
+
+| Package                        | Version    |
+| ------------------------------ | ---------- |
+| `@shopify/react-native-skia`   | `>= 1.0.0` |
+| `react-native-gesture-handler` | `>= 2.0.0` |
+| `react-native-reanimated`      | `^3.0.0`   |
+
+Canvas Kit ships no native code of its own, so it runs wherever these peers run,
+including both React Native's New Architecture and the legacy architecture. See
+the [installation guide](https://adithyavis.github.io/react-native-canvas-kit/getting-started/installation)
+for the Reanimated Babel plugin and native setup.
 
 ## Usage
 
+```tsx
+import { Stage, Layer, Circle, Rect } from 'react-native-canvas-kit';
 
-```js
-import { multiply } from 'react-native-canvas-kit';
-
-// ...
-
-const result = multiply(3, 7);
+export function Hello() {
+  return (
+    <Stage width={300} height={300}>
+      <Layer>
+        <Rect
+          x={20}
+          y={20}
+          width={120}
+          height={80}
+          fill="#8a2be2"
+          cornerRadius={12}
+        />
+        <Circle
+          x={200}
+          y={140}
+          radius={50}
+          fill="#ff5aa5"
+          stroke="#1b0030"
+          strokeWidth={4}
+        />
+      </Layer>
+    </Stage>
+  );
+}
 ```
 
+The tree mirrors a classic 2D canvas hierarchy:
+
+```
+Stage → the Skia canvas surface
+ └ Layer → a logical grouping with its own transform
+    └ Group → a transformable container of shapes
+       └ Shape → Rect, Circle, Line, Text, Image etc.
+```
+
+## Documentation
+
+- [Introduction](https://adithyavis.github.io/react-native-canvas-kit/intro)
+- [Installation](https://adithyavis.github.io/react-native-canvas-kit/getting-started/installation)
+  and [Quick Start](https://adithyavis.github.io/react-native-canvas-kit/getting-started/quick-start)
+- [Core Concepts](https://adithyavis.github.io/react-native-canvas-kit/core-concepts/stage):
+  `Stage`, `Layer`, and `Group`
+- [Shapes](https://adithyavis.github.io/react-native-canvas-kit/shapes/overview) and
+  [Styling](https://adithyavis.github.io/react-native-canvas-kit/styling/fill-and-stroke),
+- [Gestures](https://adithyavis.github.io/react-native-canvas-kit/interactivity/drag-and-drop), [Transformers](https://adithyavis.github.io/react-native-canvas-kit/interactivity/transformer) etc
+- [Brushes](https://adithyavis.github.io/react-native-canvas-kit/brushes/overview)
 
 ## Contributing
 

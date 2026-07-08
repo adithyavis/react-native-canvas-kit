@@ -384,31 +384,48 @@ export function pointerMove(
       const hasYSnaps =
         (s.yEdgeSnaps && s.yEdgeSnaps.length > 0) ||
         (s.yCenterSnaps && s.yCenterSnaps.length > 0);
-      if (hasXSnaps || hasYSnaps) {
-        let leftOffsetX = 0;
-        let sizeX = 0;
-        let topOffsetY = 0;
-        let sizeY = 0;
-        if (node.hitTestDescriptor) {
-          const rect = getHitTestDescriptorRect(node.hitTestDescriptor);
-          leftOffsetX = rect.x * node.transform.scaleX;
-          sizeX = rect.width * node.transform.scaleX;
-          topOffsetY = rect.y * node.transform.scaleY;
-          sizeY = rect.height * node.transform.scaleY;
-        }
+      if ((hasXSnaps || hasYSnaps) && node.hitTestDescriptor) {
+        const live = getTransform(p2.dragTargetId);
+        const absMatrix = getAbsoluteMatrixFromSnapshot(
+          snapshot,
+          getTransform,
+          p2.dragTargetId
+        );
+        const rect = getHitTestDescriptorRect(node.hitTestDescriptor);
+        const cA = applyTransformsToPoint(absMatrix, { x: rect.x, y: rect.y });
+        const cB = applyTransformsToPoint(absMatrix, {
+          x: rect.x + rect.width,
+          y: rect.y,
+        });
+        const cC = applyTransformsToPoint(absMatrix, {
+          x: rect.x,
+          y: rect.y + rect.height,
+        });
+        const cD = applyTransformsToPoint(absMatrix, {
+          x: rect.x + rect.width,
+          y: rect.y + rect.height,
+        });
+        const shiftX = dx - live.offset.x;
+        const shiftY = dy - live.offset.y;
+        const left = Math.min(cA.x, cB.x, cC.x, cD.x) + shiftX;
+        const right = Math.max(cA.x, cB.x, cC.x, cD.x) + shiftX;
+        const top = Math.min(cA.y, cB.y, cC.y, cD.y) + shiftY;
+        const bottom = Math.max(cA.y, cB.y, cC.y, cD.y) + shiftY;
+        const centerX = (left + right) / 2;
+        const centerY = (top + bottom) / 2;
         const tolerance = s.snapTolerance ?? DEFAULT_SNAP_TOLERANCE;
-        cx = snapAxis(
-          cx,
-          leftOffsetX,
-          sizeX,
+        cx += snapAxis(
+          left,
+          right,
+          centerX,
           s.xEdgeSnaps,
           s.xCenterSnaps,
           tolerance
         );
-        cy = snapAxis(
-          cy,
-          topOffsetY,
-          sizeY,
+        cy += snapAxis(
+          top,
+          bottom,
+          centerY,
           s.yEdgeSnaps,
           s.yCenterSnaps,
           tolerance

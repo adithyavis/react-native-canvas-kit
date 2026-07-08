@@ -16,17 +16,14 @@ export function resolveNodeSnaps(config: NodeSnaps): NodeSnaps {
 }
 
 export function snapAxis(
-  pos: number,
-  leftOffset: number,
-  size: number,
+  left: number,
+  right: number,
+  center: number,
   edgeSnaps: number[] | undefined,
   centerSnaps: number[] | undefined,
   tolerance: number
 ): number {
   'worklet';
-  const left = pos + leftOffset;
-  const right = pos + leftOffset + size;
-  const center = pos + leftOffset + size / 2;
   let bestDelta = 0;
   let bestDist = Infinity;
   if (edgeSnaps) {
@@ -50,7 +47,7 @@ export function snapAxis(
       }
     }
   }
-  return pos + bestDelta;
+  return bestDelta;
 }
 
 export function snapResizeEdge(

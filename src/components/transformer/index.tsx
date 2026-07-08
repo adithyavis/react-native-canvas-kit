@@ -143,9 +143,9 @@ export const Transformer = memo((props: TransformerProps) => {
         const isRotater = a.anchor === 'rotater';
         activeGestureSV.value = {
           nodeId: target.id,
-          isDragging: false,
-          isScaling: !isRotater,
-          isRotating: isRotater,
+          canShowDragGridLines: false,
+          canShowScalingGridLines: !isRotater,
+          canShowRotationGridLines: isRotater,
         };
       }
       runOnJS(onTransform)({

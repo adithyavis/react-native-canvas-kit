@@ -130,6 +130,13 @@ export interface NodeBounds {
   maxRotation?: number; // degrees
 }
 
+export interface ActiveGesture {
+  nodeId: number;
+  canShowDragGridLines: boolean;
+  canShowRotationGridLines: boolean;
+  canShowScalingGridLines: boolean;
+}
+
 export interface NodeSnaps {
   xEdgeSnaps?: number[];
   xCenterSnaps?: number[];

@@ -97,7 +97,7 @@ export const SnapGrid = memo(
       const centerX = (left + right) / 2;
       const centerY = (top + bottom) / 2;
 
-      if (active.isDragging || active.isScaling) {
+      if (active.canShowDragGridLines || active.canShowScalingGridLines) {
         const posTolerance =
           (snaps.snapTolerance ?? DEFAULT_SNAP_TOLERANCE) + tolerance;
         const xe = snaps.xEdgeSnaps;
@@ -148,7 +148,7 @@ export const SnapGrid = memo(
         }
       }
 
-      if (active.isRotating && snaps.rotationSnaps) {
+      if (active.canShowRotationGridLines && snaps.rotationSnaps) {
         const live = getTransform(active.nodeId);
         const rotationDeg =
           node.transform.rotation * RAD_TO_DEG + live.rotation;

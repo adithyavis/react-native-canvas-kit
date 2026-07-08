@@ -114,18 +114,18 @@ export function useStageGestures(
       if (pinch && pinch.targetId !== -1) {
         return {
           nodeId: pinch.targetId,
-          isDragging: false,
-          isScaling: pinch.scalable,
-          isRotating: pinch.rotatable,
+          canShowDragGridLines: false,
+          canShowScalingGridLines: pinch.scalable,
+          canShowRotationGridLines: pinch.rotatable,
         };
       }
       const press = pressStateSV.value;
       if (press && press.dragging && press.dragTargetId !== -1) {
         return {
           nodeId: press.dragTargetId,
-          isDragging: true,
-          isScaling: false,
-          isRotating: false,
+          canShowDragGridLines: true,
+          canShowScalingGridLines: false,
+          canShowRotationGridLines: false,
         };
       }
       return null;

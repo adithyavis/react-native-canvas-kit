@@ -28,6 +28,10 @@ import {
   type PortalContextValue,
   type PortalEntry,
 } from './internal/portal';
+import {
+  GestureStateContext,
+  type GestureStateValue,
+} from './internal/gestureState';
 import { useStageGestures } from './internal/useStageGestures';
 
 export interface StageProps {
@@ -80,10 +84,12 @@ export const Stage = memo(
     }, [registry, rootId]);
 
     const gestureEnabled = listening !== false && _gestureEnabled !== false;
-    const gesture = useStageGestures(registry, rootId, gestureEnabled, {
-      pinchSensitivity,
-      rotationSensitivity,
-    });
+    const { gesture, activeGestureSV } = useStageGestures(
+      registry,
+      rootId,
+      gestureEnabled,
+      { pinchSensitivity, rotationSensitivity }
+    );
 
     const composedGesture = useMemo(() => {
       if (!simultaneousGesture) return gesture;
@@ -95,6 +101,17 @@ export const Stage = memo(
 
     const [portalEntries, setPortalEntries] = useState<PortalEntry[]>([]);
     const { snapshotSV, getTransform } = useTransformLookup(registry);
+
+    const gestureState = useMemo<GestureStateValue>(
+      () => ({
+        snapshotSV,
+        getTransform,
+        activeGestureSV,
+        width,
+        height,
+      }),
+      [snapshotSV, getTransform, activeGestureSV, width, height]
+    );
 
     const registerPortal = useCallback((entry: PortalEntry) => {
       setPortalEntries((prev) => [
@@ -122,7 +139,9 @@ export const Stage = memo(
           <RegistryContext.Provider value={registry}>
             <ParentContext.Provider value={rootId}>
               <PortalContext.Provider value={portalContext}>
-                <OrderedChildren>{children}</OrderedChildren>
+                <GestureStateContext.Provider value={gestureState}>
+                  <OrderedChildren>{children}</OrderedChildren>
+                </GestureStateContext.Provider>
               </PortalContext.Provider>
             </ParentContext.Provider>
           </RegistryContext.Provider>
@@ -133,6 +152,7 @@ export const Stage = memo(
         gestureEnabled,
         height,
         portalContext,
+        gestureState,
         registry,
         rootId,
         simultaneousGesture,

@@ -8,6 +8,7 @@ import { Rect } from '../shapes/Rect';
 import { Circle } from '../shapes/Circle';
 import { Group } from '../Group';
 import { useRegistry } from '../internal/NodeContext';
+import { useGestureState } from '../internal/gestureState';
 import { applyTransformsToPoint } from '../../core/matrix';
 import { inflateRect } from '../../core/bounds';
 import { anchorLocalPoint } from '../../core/transformer';
@@ -86,6 +87,8 @@ export const Transformer = memo((props: TransformerProps) => {
 
   const activeAnchorSV = useSharedValue<ActiveAnchorDrag | null>(null);
 
+  const activeGestureSV = useGestureState()?.activeGestureSV;
+
   const onTransform = useOnTransform(_onTransform);
 
   const rect = useMemo(
@@ -136,13 +139,22 @@ export const Transformer = memo((props: TransformerProps) => {
         y: result.scaleY / a.cfgScaleY,
       };
       rotationSV.value = result.rotation - a.cfgRotation;
+      if (activeGestureSV) {
+        const isRotater = a.anchor === 'rotater';
+        activeGestureSV.value = {
+          nodeId: target.id,
+          isDragging: false,
+          isScaling: !isRotater,
+          isRotating: isRotater,
+        };
+      }
       runOnJS(onTransform)({
         ...result,
         targetId: target.id,
         anchor: a.anchor,
       });
     },
-    [target, constraints]
+    [target, constraints, activeGestureSV]
   );
 
   const handleCenterAnchor = useCallback(
@@ -205,6 +217,7 @@ export const Transformer = memo((props: TransformerProps) => {
       if (!target) return;
       const a = activeAnchorSV.value;
       activeAnchorSV.value = null;
+      if (activeGestureSV) activeGestureSV.value = null;
       let result: TransformResult = {
         x: target.config.x,
         y: target.config.y,
@@ -223,7 +236,7 @@ export const Transformer = memo((props: TransformerProps) => {
       }
       onTransformEnd?.({ ...result, targetId: target.id, anchor: h });
     },
-    [activeAnchorSV, target, constraints, onTransformEnd]
+    [activeAnchorSV, target, constraints, onTransformEnd, activeGestureSV]
   );
 
   if (!registry || !target || !rect || !target.resolvedTransformSV) return null;

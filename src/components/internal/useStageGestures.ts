@@ -6,10 +6,12 @@ import {
 } from 'react-native-gesture-handler';
 import {
   runOnJS,
+  useAnimatedReaction,
   useSharedValue,
   type SharedValue,
 } from 'react-native-reanimated';
 import type { NodeRegistry } from '../../core/registry';
+import type { ActiveGesture } from '../../core/types';
 import { dispatch } from '../../core/dispatch';
 import {
   EMPTY_SNAPSHOT,
@@ -41,12 +43,17 @@ export interface StageGestureOptions {
   rotationSensitivity?: number;
 }
 
+export interface StageGestures {
+  gesture: ComposedGesture;
+  activeGestureSV: SharedValue<ActiveGesture | null>;
+}
+
 export function useStageGestures(
   registry: NodeRegistry,
   rootId: number,
   enabled = true,
   options: StageGestureOptions = {}
-): ComposedGesture {
+): StageGestures {
   const pinchSensitivity =
     PINCH_SCALE_SENSITIVITY * (options.pinchSensitivity ?? 1);
   const rotationSensitivity =
@@ -100,7 +107,35 @@ export function useStageGestures(
     registry.getBrushTool()?.commit(points);
   });
 
-  return useMemo(() => {
+  const activeGestureSV = useSharedValue<ActiveGesture | null>(null);
+  useAnimatedReaction(
+    () => {
+      const pinch = pinchStateSV.value;
+      if (pinch && pinch.targetId !== -1) {
+        return {
+          nodeId: pinch.targetId,
+          isDragging: false,
+          isScaling: pinch.scalable,
+          isRotating: pinch.rotatable,
+        };
+      }
+      const press = pressStateSV.value;
+      if (press && press.dragging && press.dragTargetId !== -1) {
+        return {
+          nodeId: press.dragTargetId,
+          isDragging: true,
+          isScaling: false,
+          isRotating: false,
+        };
+      }
+      return null;
+    },
+    (value) => {
+      activeGestureSV.value = value;
+    }
+  );
+
+  const gesture = useMemo(() => {
     const on = dispatchRef.current;
     const commitBrushStroke = commitBrushStrokeRef.current;
     const getTransform: TransformLookup = (id) => {
@@ -301,4 +336,6 @@ export function useStageGestures(
     pinchSensitivity,
     rotationSensitivity,
   ]);
+
+  return { gesture, activeGestureSV };
 }

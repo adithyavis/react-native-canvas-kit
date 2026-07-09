@@ -38,7 +38,7 @@ const config: Config = {
             'https://github.com/adithyavis/react-native-canvas-kit/tree/main/docs/',
           lastVersion: 'current',
           versions: {
-            current: {
+            'current': {
               label: '1.x (Reanimated 4)',
             },
             '0.x': {

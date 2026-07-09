@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "scheme": "canvaskitexample",
     "orientation": "portrait",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "com.canvaskit.example",
       "supportsTablet": true
@@ -13,8 +13,6 @@
     "android": {
       "package": "com.canvaskit.example"
     },
-    "plugins": [
-      "expo-router"
-    ]
+    "plugins": ["expo-router"]
   }
 }

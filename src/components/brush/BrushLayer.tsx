@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, type ReactNode } from 'react';
+import { memo, useEffect, useRef, type ReactNode } from 'react';
 import { Group, Path } from '@shopify/react-native-skia';
 import { useDerivedValue, useSharedValue } from 'react-native-reanimated';
 import { useRegistry } from '../internal/NodeContext';
@@ -24,7 +24,6 @@ export const BrushLayer = memo(
   ({ tool, onStrokeEnd, children }: BrushLayerProps) => {
     const registry = useRegistry();
     const activePointsSV = useSharedValue<number[]>([]);
-    const [liveVisible, setLiveVisible] = useState(true);
 
     const toolRef = useRef(tool);
     toolRef.current = tool;
@@ -36,13 +35,11 @@ export const BrushLayer = memo(
       if (currentTool !== null && points.length >= 2) {
         onStrokeEndRef.current?.({ points, tool: currentTool });
       }
-      setLiveVisible(false);
       const committedLength = points.length;
       runAfterNextPaint(() => {
         if (activePointsSV.value.length === committedLength) {
           activePointsSV.value = [];
         }
-        setLiveVisible(true);
       });
     });
 
@@ -71,7 +68,7 @@ export const BrushLayer = memo(
     return (
       <Group layer>
         {children}
-        {liveVisible && activeStyle && (
+        {activeStyle && (
           <Path
             path={activePath}
             style="stroke"

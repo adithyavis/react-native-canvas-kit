@@ -1,6 +1,6 @@
 declare const require: undefined | ((id: string) => { version?: string });
 
-const SUPPORTED_MAJOR = 3;
+const SUPPORTED_MAJOR = 4;
 
 function getReanimatedMajor(): number | undefined {
   try {

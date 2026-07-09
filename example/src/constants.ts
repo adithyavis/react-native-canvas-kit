@@ -199,7 +199,7 @@ export function buildInitialTransforms(
     };
   }
   out[CHIP] = {
-    x: Math.round(w * 0.1),
+    x: Math.round(w * 0.5) - 150,
     y: Math.round(h * 0.5),
     scaleX: 1,
     scaleY: 1,

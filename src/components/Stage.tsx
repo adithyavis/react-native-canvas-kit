@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 import {
   Gesture,
@@ -131,7 +131,7 @@ export const Stage = memo(
     const canvas = useMemo(
       () => (
         <Canvas
-          style={[{ width, height }, style]}
+          style={StyleSheet.flatten([{ width, height }, style])}
           pointerEvents={
             gestureEnabled || simultaneousGesture != null ? 'auto' : 'none'
           }

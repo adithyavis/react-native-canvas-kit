@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Asset } from 'expo-asset';
 import {
   Stage,
   Layer,
@@ -56,7 +57,7 @@ export default function ShapesScreen() {
               <Image
                 key={s.id}
                 id={s.id}
-                src={s.src}
+                src={Asset.fromModule(s.src).uri} // you can use require('') in ios/android
                 x={t.x}
                 y={t.y}
                 scaleX={t.scaleX}

@@ -1,0 +1,10 @@
+{
+  "theme.docs.versions.unmaintainedVersionLabel": {
+    "message": "You're viewing the {siteTitle} {versionLabel} docs, an earlier release.",
+    "description": "The label used to tell the user that they're browsing an unmaintained doc version"
+  },
+  "theme.docs.versions.latestVersionSuggestionLabel": {
+    "message": "On Reanimated 4? See the {latestVersionLink} ({versionLabel}).",
+    "description": "The label used to tell the user to check the latest version"
+  }
+}

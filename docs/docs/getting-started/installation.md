@@ -25,12 +25,12 @@ yarn add react-native-canvas-kit @shopify/react-native-skia react-native-gesture
 
 ### Peer dependency versions
 
-| Package                        | Version     |
-| ------------------------------ | ----------- |
-| `@shopify/react-native-skia`   | `>= 1.0.0`  |
-| `react-native-gesture-handler` | `>= 2.0.0`  |
-| `react-native-reanimated`      | `^4.0.0`    |
-| `react-native-worklets`        | `>= 0.5.0`  |
+| Package                        | Version    |
+| ------------------------------ | ---------- |
+| `@shopify/react-native-skia`   | `>= 1.0.0` |
+| `react-native-gesture-handler` | `>= 2.0.0` |
+| `react-native-reanimated`      | `^4.0.0`   |
+| `react-native-worklets`        | `>= 0.5.0` |
 
 Reanimated 4 ships its worklet runtime in the separate `react-native-worklets`
 package, so install it alongside Reanimated.

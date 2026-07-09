@@ -32,22 +32,28 @@ experience from scratch.
 ## Installation
 
 ```sh
-npm install react-native-canvas-kit @shopify/react-native-skia react-native-gesture-handler react-native-reanimated
+npm install react-native-canvas-kit @shopify/react-native-skia react-native-gesture-handler react-native-reanimated react-native-worklets
 ```
 
-React Native Skia, Reanimated, and Gesture Handler are **peer dependencies**:
-install them alongside the library.
+React Native Skia, Reanimated, Gesture Handler, and Worklets are **peer
+dependencies**: install them alongside the library.
 
 | Package                        | Version    |
 | ------------------------------ | ---------- |
 | `@shopify/react-native-skia`   | `>= 1.0.0` |
 | `react-native-gesture-handler` | `>= 2.0.0` |
-| `react-native-reanimated`      | `^3.0.0`   |
+| `react-native-reanimated`      | `^4.0.0`   |
+| `react-native-worklets`        | `>= 0.5.0` |
 
-Canvas Kit ships no native code of its own, so it runs wherever these peers run,
-including both React Native's New Architecture and the legacy architecture. See
-the [installation guide](https://adithyavis.github.io/react-native-canvas-kit/getting-started/installation)
-for the Reanimated Babel plugin and native setup.
+Canvas Kit ships no native code of its own, but Reanimated 4 requires React
+Native's **New Architecture**, so `react-native-canvas-kit@1.x` runs on the New
+Architecture only. See the
+[installation guide](https://adithyavis.github.io/react-native-canvas-kit/getting-started/installation)
+for the worklets Babel plugin and native setup.
+
+> **Versions**: `1.x` targets **Reanimated 4** (New Architecture). If you are
+> still on **Reanimated 3** / the legacy architecture, pin
+> `react-native-canvas-kit@0.x`.
 
 ## Usage
 

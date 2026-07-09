@@ -7,6 +7,7 @@ import {
   Image,
   Transformer,
   Portal,
+  SnapGrid,
   type EventObject,
   type TransformEvent,
   type TransformResult,
@@ -57,7 +58,7 @@ export default function ShapesScreen() {
               <Image
                 key={s.id}
                 id={s.id}
-                src={Asset.fromModule(s.src).uri} // you can use require('') in ios/android
+                src={Asset.fromModule(s.src).uri}
                 x={t.x}
                 y={t.y}
                 scaleX={t.scaleX}
@@ -68,6 +69,8 @@ export default function ShapesScreen() {
                 draggable
                 scalable
                 rotatable
+                xCenterSnaps={[width / 2]}
+                rotationSnaps={[0, 90]}
                 onTap={(e) => {
                   setSelected(sel(s.id));
                   e.cancelBubble = true;
@@ -107,6 +110,7 @@ export default function ShapesScreen() {
               if (selected) commit(selected, e);
             }}
           />
+          <SnapGrid tolerance={10} dash={[6, 6]} />
         </Layer>
       </Stage>
       <DrawerButton />

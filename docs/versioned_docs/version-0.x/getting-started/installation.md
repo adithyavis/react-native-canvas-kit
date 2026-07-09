@@ -14,48 +14,41 @@ These are **peer dependencies**: install them alongside the library.
 
 ```bash
 # with expo
-npx expo install react-native-canvas-kit @shopify/react-native-skia react-native-gesture-handler react-native-reanimated react-native-worklets
+npx expo install react-native-canvas-kit @shopify/react-native-skia react-native-gesture-handler react-native-reanimated
 
 # with npm
-npm install react-native-canvas-kit @shopify/react-native-skia react-native-gesture-handler react-native-reanimated react-native-worklets
+npm install react-native-canvas-kit @shopify/react-native-skia react-native-gesture-handler react-native-reanimated
 
 # with yarn
-yarn add react-native-canvas-kit @shopify/react-native-skia react-native-gesture-handler react-native-reanimated react-native-worklets
+yarn add react-native-canvas-kit @shopify/react-native-skia react-native-gesture-handler react-native-reanimated
 ```
 
 ### Peer dependency versions
 
-| Package                        | Version     |
-| ------------------------------ | ----------- |
-| `@shopify/react-native-skia`   | `>= 1.0.0`  |
-| `react-native-gesture-handler` | `>= 2.0.0`  |
-| `react-native-reanimated`      | `^4.0.0`    |
-| `react-native-worklets`        | `>= 0.5.0`  |
+| Package                        | Version    |
+| ------------------------------ | ---------- |
+| `@shopify/react-native-skia`   | `>= 1.0.0` |
+| `react-native-gesture-handler` | `>= 2.0.0` |
+| `react-native-reanimated`      | `^3.0.0`   |
 
-Reanimated 4 ships its worklet runtime in the separate `react-native-worklets`
-package, so install it alongside Reanimated.
-
-Canvas Kit ships no native code of its own, but Reanimated 4 requires React
-Native's **New Architecture**, so v1 runs on the New Architecture only. If you
-are still on the legacy architecture, stay on Canvas Kit `0.x` (Reanimated 3):
-switch the docs to the **0.x** version using the dropdown in the top bar.
+Canvas Kit ships no native code of its own, so it runs wherever these peers run,
+including both React Native's New Architecture and the legacy architecture.
 
 ## Configure Reanimated
 
-Reanimated 4 moved its Babel plugin into `react-native-worklets`. Add it to
-`babel.config.js` **as the last plugin**:
+Add the Reanimated Babel plugin to `babel.config.js` **as the last plugin**:
 
 ```js title="babel.config.js"
 module.exports = {
   presets: ['babel-preset-expo'], // or 'module:@react-native/babel-preset'
   plugins: [
     // ...other plugins
-    'react-native-worklets/plugin', // must be last
+    'react-native-reanimated/plugin', // must be last
   ],
 };
 ```
 
-> If you use `babel-preset-expo` (SDK 54+), the worklets plugin is included
+> If you use `babel-preset-expo` (SDK 50+), the Reanimated plugin is included
 > automatically, so you can skip this step.
 
 ## Wrap your app in `GestureHandlerRootView`

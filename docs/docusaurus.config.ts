@@ -36,6 +36,15 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           editUrl:
             'https://github.com/adithyavis/react-native-canvas-kit/tree/main/docs/',
+          lastVersion: 'current',
+          versions: {
+            current: {
+              label: '1.x (Reanimated 4)',
+            },
+            '0.x': {
+              label: '0.x (Reanimated 3)',
+            },
+          },
         },
         blog: false,
         theme: {
@@ -62,6 +71,10 @@ const config: Config = {
           sidebarId: 'docs',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          type: 'docsVersionDropdown',
+          position: 'right',
         },
         {
           href: 'https://github.com/adithyavis/react-native-canvas-kit',

@@ -5,6 +5,10 @@ import { useRegistry } from '../internal/NodeContext';
 import { buildBrushPath } from '../../core/brush';
 import { BRUSHES, type BrushTool } from './brushes';
 
+function runAfterNextPaint(callback: () => void) {
+  requestAnimationFrame(() => requestAnimationFrame(callback));
+}
+
 export interface BrushStrokeEvent {
   points: number[];
   tool: BrushTool;
@@ -34,7 +38,7 @@ export const BrushLayer = memo(
       }
       setLiveVisible(false);
       const committedLength = points.length;
-      requestAnimationFrame(() => {
+      runAfterNextPaint(() => {
         if (activePointsSV.value.length === committedLength) {
           activePointsSV.value = [];
         }

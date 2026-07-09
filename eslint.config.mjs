@@ -29,6 +29,7 @@ export default defineConfig([
       'lib/',
       'dist/',
       '**/dist/',
+      'docs/',
       'example/android/',
       'example/ios/',
       'coverage/',

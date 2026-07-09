@@ -1,9 +1,6 @@
 import { Fragment, memo, useCallback, useMemo } from 'react';
-import {
-  useAnimatedReaction,
-  useSharedValue,
-  runOnJS,
-} from 'react-native-reanimated';
+import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { Rect } from '../shapes/Rect';
 import { Circle } from '../shapes/Circle';
 import { Group } from '../Group';
@@ -148,7 +145,7 @@ export const Transformer = memo((props: TransformerProps) => {
           canShowRotationGridLines: isRotater,
         };
       }
-      runOnJS(onTransform)({
+      scheduleOnRN(onTransform, {
         ...result,
         targetId: target.id,
         anchor: a.anchor,

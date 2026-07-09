@@ -5,8 +5,8 @@ import {
   useDerivedValue,
   useFrameCallback,
   useSharedValue,
-  runOnJS,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { applyTransformsToPoint } from '../core/matrix';
 import { getAbsoluteMatrixFromSnapshot } from '../core/snapshot';
 import { getHitTestDescriptorRect } from '../core/hitTestDescriptor';
@@ -57,7 +57,7 @@ export const SnapGrid = memo(
       () => nodeWithActiveGestureSV.value != null,
       (isActive, wasActive) => {
         if (isActive === wasActive) return;
-        runOnJS(setFrameActive)(isActive);
+        scheduleOnRN(setFrameActive, isActive);
       }
     );
 

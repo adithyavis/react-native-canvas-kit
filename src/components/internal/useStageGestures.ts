@@ -5,11 +5,11 @@ import {
   type GestureTouchEvent,
 } from 'react-native-gesture-handler';
 import {
-  runOnJS,
   useAnimatedReaction,
   useSharedValue,
   type SharedValue,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import type { NodeRegistry } from '../../core/registry';
 import type { ActiveGesture } from '../../core/types';
 import { dispatch } from '../../core/dispatch';
@@ -164,7 +164,7 @@ export function useStageGestures(
       },
       on: (type, id, payload) => {
         'worklet';
-        runOnJS(on)(type, id, payload);
+        scheduleOnRN(on, type, id, payload);
       },
     };
 
@@ -241,7 +241,7 @@ export function useStageGestures(
             brushAbortedSV.value = false;
             return;
           }
-          runOnJS(commitBrushStroke)(brushPoints.value);
+          scheduleOnRN(commitBrushStroke, brushPoints.value);
           return;
         }
         pointerUp(

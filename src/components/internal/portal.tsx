@@ -5,10 +5,11 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  type ComponentRef,
   type ReactNode,
 } from 'react';
 import { StyleSheet, View } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle, HostInstance } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -140,10 +141,11 @@ function PortalView({
     children,
   } = entry;
 
-  const viewRef = useRef<View>(null);
+  const viewRef = useRef<ComponentRef<typeof Animated.View>>(null);
 
   useLayoutEffect(() => {
-    viewRef.current?.measure((_x, _y, measuredWidth, measuredHeight) => {
+    const hostView = viewRef.current as unknown as HostInstance | null;
+    hostView?.measure((_x, _y, measuredWidth, measuredHeight) => {
       if (measuredWidth > 0 && measuredHeight > 0) {
         onLayout(measuredWidth, measuredHeight);
       }

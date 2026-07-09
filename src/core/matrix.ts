@@ -84,3 +84,53 @@ export function matToRNMatrix(m: Mat): number[] {
   'worklet';
   return [m[0], m[1], 0, 0, m[2], m[3], 0, 0, 0, 0, 1, 0, m[4], m[5], 0, 1];
 }
+
+type RNTransform = (
+  | { translateX: number }
+  | { translateY: number }
+  | { rotate: string }
+  | { skewX: string }
+  | { scaleX: number }
+  | { scaleY: number }
+)[];
+
+export function matToRNTransform(m: Mat): RNTransform {
+  'worklet';
+  let a = m[0];
+  let b = m[1];
+  let c = m[2];
+  let d = m[3];
+  const translateX = m[4];
+  const translateY = m[5];
+
+  let scaleX = Math.hypot(a, b);
+  if (scaleX !== 0) {
+    a /= scaleX;
+    b /= scaleX;
+  }
+  let skew = a * c + b * d;
+  c -= a * skew;
+  d -= b * skew;
+  let scaleY = Math.hypot(c, d);
+  if (scaleY !== 0) {
+    c /= scaleY;
+    d /= scaleY;
+    skew /= scaleY;
+  }
+  if (a * d - b * c < 0) {
+    a = -a;
+    b = -b;
+    scaleX = -scaleX;
+  }
+  const rotation = Math.atan2(b, a);
+  const skewX = Math.atan(skew);
+
+  return [
+    { translateX },
+    { translateY },
+    { rotate: `${rotation}rad` },
+    { skewX: `${skewX}rad` },
+    { scaleX },
+    { scaleY },
+  ];
+}

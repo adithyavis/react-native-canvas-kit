@@ -16,7 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { NodeRegistry } from '../../core/registry';
 import type { Vector2d } from '../../core/types';
-import { composeMatrix, matToRNMatrix, multiply } from '../../core/matrix';
+import { composeMatrix, matToRNTransform, multiply } from '../../core/matrix';
 import { DEG_TO_RAD, type ResolvedTransform } from '../../core/transform';
 import {
   EMPTY_SNAPSHOT,
@@ -179,7 +179,7 @@ function PortalView({
 
     return {
       opacity: 1,
-      transform: [{ matrix: matToRNMatrix(m) }],
+      transform: matToRNTransform(m),
     };
   });
 

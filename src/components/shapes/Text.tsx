@@ -62,7 +62,8 @@ export const Text = memo(
     }
     const metrics = font.getMetrics();
     const baseline = -metrics.ascent;
-    const boxWidth = font.getTextWidth(text);
+    const glyphWidths = font.getGlyphWidths(font.getGlyphIDs(text));
+    const boxWidth = glyphWidths.reduce((sum, width) => sum + width, 0);
     const boxHeight = metrics.descent - metrics.ascent;
 
     return (

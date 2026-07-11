@@ -3,6 +3,8 @@ sidebar_position: 3
 title: Group
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Group
 
 A `Group` is a transformable container you can nest anywhere inside a
@@ -19,6 +21,8 @@ import { Group, Rect, Circle, Text } from 'react-native-canvas-kit';
   <Text text="Badge" x={64} y={22} font={font} fill="#1b0030" />
 </Group>;
 ```
+
+<Demo name="core-concepts-group-1" title="Drag a group" height={460} />
 
 Dragging the group above moves all three children together; the children keep
 their own local coordinates.

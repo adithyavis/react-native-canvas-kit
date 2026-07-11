@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Portal
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Portal
 
 A `Portal` renders an ordinary React Native component as a node on the canvas.
@@ -10,6 +12,8 @@ It takes part in the same interaction model as shapes: it can be `draggable`,
 `scalable`, and `rotatable`. This is how you place real RN
 views (an image, a card, a live `TextInput`) into a scene and move them like any
 other node.
+
+The dark card below is a `Portal` wrapping a real `TextInput` — drag it, then click and type:
 
 ```tsx
 import { View, Text } from 'react-native';
@@ -27,6 +31,8 @@ import { Stage, Layer, Portal } from 'react-native-canvas-kit';
   </Layer>
 </Stage>;
 ```
+
+<Demo name="portal-overview-1" title="Portal" height={460} />
 
 ## How it works
 
@@ -88,6 +94,8 @@ swallow drags:
   </View>
 </Portal>
 ```
+
+<Demo name="portal-overview-2" title="Interactive Portal" height={460} />
 
 ## Persisting transforms
 

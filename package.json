@@ -97,7 +97,8 @@
     "react-native-reanimated": "^3.0.0"
   },
   "resolutions": {
-    "@types/react": "~18.3.12"
+    "@types/react": "~18.3.12",
+    "react-native": "0.76.9"
   },
   "workspaces": [
     "example"

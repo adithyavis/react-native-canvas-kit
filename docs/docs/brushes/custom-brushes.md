@@ -3,6 +3,8 @@ sidebar_position: 3
 title: Custom Brushes
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Custom Brushes
 
 Every brush is defined by a small **style object**, and the geometry is built by
@@ -22,7 +24,7 @@ interface BrushStyle {
   blendMode?: SkiaBlendMode; // e.g. 'multiply', 'dstOut'
   cap: 'butt' | 'round' | 'square';
   join: 'miter' | 'round' | 'bevel';
-  tension: number;           // 0 = angular, 1 = very smooth
+  tension: number; // 0 = angular, 1 = very smooth
 }
 ```
 
@@ -41,8 +43,16 @@ The simplest customization needs no new brush at all: override on the
 [brush component](./brush-types.md):
 
 ```tsx
-<Marker points={pts} color="#22d3ee" strokeWidth={24} opacity={0.8} tension={0.7} />
+<Marker
+  points={pts}
+  color="#22d3ee"
+  strokeWidth={24}
+  opacity={0.8}
+  tension={0.7}
+/>
 ```
+
+<Demo name="brushes-custom-brushes-2" title="Marker overrides" height={460} />
 
 ## Smoothing & `tension`
 
@@ -65,7 +75,15 @@ import { Pen } from 'react-native-canvas-kit';
 
 // A fat, translucent teal "chalk" built on the pen renderer
 function Chalk({ points }: { points: number[] }) {
-  return <Pen points={points} color="#7fffd4" strokeWidth={18} opacity={0.5} tension={0.3} />;
+  return (
+    <Pen
+      points={points}
+      color="#7fffd4"
+      strokeWidth={18}
+      opacity={0.5}
+      tension={0.3}
+    />
+  );
 }
 ```
 
@@ -75,11 +93,15 @@ store in state, the same pattern as `BRUSH_PATHS`, but with your own map:
 ```tsx
 const MY_BRUSHES = { ...BRUSH_PATHS, chalk: Chalk };
 
-{strokes.map((s) => {
-  const Brush = MY_BRUSHES[s.tool];
-  return <Brush key={s.id} points={s.points} />;
-})}
+{
+  strokes.map((s) => {
+    const Brush = MY_BRUSHES[s.tool];
+    return <Brush key={s.id} points={s.points} />;
+  });
+}
 ```
+
+<Demo name="brushes-custom-brushes-4" title="Custom brush map" height={460} />
 
 ## Reference
 

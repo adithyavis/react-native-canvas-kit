@@ -3,6 +3,8 @@ sidebar_position: 1
 title: BrushLayer
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Brushes
 
 The brush system adds **drawing** on top of the scene graph. A
@@ -50,6 +52,8 @@ function Sketch() {
 }
 ```
 
+<Demo name="brushes-overview-1" title="Drawing" height={460} />
+
 ## How it works
 
 1. Set `tool` to an active [brush](./brush-types.md) (`'pen'`, `'marker'`, …), or
@@ -67,18 +71,18 @@ re-render efficiently, and stack in draw order.
 
 ## Props
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `tool` | `BrushTool \| null` | The active brush, or `null` to disable drawing. |
-| `onStrokeEnd` | `(stroke: BrushStrokeEvent) => void` | Called once when a stroke finishes. |
-| `children` | `ReactNode` | Your committed strokes (and any other nodes). |
+| Prop          | Type                                 | Description                                     |
+| ------------- | ------------------------------------ | ----------------------------------------------- |
+| `tool`        | `BrushTool \| null`                  | The active brush, or `null` to disable drawing. |
+| `onStrokeEnd` | `(stroke: BrushStrokeEvent) => void` | Called once when a stroke finishes.             |
+| `children`    | `ReactNode`                          | Your committed strokes (and any other nodes).   |
 
 ### `BrushStrokeEvent`
 
 ```ts
 interface BrushStrokeEvent {
   points: number[]; // flat [x0, y0, x1, y1, …] in stage coordinates
-  tool: BrushTool;  // which brush produced the stroke
+  tool: BrushTool; // which brush produced the stroke
 }
 ```
 

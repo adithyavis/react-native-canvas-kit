@@ -14,35 +14,6 @@ from scratch.
 
 React Native Canvas Kit is heavily inspired by [Konva](https://https://konvajs.org/).
 
-```tsx
-import { Stage, Layer, Circle, Rect } from 'react-native-canvas-kit';
-
-export function Hello() {
-  return (
-    <Stage width={300} height={300}>
-      <Layer>
-        <Rect
-          x={20}
-          y={20}
-          width={120}
-          height={80}
-          fill="#8a2be2"
-          cornerRadius={12}
-        />
-        <Circle
-          x={200}
-          y={140}
-          radius={50}
-          fill="#ff5aa5"
-          stroke="#1b0030"
-          strokeWidth={4}
-        />
-      </Layer>
-    </Stage>
-  );
-}
-```
-
 ## The scene graph
 
 The tree mirrors a classic 2D canvas hierarchy:

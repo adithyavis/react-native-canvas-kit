@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Stage
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Stage
 
 The `Stage` is the root of every scene. It renders the underlying Skia canvas
@@ -24,16 +26,16 @@ inside layers (or [groups](./group.md) within layers).
 
 ## Props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `width` | `number` | None | Canvas width, in points. **Required.** |
-| `height` | `number` | None | Canvas height, in points. **Required.** |
-| `style` | `StyleProp<ViewStyle>` | None | Style for the canvas view (e.g. a `backgroundColor`). |
-| `listening` | `boolean` | `true` | When `false`, the whole stage ignores pointer/gesture input. |
-| `gestureEnabled` | `boolean` | `true` | Enables the pan / pinch / rotate gesture pipeline. |
-| `pinchSensitivity` | `number` | `1` | Multiplier on pinch-to-scale sensitivity. |
-| `rotationSensitivity` | `number` | `1` | Multiplier on two-finger rotation sensitivity. |
-| `children` | `ReactNode` | None | Layers and groups. |
+| Prop                  | Type                   | Default | Description                                                  |
+| --------------------- | ---------------------- | ------- | ------------------------------------------------------------ |
+| `width`               | `number`               | None    | Canvas width, in points. **Required.**                       |
+| `height`              | `number`               | None    | Canvas height, in points. **Required.**                      |
+| `style`               | `StyleProp<ViewStyle>` | None    | Style for the canvas view (e.g. a `backgroundColor`).        |
+| `listening`           | `boolean`              | `true`  | When `false`, the whole stage ignores pointer/gesture input. |
+| `gestureEnabled`      | `boolean`              | `true`  | Enables the pan / pinch / rotate gesture pipeline.           |
+| `pinchSensitivity`    | `number`               | `1`     | Multiplier on pinch-to-scale sensitivity.                    |
+| `rotationSensitivity` | `number`               | `1`     | Multiplier on two-finger rotation sensitivity.               |
+| `children`            | `ReactNode`            | None    | Layers and groups.                                           |
 
 ## Sizing the stage
 

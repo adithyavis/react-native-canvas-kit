@@ -3,6 +3,8 @@ sidebar_position: 2
 title: Gradients
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Gradients
 
 Instead of a solid `fill`, a shape can be filled with a **linear** or **radial**
@@ -28,6 +30,8 @@ color: `[pos1, color1, pos2, color2, …]`, where each position is `0`–`1`.
   fillLinearGradientColorStops={[0, '#8a2be2', 1, '#22d3ee']}
 />
 ```
+
+<Demo name="styling-gradients-1" title="Linear gradient" height={340} />
 
 The start/end points define the gradient's direction and length in the shape's
 local space.
@@ -55,6 +59,8 @@ local space.
 />
 ```
 
+<Demo name="styling-gradients-2" title="Radial gradient" height={340} />
+
 ## Multiple stops
 
 Add as many stops as you like:
@@ -62,3 +68,5 @@ Add as many stops as you like:
 ```tsx
 fillLinearGradientColorStops={[0, '#ff5aa5', 0.5, '#8a2be2', 1, '#22d3ee']}
 ```
+
+<Demo name="styling-gradients-3" title="Multiple color stops" height={340} />

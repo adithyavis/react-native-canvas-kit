@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Events
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Events
 
 Nodes respond to touch input through event handler props. Hit testing is
@@ -19,17 +21,19 @@ event first, and it then **bubbles** up through parents to the stage.
 />
 ```
 
+<Demo name="interactivity-events-1" title="Tap handler" height={460} />
+
 ## Handling taps
 
 The most common handlers on touch devices:
 
-| Prop | Fires when |
-| --- | --- |
-| `onTap` | A finger taps the node. |
-| `onDblTap` | Two quick taps on the node. |
-| `onPointerDown` | A pointer/touch goes down on the node. |
-| `onPointerUp` | A pointer/touch lifts off the node. |
-| `onTouchStart` / `onTouchMove` / `onTouchEnd` | Raw touch lifecycle. |
+| Prop                                          | Fires when                             |
+| --------------------------------------------- | -------------------------------------- |
+| `onTap`                                       | A finger taps the node.                |
+| `onDblTap`                                    | Two quick taps on the node.            |
+| `onPointerDown`                               | A pointer/touch goes down on the node. |
+| `onPointerUp`                                 | A pointer/touch lifts off the node.    |
+| `onTouchStart` / `onTouchMove` / `onTouchEnd` | Raw touch lifecycle.                   |
 
 Drag-specific handlers (`onDragStart`, `onDragMove`, `onDragEnd`) are covered in
 [Drag & Drop](./drag-and-drop.md); transform handlers live on the
@@ -46,11 +50,11 @@ Every handler receives an `EventObject`:
 
 ```ts
 interface EventObject<E = unknown> {
-  type: string;            // e.g. 'tap'
-  target: NodeHandle;      // the node the event started on
+  type: string; // e.g. 'tap'
+  target: NodeHandle; // the node the event started on
   currentTarget: NodeHandle; // the node currently handling it (changes while bubbling)
-  evt: E;                  // the underlying native gesture event
-  cancelBubble: boolean;   // set true to stop bubbling
+  evt: E; // the underlying native gesture event
+  cancelBubble: boolean; // set true to stop bubbling
 }
 ```
 
@@ -118,6 +122,8 @@ also reach the layer:
   />
 </Layer>
 ```
+
+<Demo name="interactivity-events-5" title="Bubbling & cancelBubble" height={460} />
 
 ## Enabling & disabling input
 

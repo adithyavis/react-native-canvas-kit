@@ -12,7 +12,7 @@ import { TOOLS, type DrawnStroke, type Tool } from '../src/constants';
 
 export default function BrushesScreen() {
   const { width, height } = useWindowDimensions();
-  const [tool, setTool] = useState<Tool>(null);
+  const [tool, setTool] = useState<Tool>(TOOLS[0].tool);
   const [strokes, setStrokes] = useState<DrawnStroke[]>([]);
   const strokeCounter = useRef(0);
 

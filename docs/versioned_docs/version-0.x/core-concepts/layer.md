@@ -3,6 +3,8 @@ sidebar_position: 2
 title: Layer
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Layer
 
 A `Layer` is a grouping node directly under the [`Stage`](./stage.md). Use layers
@@ -12,10 +14,12 @@ layers paint on top of earlier ones.
 
 ```tsx
 <Stage width={width} height={height}>
-  <Layer>{/* background shapes */}</Layer>
-  <Layer>{/* foreground shapes + a Transformer */}</Layer>
+  <Layer>{/* background layer untouched by the eraser */}</Layer>
+  <BrushLayer type="eraser">{/* A special layer in which anything can be erased  */}</Layer>
 </Stage>
 ```
+
+<Demo name="core-concepts-layer-1" title="Stacked layers" height={340} />
 
 ## Props
 
@@ -38,6 +42,8 @@ Because a bare layer has no geometry, it can't receive taps on its own. Give it 
   {/* shapes; a shape's own onTap should set cancelBubble = true */}
 </Layer>
 ```
+
+<Demo name="core-concepts-layer-2" title="Tap empty to deselect" height={460} />
 
 Shapes on top still receive their own taps first; the layer only gets the tap
 when nothing above it handles it (see [Events](../interactivity/events.md)).

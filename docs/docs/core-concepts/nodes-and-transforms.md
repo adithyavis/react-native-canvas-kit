@@ -3,6 +3,8 @@ sidebar_position: 4
 title: Nodes & Transforms
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Nodes & Transforms
 
 Every element in the tree (layers, groups, and shapes) is a **node**, and they
@@ -72,6 +74,8 @@ To rotate a `100 × 100` rectangle around its center:
   fill="#22d3ee"
 />
 ```
+
+<Demo name="core-concepts-nodes-and-transforms-3" title="Rotate around a pivot" height={340} />
 
 ## Opacity & visibility
 
@@ -154,6 +158,8 @@ Each is optional and independent; a bound that is unset is not enforced.
 />
 ```
 
+<Demo name="core-concepts-nodes-and-transforms-4" title="Bounded drag / scale / rotate" height={460} />
+
 Bounds are enforced **on interaction**: the drag / pinch / rotate pipeline and an
 attached [`Transformer`](../interactivity/transformer.md) clamp to them as you
 gesture, and the value reported by `onDragEnd` / `onTransformEnd` is already
@@ -194,6 +200,8 @@ it comes within a tolerance. Each is optional and independent.
   rotationSnaps={[0, 45, 90, 135, 180, 225, 270, 315]}
 />
 ```
+
+<Demo name="core-concepts-nodes-and-transforms-5" title="Snap to edges & angles" height={460} />
 
 Edges and center have **separate** targets: the node's left / right edges snap to
 `xEdgeSnaps`, its center snaps to `xCenterSnaps` (and likewise for y). Whichever
@@ -238,6 +246,8 @@ lines through the node's center at the snap angles.
   <SnapGrid stroke="#ff2d87" strokeWidth={1} dash={[6, 6]} />
 </Layer>
 ```
+
+<Demo name="core-concepts-nodes-and-transforms-6" title="Visualize a snap grid" height={460} />
 
 | Prop                | Type       | Default              | Description                                                      |
 | ------------------- | ---------- | -------------------- | ---------------------------------------------------------------- |

@@ -3,6 +3,8 @@ sidebar_position: 2
 title: Drag & Drop
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Drag & Drop
 
 Add `draggable` to any node and it follows your finger. Position updates run on
@@ -16,10 +18,10 @@ the UI thread, so dragging stays smooth even under JS-thread load.
 
 Dragging is **opt-in per node**. Set the flag on any node you want to move:
 
-| Prop | Default | Enables |
-| --- | --- | --- |
-| `draggable` | `false` | One-finger drag. |
-| `dragDistance` | `3` | Pixels of movement before a drag starts. |
+| Prop           | Default | Enables                                  |
+| -------------- | ------- | ---------------------------------------- |
+| `draggable`    | `false` | One-finger drag.                         |
+| `dragDistance` | `3`     | Pixels of movement before a drag starts. |
 
 `draggable` is independent of the scale and rotate flags (see
 [Multi-touch Gestures](./gestures.md)), so a node can be draggable without being
@@ -27,11 +29,11 @@ scalable or rotatable, and the other way around.
 
 ## Drag lifecycle
 
-| Handler | Fires when |
-| --- | --- |
+| Handler       | Fires when                                    |
+| ------------- | --------------------------------------------- |
 | `onDragStart` | Movement passes the `dragDistance` threshold. |
-| `onDragMove` | On each move while dragging. |
-| `onDragEnd` | The finger lifts. |
+| `onDragMove`  | On each move while dragging.                  |
+| `onDragEnd`   | The finger lifts.                             |
 
 ```tsx
 <Circle
@@ -49,6 +51,8 @@ scalable or rotatable, and the other way around.
 />
 ```
 
+<Demo name="interactivity-drag-and-drop-2" title="Drag lifecycle" height={460} />
+
 ## Activation threshold
 
 `dragDistance` (default `3`) is how many pixels the finger must move before a
@@ -56,8 +60,18 @@ drag begins; this keeps taps from being misread as tiny drags. Raise it for
 "stickier" taps:
 
 ```tsx
-<Rect x={40} y={40} width={100} height={100} fill="#22d3ee" draggable dragDistance={8} />
+<Rect
+  x={40}
+  y={40}
+  width={100}
+  height={100}
+  fill="#22d3ee"
+  draggable
+  dragDistance={25}
+/>
 ```
+
+<Demo name="interactivity-drag-and-drop-3" title="Activation threshold" height={460} />
 
 ## Persisting position
 
@@ -98,3 +112,5 @@ group (and its children) as one:
   <Circle x={24} y={35} radius={16} fill="#ff5aa5" />
 </Group>
 ```
+
+<Demo name="interactivity-drag-and-drop-5" title="Dragging a group" height={460} />

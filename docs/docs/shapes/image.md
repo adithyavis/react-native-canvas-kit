@@ -3,6 +3,8 @@ sidebar_position: 9
 title: Image
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Image
 
 Draws a raster image (PNG, JPG, …). Positioned from its **top-left** (`x`/`y`).
@@ -18,6 +20,8 @@ import { Image } from 'react-native-canvas-kit';
   height={120}
 />;
 ```
+
+<Demo name="shapes-image-1" title="Basic image" height={340} />
 
 ## Props
 
@@ -42,6 +46,8 @@ Plus all [shared](../core-concepts/nodes-and-transforms.md) and
 <Image src={{ uri: 'https://example.com/pic.jpg' }} x={100} y={0} width={80} height={80} />
 ```
 
+<Demo name="shapes-image-2" title="Image sources" height={340} />
+
 ## Fit modes
 
 When the box aspect ratio differs from the image's, `fit` decides how to
@@ -52,6 +58,8 @@ letterboxes:
 <Image src={photo} x={0} y={0} width={120} height={80} fit="cover" />
 <Image src={photo} x={0} y={0} width={120} height={80} fit="contain" />
 ```
+
+<Demo name="shapes-image-3" title="Fit modes" height={340} />
 
 ## Pre-loading with `useImage`
 
@@ -66,3 +74,5 @@ if (!img) return null;
 
 return <Image image={img} x={40} y={40} width={img.width()} height={img.height()} />;
 ```
+
+<Demo name="shapes-image-4" title="Pre-loaded with useImage" height={340} />

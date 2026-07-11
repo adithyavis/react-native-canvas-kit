@@ -3,6 +3,8 @@ sidebar_position: 6
 title: RegularPolygon
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # RegularPolygon
 
 An equal-sided polygon (triangle, pentagon, hexagon, …) centered on its origin.
@@ -14,6 +16,8 @@ import { RegularPolygon } from 'react-native-canvas-kit';
 
 <RegularPolygon x={120} y={120} sides={6} radius={70} fill="#8a2be2" />;
 ```
+
+<Demo name="shapes-regular-polygon-1" title="Basic hexagon" height={340} />
 
 ## Geometry props
 
@@ -32,6 +36,8 @@ Plus all [shared](../core-concepts/nodes-and-transforms.md) and
 <RegularPolygon x={220} y={100} sides={5} radius={60} fill="#ff5aa5" />  {/* pentagon */}
 ```
 
+<Demo name="shapes-regular-polygon-2" title="Triangle and pentagon" height={340} />
+
 Rotate to change orientation:
 
 ```tsx
@@ -45,3 +51,5 @@ Rotate to change orientation:
   strokeWidth={4}
 />
 ```
+
+<Demo name="shapes-regular-polygon-3" title="Rotated hexagon" height={340} />

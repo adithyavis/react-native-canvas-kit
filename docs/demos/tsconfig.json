@@ -1,4 +1,8 @@
 {
-  "compilerOptions": {},
+  "compilerOptions": {
+    "paths": {
+      "react-native-canvas-kit": ["../../src/index.tsx"]
+    }
+  },
   "extends": "expo/tsconfig.base"
 }

@@ -3,6 +3,8 @@ sidebar_position: 2
 title: Quick Start
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Quick Start
 
 Let's build a small interactive canvas: a couple of shapes, a draggable one, and
@@ -45,6 +47,8 @@ export default function App() {
 }
 ```
 
+<Demo name="quick-start-1" title="A first canvas" height={340} />
+
 Every drawing lives inside a [`Stage`](../core-concepts/stage.md), which owns the
 native drawing surface. Shapes go inside a [`Layer`](../core-concepts/layer.md).
 
@@ -73,6 +77,8 @@ Listen for drag lifecycle events:
 />
 ```
 
+<Demo name="quick-start-3" title="Drag events" height={340} />
+
 ## Select and transform
 
 Give a shape an `id`, track which node is selected, and point a
@@ -90,7 +96,13 @@ import {
 
 function Editor() {
   const [selected, setSelected] = useState<string | null>(null);
-  const [box, setBox] = useState({ x: 60, y: 60, scaleX: 1, scaleY: 1, rotation: 0 });
+  const [box, setBox] = useState({
+    x: 60,
+    y: 60,
+    scaleX: 1,
+    scaleY: 1,
+    rotation: 0,
+  });
 
   return (
     <Stage width={360} height={640}>
@@ -107,6 +119,8 @@ function Editor() {
           cornerRadius={12}
           fill="#22d3ee"
           draggable
+          rotatable
+          scalable
           onTap={(e) => {
             setSelected('#box');
             e.cancelBubble = true;
@@ -130,6 +144,8 @@ function Editor() {
   );
 }
 ```
+
+<Demo name="quick-start-4" title="Select and transform" height={480} />
 
 Tap the rectangle to select it (handles appear), drag a handle to resize or
 rotate, and tap the empty layer to deselect.

@@ -38,6 +38,8 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
+    "demos:export": "npm --prefix docs/demos run export",
+    "demos:build": "yarn prepare && npm --prefix docs/demos run export",
     "release": "release-it --only-version"
   },
   "keywords": [

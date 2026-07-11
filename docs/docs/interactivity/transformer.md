@@ -3,6 +3,8 @@ sidebar_position: 4
 title: Transformer
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Transformer
 
 The `Transformer` is an interactive selection box with resize and rotate handles.
@@ -63,6 +65,8 @@ function Editor() {
 }
 ```
 
+<Demo name="interactivity-transformer-1" title="Transformer editor" height={460} />
+
 ## Attaching to a node
 
 The `node` prop is a **selector string** for the target: its `id` prefixed with
@@ -78,6 +82,8 @@ your state so it persists:
 ```tsx
 <Transformer node={selected} onTransformEnd={(e) => commit(selected, e)} />
 ```
+
+<Demo name="interactivity-transformer-2" title="Persisting transforms" height={460} />
 
 `onTransformEnd` is a **node event**, so the same transform is delivered to both
 the `Transformer` and the selected node. Put the handler wherever fits your code:
@@ -97,6 +103,8 @@ interface TransformEvent {
   anchor: AnchorId; // which handle was dragged
 }
 ```
+
+<Demo name="interactivity-transformer-3" title="The TransformEvent" height={460} />
 
 `onTransformStart` and `onTransform` fire at the start of and during the gesture,
 respectively.
@@ -164,6 +172,8 @@ uniform-scaling image:
 />
 ```
 
+<Demo name="interactivity-transformer-4" title="Limiting anchors" height={460} />
+
 ## Snapping rotation
 
 Snap to 45° increments:
@@ -175,3 +185,5 @@ Snap to 45° increments:
   rotationSnapTolerance={8}
 />
 ```
+
+<Demo name="interactivity-transformer-5" title="Rotation snapping" height={460} />

@@ -38,6 +38,8 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
+    "demos:export": "npm --prefix docs/demos run export",
+    "demos:build": "yarn prepare && npm --prefix docs/demos run export",
     "release": "release-it --only-version"
   },
   "keywords": [
@@ -95,7 +97,8 @@
     "react-native-reanimated": "^3.0.0"
   },
   "resolutions": {
-    "@types/react": "~18.3.12"
+    "@types/react": "~18.3.12",
+    "react-native": "0.76.9"
   },
   "workspaces": [
     "example"

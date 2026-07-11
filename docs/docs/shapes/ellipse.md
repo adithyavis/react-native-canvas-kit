@@ -3,6 +3,8 @@ sidebar_position: 4
 title: Ellipse
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Ellipse
 
 An ellipse centered on its origin, with independent horizontal and vertical
@@ -13,6 +15,8 @@ import { Ellipse } from 'react-native-canvas-kit';
 
 <Ellipse x={140} y={120} radiusX={90} radiusY={50} fill="#8a2be2" />;
 ```
+
+<Demo name="shapes-ellipse-1" title="An ellipse" height={340} />
 
 ## Geometry props
 
@@ -37,6 +41,8 @@ Plus all [shared](../core-concepts/nodes-and-transforms.md) and
   strokeWidth={4}
 />
 ```
+
+<Demo name="shapes-ellipse-2" title="Filled and stroked" height={340} />
 
 > A `Circle` is just an `Ellipse` with `radiusX === radiusY`. Use `Circle` when
 > both radii are equal.

@@ -3,6 +3,8 @@ sidebar_position: 5
 title: Bounds & Snapping
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Bounds & Snapping
 
 Bounds and snapping are node-level constraints that shape how a node responds to
@@ -44,6 +46,8 @@ Each is optional and independent; a bound that is unset is not enforced.
 />
 ```
 
+<Demo name="interactivity-bounds-and-snapping-1" title="Bounds" height={460} />
+
 Bounds are enforced **on interaction**: the drag / pinch / rotate pipeline and an
 attached [`Transformer`](./transformer.md) clamp to them as you gesture, and the
 value reported by `onDragEnd` / `onTransformEnd` is already clamped, so your
@@ -84,6 +88,8 @@ it comes within a tolerance. Each is optional and independent.
   rotationSnaps={[0, 45, 90, 135, 180, 225, 270, 315]}
 />
 ```
+
+<Demo name="interactivity-bounds-and-snapping-2" title="Snapping" height={460} />
 
 Edges and center have **separate** targets: the node's left / right edges snap to
 `xEdgeSnaps`, its center snaps to `xCenterSnaps` (and likewise for y). Whichever
@@ -130,14 +136,16 @@ node's center at the snap angles.
 </Layer>
 ```
 
-| Prop                | Type       | Default              | Description                                              |
-| ------------------- | ---------- | -------------------- | -------------------------------------------------------- |
-| `stroke`            | `string`   | `'rgb(255, 25, 0)'`  | Line color.                                              |
-| `strokeWidth`       | `number`   | `1`                  | Line width.                                              |
-| `dash`              | `number[]` | None                 | Dash pattern (e.g. `[6, 6]`); omit for solid.            |
-| `opacity`           | `number`   | `1`                  | Line opacity.                                            |
-| `tolerance`         | `number`   | `10`                 | Extra margin, added to the node's `snapTolerance`, over which position guides stay visible. |
-| `rotationTolerance` | `number`   | `5`                  | Extra margin, added to the node's `rotationSnapTolerance`, over which rotation guides stay visible. |
+<Demo name="interactivity-bounds-and-snapping-3" title="Snap grid" height={460} />
+
+| Prop                | Type       | Default             | Description                                                                                         |
+| ------------------- | ---------- | ------------------- | --------------------------------------------------------------------------------------------------- |
+| `stroke`            | `string`   | `'rgb(255, 25, 0)'` | Line color.                                                                                         |
+| `strokeWidth`       | `number`   | `1`                 | Line width.                                                                                         |
+| `dash`              | `number[]` | None                | Dash pattern (e.g. `[6, 6]`); omit for solid.                                                       |
+| `opacity`           | `number`   | `1`                 | Line opacity.                                                                                       |
+| `tolerance`         | `number`   | `10`                | Extra margin, added to the node's `snapTolerance`, over which position guides stay visible.         |
+| `rotationTolerance` | `number`   | `5`                 | Extra margin, added to the node's `rotationSnapTolerance`, over which rotation guides stay visible. |
 
 `tolerance` and `rotationTolerance` widen only the **visible** zone, not the
 snap zone: with a node `rotationSnapTolerance` of `5` and a grid `rotationTolerance`

@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Canvas Kit Demos",
+    "slug": "react-native-canvas-kit-demos",
+    "newArchEnabled": true,
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "experiments": {
+      "baseUrl": "/react-native-canvas-kit/demos"
+    }
+  }
+}

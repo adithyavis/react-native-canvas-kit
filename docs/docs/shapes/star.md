@@ -3,6 +3,8 @@ sidebar_position: 7
 title: Star
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Star
 
 A star with alternating inner and outer vertices, centered on its origin.
@@ -12,6 +14,8 @@ import { Star } from 'react-native-canvas-kit';
 
 <Star x={120} y={120} numPoints={5} innerRadius={30} outerRadius={70} fill="#8a2be2" />;
 ```
+
+<Demo name="shapes-star-1" title="Basic star" height={340} />
 
 ## Geometry props
 
@@ -33,3 +37,5 @@ a small inner radius makes sharp points, a large one makes a chunky star.
 <Star x={90} y={110} numPoints={5} innerRadius={16} outerRadius={70} fill="#ff5aa5" /> {/* spiky */}
 <Star x={230} y={110} numPoints={6} innerRadius={45} outerRadius={70} fill="#22d3ee" /> {/* chunky */}
 ```
+
+<Demo name="shapes-star-2" title="Spiky vs chunky" height={340} />

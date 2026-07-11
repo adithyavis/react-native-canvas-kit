@@ -36,14 +36,21 @@ export const Text = memo(
     };
 
     const matched = useMemo(() => {
+      if (fontProp) {
+        return null;
+      }
       const style = {
         fontFamily,
         fontSize,
         fontStyle: fontStyle.includes('italic') ? 'italic' : 'normal',
         fontWeight: fontStyle.includes('bold') ? 'bold' : 'normal',
       };
-      return matchFont(style as Parameters<typeof matchFont>[0]);
-    }, [fontFamily, fontSize, fontStyle]);
+      try {
+        return matchFont(style as Parameters<typeof matchFont>[0]);
+      } catch {
+        return null;
+      }
+    }, [fontProp, fontFamily, fontSize, fontStyle]);
     const font = fontProp ?? matched;
 
     if (!font) {
@@ -55,7 +62,8 @@ export const Text = memo(
     }
     const metrics = font.getMetrics();
     const baseline = -metrics.ascent;
-    const boxWidth = font.measureText(text).width;
+    const glyphWidths = font.getGlyphWidths(font.getGlyphIDs(text));
+    const boxWidth = glyphWidths.reduce((sum, width) => sum + width, 0);
     const boxHeight = metrics.descent - metrics.ascent;
 
     return (

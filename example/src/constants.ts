@@ -1,4 +1,3 @@
-import type { ImageSourcePropType } from 'react-native';
 import type { BrushTool } from 'react-native-canvas-kit';
 
 export const FONT_URL =
@@ -173,14 +172,14 @@ export const STICKERS: Sticker[] = [
   },
 ];
 
-export const TOOLS: { tool: BrushTool; icon: ImageSourcePropType }[] = [
+export const TOOLS = [
   { tool: 'pen', icon: require('./assets/tools/pen.png') },
   { tool: 'pencil', icon: require('./assets/tools/pencil.png') },
   { tool: 'marker', icon: require('./assets/tools/marker.png') },
   { tool: 'highlighter', icon: require('./assets/tools/highlighter.png') },
   { tool: 'tape', icon: require('./assets/tools/tape.png') },
   { tool: 'eraser', icon: require('./assets/tools/eraser.png') },
-];
+] as const;
 
 export const sel = (id: string) => `#${id}`;
 
@@ -199,7 +198,7 @@ export function buildInitialTransforms(
     };
   }
   out[CHIP] = {
-    x: Math.round(w * 0.1),
+    x: Math.round(w * 0.5) - 150,
     y: Math.round(h * 0.5),
     scaleX: 1,
     scaleY: 1,

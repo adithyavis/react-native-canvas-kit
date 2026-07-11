@@ -3,15 +3,21 @@ sidebar_position: 2
 title: Brush Types
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Brush Types
 
 Six brushes ship out of the box. Each is both a value in the `BrushTool` union
 (for `BrushLayer`'s `tool` prop) and a ready-made component for rendering
 committed strokes.
 
+Pick a brush and draw on the canvas below:
+
 ```ts
 type BrushTool = 'pen' | 'pencil' | 'marker' | 'highlighter' | 'tape' | 'eraser';
 ```
+
+<Demo name="brushes-brush-types-1" title="Brushes" height={460} />
 
 ## The brushes
 
@@ -43,6 +49,8 @@ import { BRUSH_PATHS } from 'react-native-canvas-kit';
 })}
 ```
 
+<Demo name="brushes-brush-types-2" title="Committed strokes" height={460} />
+
 Or use a component directly:
 
 ```tsx
@@ -51,6 +59,8 @@ import { Pen, Highlighter } from 'react-native-canvas-kit';
 <Pen points={[0, 0, 40, 30, 80, 10]} />
 <Highlighter points={[0, 60, 120, 60]} />
 ```
+
+<Demo name="brushes-brush-types-3" title="Pen and Highlighter" height={460} />
 
 ## Brush component props
 
@@ -69,6 +79,8 @@ required; the rest override that brush's defaults:
 <Marker points={pts} color="#22d3ee" strokeWidth={24} />
 <Pencil points={pts} opacity={0.6} tension={0.2} />
 ```
+
+<Demo name="brushes-brush-types-4" title="Prop overrides" height={460} />
 
 To change a brush's defaults everywhere, or to add a new brush, see
 [Custom Brushes](./custom-brushes.md).

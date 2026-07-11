@@ -3,6 +3,8 @@ sidebar_position: 3
 title: Multi-touch Gestures
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Multi-touch Gestures
 
 Beyond one-finger dragging, nodes support **two-finger pinch-to-scale** and
@@ -38,6 +40,8 @@ pipeline off at once. A node you can drag, pinch, and twist declares all three:
 />
 ```
 
+<Demo name="interactivity-gestures-1" title="Drag, pinch & rotate" height={460} />
+
 ## Tuning sensitivity
 
 Pinch and rotation sensitivity are configured once on the
@@ -58,6 +62,8 @@ Pinch and rotation sensitivity are configured once on the
   {/* ... */}
 </Stage>
 ```
+
+<Demo name="interactivity-gestures-2" title="Tuning sensitivity" height={460} />
 
 ## Persisting the result
 

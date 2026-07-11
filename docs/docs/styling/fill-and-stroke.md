@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Fill & Stroke
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Fill & Stroke
 
 Every shape shares the same paint model: an optional **fill** and an optional
@@ -18,6 +20,8 @@ Every shape shares the same paint model: an optional **fill** and an optional
 ```tsx
 <Rect x={20} y={20} width={120} height={80} fill="#8a2be2" />
 ```
+
+<Demo name="styling-fill-and-stroke-1" title="Solid fill" height={340} />
 
 ## Stroke
 
@@ -42,6 +46,8 @@ Every shape shares the same paint model: an optional **fill** and an optional
 />
 ```
 
+<Demo name="styling-fill-and-stroke-2" title="Fill and stroke" height={340} />
+
 A shape can have both: the fill is painted first, then the stroke on top.
 
 ## Line caps and joins
@@ -53,6 +59,8 @@ matter most for thick `Line` strokes:
 <Line points={pts} stroke="#22d3ee" strokeWidth={16} lineCap="round" lineJoin="round" />
 <Line points={pts} stroke="#ff5aa5" strokeWidth={16} lineCap="butt"  lineJoin="miter" />
 ```
+
+<Demo name="styling-fill-and-stroke-3" title="Line caps and joins" height={340} />
 
 ## Dashed strokes
 
@@ -73,6 +81,8 @@ matter most for thick `Line` strokes:
   dash={[12, 8]}
 />
 ```
+
+<Demo name="styling-fill-and-stroke-4" title="Dashed stroke" height={340} />
 
 ## See also
 

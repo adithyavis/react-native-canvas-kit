@@ -3,6 +3,8 @@ sidebar_position: 3
 title: Shadows & Blend Modes
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Shadows & Blend Modes
 
 ## Opacity
@@ -16,6 +18,8 @@ group fades everything inside it uniformly.
   <Circle x={120} y={50} radius={40} fill="#ff5aa5" />
 </Group>
 ```
+
+<Demo name="styling-shadows-and-blend-1" title="Opacity cascades to children" height={340} />
 
 ## Shadows
 
@@ -42,6 +46,8 @@ group fades everything inside it uniformly.
 />
 ```
 
+<Demo name="styling-shadows-and-blend-2" title="Drop shadow" height={340} />
+
 ## Blend modes
 
 `globalCompositeOperation` controls how a shape blends with what's already been
@@ -58,6 +64,8 @@ and map to Skia blend modes.
   globalCompositeOperation="multiply"
 />
 ```
+
+<Demo name="styling-shadows-and-blend-3" title="Multiply blend mode" height={340} />
 
 ### Available operations
 

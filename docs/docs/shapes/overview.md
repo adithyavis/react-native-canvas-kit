@@ -3,6 +3,8 @@ sidebar_position: 1
 title: Overview
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Shapes
 
 Shapes are the drawable leaves of the tree. The library ships eight:
@@ -41,6 +43,8 @@ A shape with neither a `fill` nor a `stroke` draws nothing. Provide at least one
 <Circle x={80} y={80} radius={40} fill="#8a2be2" />                 {/* filled */}
 <Circle x={200} y={80} radius={40} stroke="#8a2be2" strokeWidth={6} /> {/* outlined */}
 ```
+
+<Demo name="shapes-overview-1" title="Fill vs. stroke" height={340} />
 
 ## Local coordinates
 

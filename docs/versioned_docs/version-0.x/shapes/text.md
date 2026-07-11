@@ -3,6 +3,8 @@ sidebar_position: 8
 title: Text
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Text
 
 Renders a string using a Skia font. Text is positioned from its **top-left**
@@ -18,6 +20,8 @@ function Label() {
   return <Text text="Hello" x={20} y={20} font={font} fill="#1b0030" />;
 }
 ```
+
+<Demo name="shapes-text-1" title="Hello text" height={340} />
 
 ## Props
 
@@ -46,6 +50,8 @@ const font = useFont(
 );
 ```
 
+<Demo name="shapes-text-2" title="Font from a URL" height={340} />
+
 `useFont` accepts a local asset (`require(...)`) or a remote URL.
 
 ## Measuring text
@@ -59,6 +65,8 @@ const metrics = font ? font.getMetrics() : null;
 const height = metrics ? metrics.descent - metrics.ascent : 0;
 ```
 
+<Demo name="shapes-text-3" title="Measuring text" height={340} />
+
 ## System fonts
 
 If you don't want to bundle a font file, omit `font` and pass `fontFamily` /
@@ -70,3 +78,5 @@ import { matchFont } from 'react-native-canvas-kit';
 
 const font = matchFont({ fontFamily: 'Helvetica', fontSize: 20, fontWeight: 'bold' });
 ```
+
+<Demo name="shapes-text-4" title="System font text" height={340} />

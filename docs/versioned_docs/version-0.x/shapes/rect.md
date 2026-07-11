@@ -3,6 +3,8 @@ sidebar_position: 2
 title: Rect
 ---
 
+import Demo from '@site/src/components/Demo';
+
 # Rect
 
 A rectangle, optionally with rounded corners. Its origin is the **top-left**
@@ -11,16 +13,23 @@ corner, so `x`/`y` position that corner.
 ```tsx
 import { Rect } from 'react-native-canvas-kit';
 
-<Rect x={20} y={20} width={160} height={100} cornerRadius={16} fill="#8a2be2" />;
+<Rect
+  x={20}
+  y={20}
+  width={160}
+  height={100}
+  cornerRadius={16}
+  fill="#8a2be2"
+/>;
 ```
 
 ## Geometry props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `width` | `number` | `0` | Rectangle width. |
-| `height` | `number` | `0` | Rectangle height. |
-| `cornerRadius` | `number \| number[]` | None | Corner radius. A single number rounds all corners uniformly. |
+| Prop           | Type                 | Default | Description                                                  |
+| -------------- | -------------------- | ------- | ------------------------------------------------------------ |
+| `width`        | `number`             | `0`     | Rectangle width.                                             |
+| `height`       | `number`             | `0`     | Rectangle height.                                            |
+| `cornerRadius` | `number \| number[]` | None    | Corner radius. A single number rounds all corners uniformly. |
 
 Plus all [shared](../core-concepts/nodes-and-transforms.md) and
 [styling](../styling/fill-and-stroke.md) props.
@@ -30,6 +39,8 @@ Plus all [shared](../core-concepts/nodes-and-transforms.md) and
 ```tsx
 <Rect x={20} y={20} width={140} height={90} cornerRadius={20} fill="#22d3ee" />
 ```
+
+<Demo name="shapes-rect-2" title="Rounded corners" height={340} />
 
 ## Outlined rectangle
 
@@ -44,6 +55,8 @@ Plus all [shared](../core-concepts/nodes-and-transforms.md) and
   strokeWidth={4}
 />
 ```
+
+<Demo name="shapes-rect-3" title="Outlined rectangle" height={340} />
 
 ## Centered rotation
 
@@ -61,3 +74,5 @@ Use `offset` to rotate around the center rather than the corner:
   fill="#ff5aa5"
 />
 ```
+
+<Demo name="shapes-rect-4" title="Centered rotation" height={340} />

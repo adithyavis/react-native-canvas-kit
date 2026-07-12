@@ -1,5 +1,10 @@
 import React from 'react';
-import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import {
+  AbsoluteFill,
+  spring,
+  useCurrentFrame,
+  useVideoConfig,
+} from 'remotion';
 import { SlideLayout } from '../components/SlideLayout';
 import { SteppedCaption } from '../components/SteppedCaption';
 import { RectShape, ScreenBase } from '../components/canvasPrimitives';
@@ -21,9 +26,7 @@ const PortalScreen: React.FC = () => {
         <RectShape accent={theme.purple} x={52} y={64} w={30} h={24} />
         <circle cx={34} cy={156} r={15} fill={theme.pink} />
       </ScreenBase>
-      <AbsoluteFill
-        style={{ alignItems: 'center', justifyContent: 'center' }}
-      >
+      <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center' }}>
         <div
           style={{
             transform: `translate(${dx}px, ${dy}px) scale(${appear})`,

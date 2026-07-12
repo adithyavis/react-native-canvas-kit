@@ -77,8 +77,22 @@ export const Transformer: React.FC<{
         strokeWidth={0.7}
         strokeDasharray="2.5 2"
       />
-      <line x1={cx} y1={by} x2={cx} y2={by - 9} stroke={color} strokeWidth={0.7} />
-      <circle cx={cx} cy={by - 11} r={2.4} fill="#fff" stroke={color} strokeWidth={0.7} />
+      <line
+        x1={cx}
+        y1={by}
+        x2={cx}
+        y2={by - 9}
+        stroke={color}
+        strokeWidth={0.7}
+      />
+      <circle
+        cx={cx}
+        cy={by - 11}
+        r={2.4}
+        fill="#fff"
+        stroke={color}
+        strokeWidth={0.7}
+      />
       {corners.map(([hx, hy], i) => (
         <rect
           key={i}
@@ -132,7 +146,15 @@ export const GridDots: React.FC<{ opacity: number }> = ({ opacity }) => {
   const dots: React.ReactNode[] = [];
   for (let gx = 18; gx <= 82; gx += 16) {
     for (let gy = 40; gy <= 184; gy += 16) {
-      dots.push(<circle key={`${gx}-${gy}`} cx={gx} cy={gy} r={0.7} fill={theme.faint} />);
+      dots.push(
+        <circle
+          key={`${gx}-${gy}`}
+          cx={gx}
+          cy={gy}
+          r={0.7}
+          fill={theme.faint}
+        />
+      );
     }
   }
   return <g opacity={opacity}>{dots}</g>;

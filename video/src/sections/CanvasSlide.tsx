@@ -92,13 +92,19 @@ const CanvasScreen: React.FC<{ stepLen: number }> = ({ stepLen }) => {
       <ScreenBase>
         {showGrid ? <GridDots opacity={0.55} /> : null}
         {index === 6 ? <Guides active={guideActive} /> : null}
-        <g transform={`translate(70 150) scale(${circleScale}) translate(-70 -150)`}>
+        <g
+          transform={`translate(70 150) scale(${circleScale}) translate(-70 -150)`}
+        >
           <circle cx={70} cy={150} r={13} fill={theme.pink} />
         </g>
-        <g transform={`translate(30 152) scale(${starScale}) translate(-30 -152)`}>
+        <g
+          transform={`translate(30 152) scale(${starScale}) translate(-30 -152)`}
+        >
           <Star cx={30} cy={152} outer={16} inner={7} fill={theme.purple} />
         </g>
-        <g transform={`translate(${CX} ${CY}) scale(${rectAppear}) translate(${-CX} ${-CY})`}>
+        <g
+          transform={`translate(${CX} ${CY}) scale(${rectAppear}) translate(${-CX} ${-CY})`}
+        >
           <g transform={rectTransform}>
             <RectShape accent={theme.purple} />
             {showTransformer ? <Transformer /> : null}

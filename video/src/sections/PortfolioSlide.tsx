@@ -11,7 +11,10 @@ import { theme } from '../theme';
 import { portfolio } from '../portfolio';
 import type { PortfolioItem } from '../portfolio';
 import { PortfolioMock } from '../components/PortfolioMocks';
-import { HEADER_SPACE_LANDSCAPE, HEADER_SPACE_SQUARE } from '../components/Header';
+import {
+  HEADER_SPACE_LANDSCAPE,
+  HEADER_SPACE_SQUARE,
+} from '../components/Header';
 
 const PortfolioCard: React.FC<{ item: PortfolioItem; index: number }> = ({
   item,
@@ -19,7 +22,11 @@ const PortfolioCard: React.FC<{ item: PortfolioItem; index: number }> = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const s = spring({ frame: frame - 8 - index * 5, fps, config: { damping: 200 } });
+  const s = spring({
+    frame: frame - 8 - index * 5,
+    fps,
+    config: { damping: 200 },
+  });
 
   return (
     <div
@@ -48,7 +55,9 @@ const PortfolioCard: React.FC<{ item: PortfolioItem; index: number }> = ({
   );
 };
 
-export const PortfolioSlide: React.FC<{ duration: number }> = ({ duration }) => {
+export const PortfolioSlide: React.FC<{ duration: number }> = ({
+  duration,
+}) => {
   const frame = useCurrentFrame();
   const { fps, width } = useVideoConfig();
   const isSquare = width < 1400;

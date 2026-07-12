@@ -1,0 +1,23 @@
+{
+  "name": "canvas-kit-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Remotion promo video for react-native-canvas-kit",
+  "scripts": {
+    "dev": "remotion studio",
+    "render": "npm run render:landscape && npm run render:square",
+    "render:landscape": "remotion render Landscape out/landscape.mp4",
+    "render:square": "remotion render Square out/square.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/transitions": "^4.0.488",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "typescript": "^5.5.0"
+  }
+}

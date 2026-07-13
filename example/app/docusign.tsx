@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import {
-  LayoutChangeEvent,
+  type LayoutChangeEvent,
   Pressable,
   StyleSheet,
   Text,
@@ -16,11 +16,12 @@ interface SignatureStroke {
   color: string;
 }
 
-const INK_COLORS = ['#1b1b1f', '#2f6bff', '#e5352b'];
+const INK_COLORS: string[] = ['#1b1b1f', '#2f6bff', '#e5352b'];
+const DEFAULT_INK = '#1b1b1f';
 
 export default function DocuSignScreen() {
   const [strokes, setStrokes] = useState<SignatureStroke[]>([]);
-  const [color, setColor] = useState(INK_COLORS[0]);
+  const [color, setColor] = useState<string>(DEFAULT_INK);
   const [pad, setPad] = useState({ width: 0, height: 0 });
   const strokeCounter = useRef(0);
   const colorRef = useRef(color);

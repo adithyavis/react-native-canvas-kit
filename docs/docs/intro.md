@@ -6,6 +6,8 @@ title: Introduction
 
 # React Native Canvas Kit
 
+<video src="/react-native-canvas-kit/landscape.mp4" autoPlay loop muted playsInline style={{ width: '100%', aspectRatio: '16 / 9', borderRadius: 8 }} />
+
 **React Native Canvas Kit** is a batteries-included 2D canvas kit built on
 top of [React Native Skia](https://shopify.github.io/react-native-skia/). Canvas Kit layers a
 **scene graph** on top of Skia and comes with pre-built shapes, support for gestures and

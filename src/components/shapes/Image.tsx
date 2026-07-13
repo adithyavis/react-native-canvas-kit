@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import {
   Image as SkiaImage,
   useImage,
@@ -19,10 +19,11 @@ export interface ImageProps extends ShapeConfig {
   width?: number;
   height?: number;
   fit?: Fit;
+  children?: ReactNode;
 }
 
 export const Image = memo(
-  ({ image, src, width, height, fit, ...props }: ImageProps) => {
+  ({ image, src, width, height, fit, children, ...props }: ImageProps) => {
     const resolved = useImage(src ?? null);
     const skImage = image ?? resolved;
 
@@ -51,7 +52,9 @@ export const Image = memo(
           width={w}
           height={h}
           fit={fit ?? 'fill'}
-        />
+        >
+          {children}
+        </SkiaImage>
       </Container>
     );
   }

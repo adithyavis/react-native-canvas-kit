@@ -20,7 +20,7 @@ function DrawerContent(props: DrawerContentComponentProps) {
   return (
     <DrawerContentScrollView {...props}>
       {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
+        const options = descriptors[route.key]?.options ?? {};
         const label =
           typeof options.drawerLabel === 'string'
             ? options.drawerLabel

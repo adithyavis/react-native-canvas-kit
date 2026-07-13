@@ -1,7 +1,6 @@
 import React from 'react';
 import { AbsoluteFill, useVideoConfig } from 'remotion';
 import { theme } from '../theme';
-import { DeviceFrame } from './DeviceFrame';
 import { HEADER_SPACE_LANDSCAPE, HEADER_SPACE_SQUARE } from './Header';
 
 export const useIsSquare = () => {
@@ -13,12 +12,9 @@ export const SlideLayout: React.FC<{
   caption: React.ReactNode;
   children: React.ReactNode;
 }> = ({ caption, children }) => {
-  const { width, height } = useVideoConfig();
+  const { width } = useVideoConfig();
   const isSquare = width < 1400;
   const headerSpace = isSquare ? HEADER_SPACE_SQUARE : HEADER_SPACE_LANDSCAPE;
-  const screenHeight = Math.round(
-    isSquare ? Math.min(height * 0.44, 520) : Math.min(height * 0.72, 760)
-  );
 
   return (
     <AbsoluteFill
@@ -28,11 +24,11 @@ export const SlideLayout: React.FC<{
         flexDirection: isSquare ? 'column' : 'row',
         alignItems: 'center',
         justifyContent: isSquare ? 'flex-start' : 'space-around',
-        gap: isSquare ? 36 : 40,
+        gap: isSquare ? 30 : 40,
         paddingTop: headerSpace,
         paddingLeft: isSquare ? 60 : 110,
         paddingRight: isSquare ? 60 : 110,
-        paddingBottom: isSquare ? 50 : 0,
+        paddingBottom: isSquare ? 40 : 0,
         fontFamily: theme.sans,
       }}
     >
@@ -40,13 +36,13 @@ export const SlideLayout: React.FC<{
         style={{
           display: 'flex',
           justifyContent: isSquare ? 'center' : 'flex-start',
-          flex: isSquare ? 'none' : '0 1 640px',
+          flex: isSquare ? 'none' : '0 1 600px',
         }}
       >
         {caption}
       </div>
       <div style={{ flex: 'none', display: 'flex', justifyContent: 'center' }}>
-        <DeviceFrame screenHeight={screenHeight}>{children}</DeviceFrame>
+        {children}
       </div>
     </AbsoluteFill>
   );

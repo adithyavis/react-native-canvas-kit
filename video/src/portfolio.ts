@@ -1,59 +1,45 @@
 export type PortfolioItem = {
   id: string;
   label: string;
-  accent: string;
-  ratio: number;
   source: string;
-  image: boolean;
+  clipSeconds: number;
+  ratio: number;
 };
 
 export const portfolio: PortfolioItem[] = [
   {
     id: 'instagram',
-    label: 'Instagram Stories',
-    accent: '#a855f7',
-    ratio: 1.7,
-    source: 'instagram.png',
-    image: false,
+    label: 'Instagram crop',
+    source: 'instagram_crop.mp4',
+    clipSeconds: 5.85,
+    ratio: 1.5,
   },
   {
     id: 'canva',
     label: 'Canva board',
-    accent: '#38bdf8',
-    ratio: 0.68,
-    source: 'canva.png',
-    image: false,
+    source: 'canva.mp4',
+    clipSeconds: 4.37,
+    ratio: 1.3,
   },
   {
     id: 'gpay',
     label: 'Google Pay scratch',
-    accent: '#34d399',
-    ratio: 1.5,
-    source: 'google-pay.png',
-    image: false,
+    source: 'gpay_scratch_card.mp4',
+    clipSeconds: 3.23,
+    ratio: 1.6,
   },
   {
     id: 'snapseed',
     label: 'Snapseed',
-    accent: '#f59e0b',
-    ratio: 1.2,
-    source: 'snapseed.png',
-    image: false,
+    source: 'snapseed.mp4',
+    clipSeconds: 7.85,
+    ratio: 1.35,
   },
   {
-    id: 'reactflow',
-    label: 'React Flow',
-    accent: '#22d3ee',
-    ratio: 0.7,
-    source: 'react-flow.png',
-    image: false,
-  },
-  {
-    id: 'photo',
-    label: 'Photo editor',
-    accent: '#ff2d87',
-    ratio: 1.3,
-    source: 'photo-editor.png',
-    image: false,
+    id: 'docusign',
+    label: 'Docusign',
+    source: 'docusign.mp4',
+    clipSeconds: 5.53,
+    ratio: 1.45,
   },
 ];

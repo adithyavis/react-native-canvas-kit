@@ -5,7 +5,8 @@ import type { Timing } from './MarketingVideo';
 
 const landscapeTiming: Timing = {
   intro: 70,
-  canvas: 490,
+  canvas: 360,
+  brush: 190,
   portal: 150,
   portfolio: 190,
   cta: 150,
@@ -13,14 +14,15 @@ const landscapeTiming: Timing = {
 
 const squareTiming: Timing = {
   intro: 60,
-  canvas: 420,
+  canvas: 300,
+  brush: 160,
   portal: 120,
   portfolio: 160,
   cta: 120,
 };
 
 const totalFrames = (t: Timing) =>
-  t.intro + t.canvas + t.portal + t.portfolio + t.cta;
+  t.intro + t.canvas + t.brush + t.portal + t.portfolio + t.cta;
 
 export const RemotionRoot: React.FC = () => {
   return (

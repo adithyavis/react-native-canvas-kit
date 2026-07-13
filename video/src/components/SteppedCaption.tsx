@@ -28,12 +28,11 @@ export const SteppedCaption: React.FC<{
       <div
         key={index}
         style={{
-          fontSize: isSquare ? 60 : 84,
+          fontSize: isSquare ? 34 : 52,
           fontWeight: 700,
           letterSpacing: -2,
           lineHeight: 1.05,
           color: theme.ink,
-          transform: `translateY(${y}px)`,
         }}
       >
         {steps[index]}

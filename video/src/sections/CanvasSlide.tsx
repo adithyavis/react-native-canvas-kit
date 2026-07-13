@@ -1,126 +1,107 @@
 import React from 'react';
 import {
-  AbsoluteFill,
+  Series,
   interpolate,
   spring,
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import { SlideLayout } from '../components/SlideLayout';
-import { LyricsCaption } from '../components/LyricsCaption';
-import {
-  CX,
-  CY,
-  RectShape,
-  Star,
-  Transformer,
-  Finger,
-  Guides,
-  GridDots,
-  ScreenBase,
-} from '../components/canvasPrimitives';
+import { SlideLayout, useIsSquare } from '../components/SlideLayout';
+import { DeviceVideo } from '../components/DeviceVideo';
 import { theme } from '../theme';
 
-const LINES = [
-  'Add a rectangle.',
-  'Or a circle.',
-  'Or any shape.',
-  'Drag it.',
-  'Rotate it.',
-  'Scale it.',
-  'Snap to guides.',
+type Phase = {
+  id: string;
+  caption: string;
+  subtitle: string;
+  video: string;
+  videoSeconds: number;
+  aspect: number;
+};
+
+const PHASES: Phase[] = [
+  {
+    id: 'shapes',
+    caption: 'Add an Image. Or a circle. Or anything.',
+    subtitle: 'Comes with pre-defined Shapes.',
+    video: 'Canvas_shapes.mp4',
+    videoSeconds: 3.15,
+    aspect: 0.483,
+  },
+  {
+    id: 'interactivity',
+    caption: 'Drag it. Rotate it. Scale it.',
+    subtitle: 'All on the UI thread; buttery smooth.',
+    video: 'drag.mp4',
+    videoSeconds: 6.38,
+    aspect: 0.462,
+  },
 ];
 
-const CanvasScreen: React.FC<{ stepLen: number }> = ({ stepLen }) => {
+const PhaseCaption: React.FC<{ phase: Phase }> = ({ phase }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const index = Math.min(LINES.length - 1, Math.floor(frame / stepLen));
-  const t = (frame - index * stepLen) / fps;
-
-  const rectAppear = spring({ frame, fps, config: { damping: 12, mass: 0.7 } });
-  const circleAppear = spring({
-    frame: frame - stepLen,
-    fps,
-    config: { damping: 12, mass: 0.7 },
-  });
-  const starAppear = spring({
-    frame: frame - stepLen * 2,
-    fps,
-    config: { damping: 12, mass: 0.7 },
-  });
-  const othersFade = spring({
-    frame: frame - stepLen * 3,
-    fps,
-    config: { damping: 16 },
-  });
-  const circleScale = Math.max(0, circleAppear * (1 - othersFade));
-  const starScale = Math.max(0, starAppear * (1 - othersFade));
-
-  let rectTransform = '';
-  let showTransformer = false;
-  let finger: React.ReactNode = null;
-  let showGrid = false;
-  let guideActive = 0;
-
-  if (index === 3) {
-    const dx = Math.sin(t * 2) * 20;
-    rectTransform = `translate(${dx} 0)`;
-    finger = <Finger x={CX + dx} y={CY + 12} />;
-  } else if (index === 4) {
-    const ang = Math.sin(t * 2) * 30;
-    rectTransform = `rotate(${ang} ${CX} ${CY})`;
-    showTransformer = true;
-  } else if (index === 5) {
-    const sc = 0.78 + (0.5 + 0.5 * Math.sin(t * 2.2)) * 0.42;
-    rectTransform = `translate(${CX} ${CY}) scale(${sc}) translate(${-CX} ${-CY})`;
-    showTransformer = true;
-  } else if (index === 6) {
-    const dx = 14 * Math.cos(t * 1.3);
-    const dy = 10 * Math.sin(t * 1.0);
-    rectTransform = `translate(${dx} ${dy})`;
-    showTransformer = true;
-    showGrid = true;
-    const near = Math.max(Math.abs(dx), Math.abs(dy));
-    guideActive = interpolate(near, [0, 3, 7], [1, 0.3, 0], {
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
-    });
-  }
-
+  const isSquare = useIsSquare();
+  const enter = spring({ frame, fps, config: { damping: 200 } });
+  const y = interpolate(enter, [0, 1], [24, 0]);
   return (
-    <AbsoluteFill style={{ background: '#fff' }}>
-      <ScreenBase>
-        {showGrid ? <GridDots opacity={0.55} /> : null}
-        {index === 6 ? <Guides active={guideActive} /> : null}
-        <g
-          transform={`translate(70 150) scale(${circleScale}) translate(-70 -150)`}
-        >
-          <circle cx={70} cy={150} r={13} fill={theme.pink} />
-        </g>
-        <g
-          transform={`translate(30 152) scale(${starScale}) translate(-30 -152)`}
-        >
-          <Star cx={30} cy={152} outer={16} inner={7} fill={theme.purple} />
-        </g>
-        <g
-          transform={`translate(${CX} ${CY}) scale(${rectAppear}) translate(${-CX} ${-CY})`}
-        >
-          <g transform={rectTransform}>
-            <RectShape accent={theme.purple} />
-            {showTransformer ? <Transformer /> : null}
-          </g>
-        </g>
-        {finger}
-      </ScreenBase>
-    </AbsoluteFill>
+    <div
+      style={{
+        textAlign: isSquare ? 'center' : 'left',
+        maxWidth: isSquare ? 820 : 600,
+        fontFamily: theme.sans,
+        transform: `translateY(${y}px)`,
+      }}
+    >
+      <div
+        style={{
+          fontSize: isSquare ? 46 : 62,
+          fontWeight: 700,
+          letterSpacing: -2,
+          lineHeight: 1.08,
+          color: theme.ink,
+        }}
+      >
+        {phase.caption}
+      </div>
+      <div
+        style={{
+          fontSize: isSquare ? 26 : 32,
+          fontWeight: 500,
+          color: theme.muted,
+          marginTop: 20,
+          lineHeight: 1.35,
+        }}
+      >
+        {phase.subtitle}
+      </div>
+    </div>
   );
 };
 
+const PhaseView: React.FC<{ phase: Phase; phaseLen: number }> = ({
+  phase,
+  phaseLen,
+}) => (
+  <SlideLayout caption={<PhaseCaption phase={phase} />}>
+    <DeviceVideo
+      src={phase.video}
+      clipSeconds={phase.videoSeconds}
+      durationInFrames={phaseLen}
+      aspect={phase.aspect}
+    />
+  </SlideLayout>
+);
+
 export const CanvasSlide: React.FC<{ duration: number }> = ({ duration }) => {
-  const stepLen = duration / LINES.length;
+  const phaseLen = Math.floor(duration / PHASES.length);
   return (
-    <SlideLayout caption={<LyricsCaption lines={LINES} stepLen={stepLen} />}>
-      <CanvasScreen stepLen={stepLen} />
-    </SlideLayout>
+    <Series>
+      {PHASES.map((phase) => (
+        <Series.Sequence key={phase.id} durationInFrames={phaseLen}>
+          <PhaseView phase={phase} phaseLen={phaseLen} />
+        </Series.Sequence>
+      ))}
+    </Series>
   );
 };

@@ -10,6 +10,7 @@ import {
 import { theme } from './theme';
 import { Header } from './components/Header';
 import { CanvasSlide } from './sections/CanvasSlide';
+import { BrushSlide } from './sections/BrushSlide';
 import { PortalSlide } from './sections/PortalSlide';
 import { PortfolioSlide } from './sections/PortfolioSlide';
 import { CTA } from './sections/CTA';
@@ -17,6 +18,7 @@ import { CTA } from './sections/CTA';
 export type Timing = {
   intro: number;
   canvas: number;
+  brush: number;
   portal: number;
   portfolio: number;
   cta: number;
@@ -46,6 +48,9 @@ export const MarketingVideo: React.FC<{ timing: Timing }> = ({ timing }) => {
         </Series.Sequence>
         <Series.Sequence durationInFrames={t.canvas}>
           <CanvasSlide duration={t.canvas} />
+        </Series.Sequence>
+        <Series.Sequence durationInFrames={t.brush}>
+          <BrushSlide duration={t.brush} />
         </Series.Sequence>
         <Series.Sequence durationInFrames={t.portal}>
           <PortalSlide duration={t.portal} />

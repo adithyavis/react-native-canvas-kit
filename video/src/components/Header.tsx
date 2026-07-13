@@ -24,16 +24,15 @@ export const Header: React.FC<{ introEnd: number; hideFrom: number }> = ({
   }
 
   const isSquare = width < 1400;
-  const enter = spring({ frame, fps, config: { damping: 200 } });
-  const settleStart = introEnd - 4;
-  const settleEnd = introEnd + 24;
+  const settleStart = introEnd - 15;
+  const settleEnd = introEnd - 2;
   const s = interpolate(frame, [settleStart, settleEnd], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
     easing: Easing.inOut(Easing.ease),
   });
 
-  const bigScale = (isSquare ? 0.6 : 1) * interpolate(enter, [0, 1], [0.86, 1]);
+  const bigScale = isSquare ? 0.6 : 1;
   const smallScale = isSquare ? 0.34 : 0.44;
   const scale = interpolate(s, [0, 1], [bigScale, smallScale]);
 

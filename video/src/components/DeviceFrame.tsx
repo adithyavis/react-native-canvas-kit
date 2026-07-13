@@ -33,60 +33,6 @@ export const DeviceFrame: React.FC<{
         }}
       >
         {children}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: statusH,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 18px',
-            fontFamily: theme.sans,
-            fontSize: Math.round(statusH * 0.42),
-            fontWeight: 600,
-            color: theme.ink,
-            zIndex: 3,
-          }}
-        >
-          <span>9:41</span>
-          <span
-            style={{
-              width: 17,
-              height: 9,
-              border: `1.5px solid ${theme.ink}`,
-              borderRadius: 2,
-              position: 'relative',
-            }}
-          >
-            <span
-              style={{
-                position: 'absolute',
-                top: 1.5,
-                left: 1.5,
-                bottom: 1.5,
-                width: '68%',
-                background: theme.ink,
-                borderRadius: 1,
-              }}
-            />
-          </span>
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            top: Math.round(statusH * 0.34),
-            left: '50%',
-            marginLeft: -hole / 2,
-            width: hole,
-            height: hole,
-            borderRadius: 999,
-            background: '#0a0a0c',
-            zIndex: 4,
-          }}
-        />
       </div>
     </div>
   );

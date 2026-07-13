@@ -12,7 +12,8 @@ top of [React Native Skia](https://shopify.github.io/react-native-skia/). Canvas
 interactivity, transformers, and brushes, so that you don't have to compose a canvas experience
 from scratch.
 
-React Native Canvas Kit is heavily inspired by [Konva](https://https://konvajs.org/).
+React Native Canvas Kit is heavily inspired by [Konva](https://konvajs.org/); see
+[Thanks to Konva](./thanks-to-konva.md) for what the two share.
 
 ## The scene graph
 

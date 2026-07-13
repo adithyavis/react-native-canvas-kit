@@ -1,0 +1,65 @@
+# React Native Canvas Kit
+
+> React Native Canvas Kit is a batteries-included 2D canvas library for React Native. It layers a Konva-style scene graph (Stage, Layer, Group, Shape) on top of React Native Skia and ships pre-built shapes, hierarchy-aware events, draggable nodes, multi-touch gestures, an interactive Transformer, and a set of brushes. Gestures and dragging run on the UI thread via Reanimated and Gesture Handler. It requires React Native's New Architecture; the 0.x line targets Reanimated 3 / legacy architecture.
+
+## Keywords
+
+react-native-canvas-kit, react-native-canvas, canvas for react native, react-native-konva, konva for react native, konva react native, expo-canvas, canvas for expo, react-native-skia canvas, skia scene graph, 2D canvas library react native, the only canvas you would need on react native, react native drawing library, react native shapes, react native transformer, react native brushes, react native gestures canvas, interactive canvas react native, HTML5 canvas alternative react native.
+
+## Getting Started
+
+- [Introduction](https://adithyavis.github.io/react-native-canvas-kit/intro): What Canvas Kit is, the scene graph model, and what the library provides.
+- [Installation](https://adithyavis.github.io/react-native-canvas-kit/getting-started/installation): Install the library and its Skia, Reanimated, and Gesture Handler peer dependencies, and configure Babel.
+- [Quick Start](https://adithyavis.github.io/react-native-canvas-kit/getting-started/quick-start): Build a first interactive canvas with shapes, dragging, and a transformer.
+- [Web](https://adithyavis.github.io/react-native-canvas-kit/getting-started/web): Run Canvas Kit in the browser via Skia's CanvasKit WASM, including the load-order rule and a web-only entry point.
+
+## Core Concepts
+
+- [Stage](https://adithyavis.github.io/react-native-canvas-kit/core-concepts/stage): The root node that owns the native Skia drawing surface.
+- [Layer](https://adithyavis.github.io/react-native-canvas-kit/core-concepts/layer): A logical grouping with its own transform inside a Stage.
+- [Group](https://adithyavis.github.io/react-native-canvas-kit/core-concepts/group): A transformable container for shapes and nested groups.
+- [Nodes and transforms](https://adithyavis.github.io/react-native-canvas-kit/core-concepts/nodes-and-transforms): How position, scale, and rotation cascade down the node tree.
+
+## Shapes
+
+- [Overview](https://adithyavis.github.io/react-native-canvas-kit/shapes/overview): The shared transform and styling props common to every shape.
+- [Rect](https://adithyavis.github.io/react-native-canvas-kit/shapes/rect): Rectangles with optional corner radius.
+- [Circle](https://adithyavis.github.io/react-native-canvas-kit/shapes/circle): Circles by center and radius.
+- [Ellipse](https://adithyavis.github.io/react-native-canvas-kit/shapes/ellipse): Ellipses with independent x and y radii.
+- [Line](https://adithyavis.github.io/react-native-canvas-kit/shapes/line): Polylines and open or closed point paths.
+- [Regular Polygon](https://adithyavis.github.io/react-native-canvas-kit/shapes/regular-polygon): Equilateral polygons by side count and radius.
+- [Star](https://adithyavis.github.io/react-native-canvas-kit/shapes/star): Stars with inner and outer radii.
+- [Text](https://adithyavis.github.io/react-native-canvas-kit/shapes/text): Text drawing and styling.
+- [Image](https://adithyavis.github.io/react-native-canvas-kit/shapes/image): Rendering images onto the canvas.
+
+## Styling
+
+- [Fill and stroke](https://adithyavis.github.io/react-native-canvas-kit/styling/fill-and-stroke): Fill colors, stroke color, and stroke width.
+- [Gradients](https://adithyavis.github.io/react-native-canvas-kit/styling/gradients): Linear and radial gradient fills.
+- [Shadows and blend](https://adithyavis.github.io/react-native-canvas-kit/styling/shadows-and-blend): Drop shadows and blend modes.
+
+## Interactivity
+
+- [Events](https://adithyavis.github.io/react-native-canvas-kit/interactivity/events): Tap and press events with hierarchy-aware hit testing and ancestor bubbling.
+- [Drag and drop](https://adithyavis.github.io/react-native-canvas-kit/interactivity/drag-and-drop): Making nodes draggable and handling drag lifecycle events.
+- [Gestures](https://adithyavis.github.io/react-native-canvas-kit/interactivity/gestures): UI-thread pinch-to-scale and rotate multi-touch gestures.
+- [Transformer](https://adithyavis.github.io/react-native-canvas-kit/interactivity/transformer): An attachable selection box with resize and rotate handles.
+- [Bounds and snapping](https://adithyavis.github.io/react-native-canvas-kit/interactivity/bounds-and-snapping): Node bounds and snapping during transforms.
+
+## Brushes
+
+- [Overview](https://adithyavis.github.io/react-native-canvas-kit/brushes/overview): The BrushLayer and UI-thread stroke capture.
+- [Brush types](https://adithyavis.github.io/react-native-canvas-kit/brushes/brush-types): Ready-made brushes (pen, pencil, marker, highlighter, tape, eraser).
+- [Custom brushes](https://adithyavis.github.io/react-native-canvas-kit/brushes/custom-brushes): Building your own brushes.
+
+## Portal
+
+- [Overview](https://adithyavis.github.io/react-native-canvas-kit/portal/overview): Rendering nodes into a different part of the scene graph.
+
+## More
+
+- [Thanks to Konva](https://adithyavis.github.io/react-native-canvas-kit/thanks-to-konva): The Konva inspiration behind the API, and what is kept similar or different.
+
+## Source
+
+- [GitHub repository](https://github.com/adithyavis/react-native-canvas-kit): Source, issues, and releases for React Native Canvas Kit.

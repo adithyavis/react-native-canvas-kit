@@ -8,7 +8,7 @@
 # react-native-canvas-kit
 
 <p align="center">
-  <video src="https://github.com/adithyavis/react-native-canvas-kit/raw/main/assets/landscape.mp4" width="100%" controls muted autoplay loop></video>
+  <video src="https://github.com/user-attachments/assets/762d8210-e6f8-4423-8027-859e4156b6b8" width="100%" controls muted autoplay loop></video>
 </p>
 
 A **batteries-included 2D canvas kit for React Native**, built on top of

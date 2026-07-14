@@ -7,6 +7,10 @@
 
 # react-native-canvas-kit
 
+<p align="center">
+  <video src="https://github.com/adithyavis/react-native-canvas-kit/raw/main/assets/landscape.mp4" width="100%" controls muted autoplay loop></video>
+</p>
+
 A **batteries-included 2D canvas kit for React Native**, built on top of
 [React Native Skia](https://shopify.github.io/react-native-skia/). Canvas Kit
 layers a **scene graph** over Skia and ships with pre-built shapes, gestures and

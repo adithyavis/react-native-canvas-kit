@@ -1,5 +1,12 @@
 import { memo, useEffect, useRef, type ReactNode } from 'react';
-import { Group, Path } from '@shopify/react-native-skia';
+import {
+  BlendMode,
+  Group,
+  Path,
+  StrokeCap,
+  StrokeJoin,
+  type SkEnum,
+} from '@shopify/react-native-skia';
 import { useDerivedValue, useSharedValue } from 'react-native-reanimated';
 import { useRegistry } from '../internal/NodeContext';
 import { buildBrushPath } from '../../core/brush';
@@ -16,12 +23,26 @@ export interface BrushStrokeEvent {
 
 export interface BrushLayerProps {
   tool: BrushTool | null;
+  strokeWidth?: number;
+  strokeCap?: SkEnum<typeof StrokeCap>;
+  strokeJoin?: SkEnum<typeof StrokeJoin>;
+  opacity?: number;
+  blendMode?: SkEnum<typeof BlendMode>;
   onStrokeEnd?: (stroke: BrushStrokeEvent) => void;
   children?: ReactNode;
 }
 
 export const BrushLayer = memo(
-  ({ tool, onStrokeEnd, children }: BrushLayerProps) => {
+  ({
+    tool,
+    strokeWidth,
+    strokeCap,
+    strokeJoin,
+    opacity,
+    blendMode,
+    onStrokeEnd,
+    children,
+  }: BrushLayerProps) => {
     const registry = useRegistry();
     const activePointsSV = useSharedValue<number[]>([]);
 
@@ -57,8 +78,8 @@ export const BrushLayer = memo(
       return () => registry.unregisterBrushTool();
     }, [registry, tool, activePointsSV]);
 
-    const activeStyle = tool === null ? null : BRUSHES[tool];
-    const activeTension = activeStyle?.tension ?? 0.5;
+    const activeBrush = tool === null ? null : BRUSHES[tool];
+    const activeTension = activeBrush?.tension ?? 0.5;
 
     const activePath = useDerivedValue(
       () => buildBrushPath(activePointsSV.value, activeTension),
@@ -68,16 +89,16 @@ export const BrushLayer = memo(
     return (
       <Group layer>
         {children}
-        {activeStyle && (
+        {activeBrush && (
           <Path
             path={activePath}
             style="stroke"
-            color={activeStyle.color}
-            strokeWidth={activeStyle.strokeWidth}
-            strokeCap={activeStyle.cap}
-            strokeJoin={activeStyle.join}
-            opacity={activeStyle.opacity}
-            blendMode={activeStyle.blendMode}
+            color={activeBrush.color}
+            strokeWidth={strokeWidth ?? activeBrush.strokeWidth}
+            strokeCap={strokeCap ?? activeBrush.cap}
+            strokeJoin={strokeJoin ?? activeBrush.join}
+            opacity={opacity ?? activeBrush.opacity}
+            blendMode={blendMode ?? activeBrush.blendMode}
           />
         )}
       </Group>

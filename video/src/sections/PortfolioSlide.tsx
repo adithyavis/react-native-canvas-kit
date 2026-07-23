@@ -30,7 +30,11 @@ const PhoneCard: React.FC<{
 }> = ({ item, index, duration, phoneWidth, phoneHeight, radius }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const s = spring({ frame: frame - 6 - index * 4, fps, config: { damping: 200 } });
+  const s = spring({
+    frame: frame - 6 - index * 4,
+    fps,
+    config: { damping: 200 },
+  });
   const stagger = (index % 2 === 0 ? -1 : 1) * 20;
 
   return (
@@ -101,6 +105,7 @@ export const PortfolioSlide: React.FC<{ duration: number }> = ({
           justifyContent: 'center',
           alignItems: 'center',
           flex: isSquare ? 'none' : '1',
+          marginTop: isSquare ? 100 : 0,
         }}
       >
         {portfolio.map((item, i) => (

@@ -50,7 +50,7 @@ const PhaseCaption: React.FC<{ phase: Phase }> = ({ phase }) => {
         textAlign: isSquare ? 'center' : 'left',
         maxWidth: isSquare ? 820 : 600,
         fontFamily: theme.sans,
-        transform: `translateY(${y}px)`,
+        transform: isSquare ? `translateY(${0}px)` : `translateY(${y}px)`,
       }}
     >
       <div

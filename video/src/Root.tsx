@@ -13,7 +13,7 @@ const landscapeTiming: Timing = {
 };
 
 const squareTiming: Timing = {
-  intro: 60,
+  intro: 0,
   canvas: 300,
   brush: 160,
   portal: 120,

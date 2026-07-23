@@ -43,9 +43,11 @@ export const MarketingVideo: React.FC<{ timing: Timing }> = ({ timing }) => {
         }
       />
       <Series>
-        <Series.Sequence durationInFrames={t.intro}>
-          <AbsoluteFill style={{ background: theme.bg }} />
-        </Series.Sequence>
+        {t.intro > 0 ? (
+          <Series.Sequence durationInFrames={t.intro}>
+            <AbsoluteFill style={{ background: theme.bg }} />
+          </Series.Sequence>
+        ) : null}
         <Series.Sequence durationInFrames={t.canvas}>
           <CanvasSlide duration={t.canvas} />
         </Series.Sequence>

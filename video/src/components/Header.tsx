@@ -3,7 +3,6 @@ import {
   AbsoluteFill,
   Easing,
   interpolate,
-  spring,
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
@@ -17,7 +16,7 @@ export const Header: React.FC<{ introEnd: number; hideFrom: number }> = ({
   hideFrom,
 }) => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { width, height } = useVideoConfig();
 
   if (frame >= hideFrom) {
     return null;
@@ -40,6 +39,10 @@ export const Header: React.FC<{ introEnd: number; hideFrom: number }> = ({
   const parkedY = isSquare ? 38 + 40 : 50 + 44;
   const cx = interpolate(s, [0, 1], [width / 2, parkedX]);
   const cy = interpolate(s, [0, 1], [height * 0.42, parkedY]);
+
+  if (isSquare) {
+    return;
+  }
 
   return (
     <AbsoluteFill

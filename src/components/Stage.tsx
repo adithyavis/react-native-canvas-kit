@@ -1,6 +1,8 @@
 import {
+  forwardRef,
   memo,
   useCallback,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -8,7 +10,13 @@ import {
   type ReactNode,
 } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { Canvas } from '@shopify/react-native-skia';
+import {
+  Canvas,
+  ImageFormat,
+  Skia,
+  useCanvasRef,
+  type SkImage,
+} from '@shopify/react-native-skia';
 import {
   Gesture,
   GestureDetector,
@@ -34,6 +42,30 @@ import {
 } from './internal/gestureState';
 import { useStageGestures } from './internal/useStageGestures';
 
+export interface StageToImageOptions {
+  mimeType?: 'image/png' | 'image/jpeg' | 'image/webp';
+  quality?: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+export interface StageHandle {
+  makeImageSnapshot: (options?: StageToImageOptions) => Promise<SkImage | null>;
+  toBase64: (options?: StageToImageOptions) => Promise<string | null>;
+  toDataURL: (options?: StageToImageOptions) => Promise<string | null>;
+}
+
+const MIME_TYPE_TO_IMAGE_FORMAT: Record<
+  NonNullable<StageToImageOptions['mimeType']>,
+  ImageFormat
+> = {
+  'image/png': ImageFormat.PNG,
+  'image/jpeg': ImageFormat.JPEG,
+  'image/webp': ImageFormat.WEBP,
+};
+
 export interface StageProps {
   width: number;
   height: number;
@@ -50,17 +82,22 @@ export interface StageProps {
 }
 
 export const Stage = memo(
-  ({
-    width,
-    height,
-    style,
-    listening = true,
-    gestureEnabled: _gestureEnabled = true,
-    pinchSensitivity,
-    rotationSensitivity,
-    simultaneousGesture,
-    children,
-  }: StageProps) => {
+  forwardRef<StageHandle, StageProps>(function Stage(
+    {
+      width,
+      height,
+      style,
+      listening = true,
+      gestureEnabled: _gestureEnabled = true,
+      pinchSensitivity,
+      rotationSensitivity,
+      simultaneousGesture,
+      children,
+    },
+    ref
+  ) {
+    const canvasRef = useCanvasRef();
+
     const registryRef = useRef<NodeRegistry | null>(null);
     if (!registryRef.current) {
       registryRef.current = new NodeRegistry();
@@ -128,9 +165,46 @@ export const Stage = memo(
       [registerPortal]
     );
 
+    useImperativeHandle(ref, () => {
+      const snapshot = async (options?: StageToImageOptions) => {
+        const canvasHandle = canvasRef.current;
+        if (!canvasHandle) return null;
+        const cropRect =
+          options?.width != null && options?.height != null
+            ? Skia.XYWHRect(
+                options.x ?? 0,
+                options.y ?? 0,
+                options.width,
+                options.height
+              )
+            : undefined;
+        return canvasHandle.makeImageSnapshotAsync(cropRect);
+      };
+
+      const encode = async (options?: StageToImageOptions) => {
+        const image = await snapshot(options);
+        if (!image) return null;
+        const format =
+          MIME_TYPE_TO_IMAGE_FORMAT[options?.mimeType ?? 'image/png'];
+        const quality = Math.round((options?.quality ?? 1) * 100);
+        return image.encodeToBase64(format, quality);
+      };
+
+      return {
+        makeImageSnapshot: snapshot,
+        toBase64: encode,
+        toDataURL: async (options?: StageToImageOptions) => {
+          const base64 = await encode(options);
+          if (base64 == null) return null;
+          return `data:${options?.mimeType ?? 'image/png'};base64,${base64}`;
+        },
+      };
+    }, [canvasRef]);
+
     const canvas = useMemo(
       () => (
         <Canvas
+          ref={canvasRef}
           style={StyleSheet.flatten([{ width, height }, style])}
           pointerEvents={
             gestureEnabled || simultaneousGesture != null ? 'auto' : 'none'
@@ -148,6 +222,7 @@ export const Stage = memo(
         </Canvas>
       ),
       [
+        canvasRef,
         children,
         gestureEnabled,
         height,
@@ -181,6 +256,6 @@ export const Stage = memo(
         />
       </View>
     );
-  }
+  })
 );
 Stage.displayName = 'Stage';

@@ -1,12 +1,19 @@
 import { useRef, useState } from 'react';
 import {
   type LayoutChangeEvent,
+  Image as RNImage,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { Stage, BrushLayer, Pen } from 'react-native-canvas-kit';
+import {
+  Stage,
+  BrushLayer,
+  Pen,
+  type StageHandle,
+} from 'react-native-canvas-kit';
 import { DrawerButton } from '../src/DrawerButton';
 import { useTouchTracker, TouchRings } from '../src/TouchOverlay';
 
@@ -23,9 +30,11 @@ export default function DocuSignScreen() {
   const [strokes, setStrokes] = useState<SignatureStroke[]>([]);
   const [color, setColor] = useState<string>(DEFAULT_INK);
   const [pad, setPad] = useState({ width: 0, height: 0 });
+  const [signatureUri, setSignatureUri] = useState<string | null>(null);
   const strokeCounter = useRef(0);
   const colorRef = useRef(color);
   colorRef.current = color;
+  const stageRef = useRef<StageHandle>(null);
   const { gesture: touchGesture, touches } = useTouchTracker();
 
   const onPadLayout = (e: LayoutChangeEvent) => {
@@ -35,6 +44,13 @@ export default function DocuSignScreen() {
 
   const clear = () => setStrokes([]);
   const isEmpty = strokes.length === 0;
+
+  const handleCreate = async () => {
+    const dataUrl = await stageRef.current?.toDataURL({
+      mimeType: 'image/png',
+    });
+    if (dataUrl) setSignatureUri(dataUrl);
+  };
 
   return (
     <View style={styles.root}>
@@ -51,7 +67,12 @@ export default function DocuSignScreen() {
             <Text style={styles.tabText}>Take Photo</Text>
           </View>
         </View>
-        <Pressable style={styles.create} disabled={isEmpty} hitSlop={12}>
+        <Pressable
+          style={styles.create}
+          disabled={isEmpty}
+          hitSlop={12}
+          onPress={handleCreate}
+        >
           <Text style={[styles.createText, isEmpty && styles.createDisabled]}>
             Create
           </Text>
@@ -69,6 +90,7 @@ export default function DocuSignScreen() {
 
           {pad.width > 0 && (
             <Stage
+              ref={stageRef}
               width={pad.width}
               height={pad.height}
               style={styles.stage}
@@ -123,6 +145,30 @@ export default function DocuSignScreen() {
         them on documents, including legally binding contracts - just the same
         as a pen-and-paper signature.
       </Text>
+
+      <Modal
+        visible={signatureUri !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSignatureUri(null)}
+      >
+        <Pressable
+          style={styles.previewBackdrop}
+          onPress={() => setSignatureUri(null)}
+        >
+          <View style={styles.previewCard}>
+            <Text style={styles.previewTitle}>Signature created</Text>
+            {signatureUri && (
+              <RNImage
+                source={{ uri: signatureUri }}
+                style={styles.previewImage}
+                resizeMode="contain"
+              />
+            )}
+            <Text style={styles.previewHint}>Tap anywhere to close</Text>
+          </View>
+        </Pressable>
+      </Modal>
 
       <DrawerButton />
     </View>
@@ -246,5 +292,42 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     color: '#6b7280',
+  },
+  previewBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  previewCard: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  previewTitle: {
+    color: '#1b1b1f',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  previewImage: {
+    width: '100%',
+    aspectRatio: 1.6,
+    borderRadius: 8,
+    backgroundColor: '#f4f5f7',
+  },
+  previewHint: {
+    color: '#9a9aa2',
+    fontSize: 12,
+    marginTop: 12,
   },
 });

@@ -2,7 +2,11 @@ import { assertReanimatedVersion } from './core/assertReanimatedVersion';
 assertReanimatedVersion();
 
 export { Stage } from './components/Stage';
-export type { StageProps } from './components/Stage';
+export type {
+  StageProps,
+  StageHandle,
+  StageToImageOptions,
+} from './components/Stage';
 export { Layer } from './components/Layer';
 export type { LayerProps } from './components/Layer';
 export { Group } from './components/Group';

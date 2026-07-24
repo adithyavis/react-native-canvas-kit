@@ -30,12 +30,14 @@ interface BoardSize {
 interface CanvaChromeProps {
   hasSelection: boolean;
   onConfirmSelection: () => void;
+  onExport?: () => void;
   children: (size: BoardSize) => ReactNode;
 }
 
 export function CanvaChrome({
   hasSelection,
   onConfirmSelection,
+  onExport,
   children,
 }: CanvaChromeProps) {
   const navigation = useNavigation();
@@ -97,12 +99,9 @@ export function CanvaChrome({
             color={HEADER_TINT}
             style={styles.headerIcon}
           />
-          <Ionicons
-            name="share-outline"
-            size={24}
-            color={HEADER_TINT}
-            style={styles.headerIcon}
-          />
+          <Pressable onPress={onExport} hitSlop={8} style={styles.headerIcon}>
+            <Ionicons name="share-outline" size={24} color={HEADER_TINT} />
+          </Pressable>
         </View>
       </View>
 

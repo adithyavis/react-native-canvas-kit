@@ -60,6 +60,13 @@ The stage itself is transparent. Give it a background with `style`:
 <Stage width={width} height={height} style={{ backgroundColor: '#a441e1' }} />
 ```
 
+## Exporting to an image
+
+Attach a `ref` to the stage to snapshot the canvas to an image via
+`toDataURL`, `toBase64`, or `makeImageSnapshot`. See
+[Export to Image](../export/overview.md) for the full API and an interactive
+demo.
+
 ## Disabling interaction
 
 - `listening={false}` turns the stage into a static, non-interactive drawing.

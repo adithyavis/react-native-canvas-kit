@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Image as RNImage,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,6 +18,7 @@ import {
   Layer,
   Image,
   type EventObject,
+  type StageHandle,
   type TransformResult,
 } from 'react-native-canvas-kit';
 import { CROP_PHOTOS } from '../src/cropPhotos';
@@ -76,7 +78,16 @@ export default function InstagramCropScreen() {
   const [transforms, setTransforms] = useState<Record<string, CropTransform>>(
     {}
   );
+  const [croppedUri, setCroppedUri] = useState<string | null>(null);
+  const stageRef = useRef<StageHandle>(null);
   const { gesture: touchGesture, touches } = useTouchTracker();
+
+  const handleDone = async () => {
+    const dataUrl = await stageRef.current?.toDataURL({
+      mimeType: 'image/png',
+    });
+    if (dataUrl) setCroppedUri(dataUrl);
+  };
 
   const transform = transforms[selectedId] ?? IDENTITY;
   const selected = CROP_PHOTOS.find((p) => p.id === selectedId)!;
@@ -161,7 +172,7 @@ export default function InstagramCropScreen() {
           <Text style={styles.titleText}>Recents</Text>
           <Text style={styles.caret}>⌄</Text>
         </Pressable>
-        <Pressable hitSlop={8}>
+        <Pressable hitSlop={8} onPress={handleDone}>
           <Text style={styles.done}>Done</Text>
         </Pressable>
       </View>
@@ -169,6 +180,7 @@ export default function InstagramCropScreen() {
       <View style={[styles.cropArea, { height: cropSize }]}>
         <Stage
           key={selectedId}
+          ref={stageRef}
           width={cropSize}
           height={cropSize}
           style={styles.stage}
@@ -226,6 +238,31 @@ export default function InstagramCropScreen() {
           );
         })}
       </ScrollView>
+
+      <Modal
+        visible={croppedUri !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCroppedUri(null)}
+      >
+        <Pressable
+          style={styles.previewBackdrop}
+          onPress={() => setCroppedUri(null)}
+        >
+          <Text style={styles.previewTitle}>Cropped photo</Text>
+          {croppedUri && (
+            <RNImage
+              source={{ uri: croppedUri }}
+              style={[
+                styles.previewImage,
+                { width: width * 0.6, height: width * 0.6 },
+              ]}
+              resizeMode="cover"
+            />
+          )}
+          <Text style={styles.previewHint}>Tap anywhere to close</Text>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -293,5 +330,29 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderWidth: 3,
     borderColor: '#3897f0',
+  },
+  previewBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  previewTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 20,
+  },
+  previewImage: {
+    borderRadius: 9999,
+    borderWidth: 3,
+    borderColor: '#ffffff',
+    backgroundColor: '#111111',
+  },
+  previewHint: {
+    color: '#8e8e93',
+    fontSize: 12,
+    marginTop: 20,
   },
 });

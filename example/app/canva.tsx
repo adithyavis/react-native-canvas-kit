@@ -1,5 +1,19 @@
-import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
-import { StyleSheet, View } from 'react-native';
+import {
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from 'react';
+import {
+  Image as RNImage,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text as RNText,
+  View,
+} from 'react-native';
 import { Asset } from 'expo-asset';
 import {
   Stage,
@@ -9,6 +23,7 @@ import {
   Transformer,
   useFont,
   type EventObject,
+  type StageHandle,
   type TransformEvent,
   type TransformResult,
 } from 'react-native-canvas-kit';
@@ -30,22 +45,68 @@ const QUADRANTS = [
 
 export default function CanvaScreen() {
   const [selected, setSelected] = useState<string | null>(null);
+  const [exportedUri, setExportedUri] = useState<string | null>(null);
+  const stageRef = useRef<StageHandle>(null);
+
+  const handleExport = async () => {
+    const dataUrl = await stageRef.current?.toDataURL({
+      mimeType: 'image/png',
+    });
+    if (dataUrl) setExportedUri(dataUrl);
+  };
 
   return (
-    <CanvaChrome
-      hasSelection={selected !== null}
-      onConfirmSelection={() => setSelected(null)}
+    <>
+      <CanvaChrome
+        hasSelection={selected !== null}
+        onConfirmSelection={() => setSelected(null)}
+        onExport={handleExport}
+      >
+        {({ width, height }) => (
+          <CanvaBoard
+            key={`${Math.round(width)}x${Math.round(height)}`}
+            stageRef={stageRef}
+            width={width}
+            height={height}
+            selected={selected}
+            setSelected={setSelected}
+            onExport={handleExport}
+          />
+        )}
+      </CanvaChrome>
+      <ExportPreview uri={exportedUri} onClose={() => setExportedUri(null)} />
+    </>
+  );
+}
+
+function ExportPreview({
+  uri,
+  onClose,
+}: {
+  uri: string | null;
+  onClose: () => void;
+}) {
+  return (
+    <Modal
+      visible={uri !== null}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
     >
-      {({ width, height }) => (
-        <CanvaBoard
-          key={`${Math.round(width)}x${Math.round(height)}`}
-          width={width}
-          height={height}
-          selected={selected}
-          setSelected={setSelected}
-        />
-      )}
-    </CanvaChrome>
+      <Pressable style={styles.previewBackdrop} onPress={onClose}>
+        <View style={styles.previewCard}>
+          <RNText style={styles.previewTitle}>Exported image</RNText>
+          {uri && (
+            <RNImage
+              source={{ uri }}
+              style={styles.previewImage}
+              resizeMode="contain"
+            />
+          )}
+          <RNText style={styles.previewHint}>Tap anywhere to close</RNText>
+        </View>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -54,9 +115,18 @@ interface CanvaBoardProps {
   height: number;
   selected: string | null;
   setSelected: Dispatch<SetStateAction<string | null>>;
+  stageRef: RefObject<StageHandle | null>;
+  onExport: () => void;
 }
 
-function CanvaBoard({ width, height, selected, setSelected }: CanvaBoardProps) {
+function CanvaBoard({
+  width,
+  height,
+  selected,
+  setSelected,
+  stageRef,
+  onExport,
+}: CanvaBoardProps) {
   const quadrantWidth = width / 2;
   const quadrantHeight = height / 2;
   const font = useFont(FONT_URL, Math.round(width * 0.2));
@@ -110,7 +180,12 @@ function CanvaBoard({ width, height, selected, setSelected }: CanvaBoardProps) {
 
   return (
     <View style={styles.board}>
-      <Stage width={width} height={height} simultaneousGesture={touchGesture}>
+      <Stage
+        ref={stageRef}
+        width={width}
+        height={height}
+        simultaneousGesture={touchGesture}
+      >
         <Layer
           onTap={() => setSelected(null)}
           width={width}
@@ -190,10 +265,64 @@ function CanvaBoard({ width, height, selected, setSelected }: CanvaBoardProps) {
         </Layer>
       </Stage>
       <TouchRings touches={touches} />
+      <Pressable style={styles.exportButton} onPress={onExport} hitSlop={8}>
+        <RNText style={styles.exportButtonText}>Export</RNText>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   board: { flex: 1 },
+  exportButton: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
+    backgroundColor: CANVA_PURPLE,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 22,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 5,
+  },
+  exportButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  previewBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  previewCard: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+  },
+  previewTitle: {
+    color: '#1b1b1f',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  previewImage: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f3',
+  },
+  previewHint: {
+    color: '#9a9aa2',
+    fontSize: 12,
+    marginTop: 12,
+  },
 });

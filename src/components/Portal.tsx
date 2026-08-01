@@ -94,6 +94,14 @@ export const Portal = memo(
     }, [registry, id, transformable, dragOffsetSV, scaleSV, rotationSV]);
 
     useLayoutEffect(() => {
+      if (!registry || id == null) return;
+      registry.registerResolvedTransform(id, resolvedTransformSV);
+      return () => {
+        registry.unregisterResolvedTransform(id);
+      };
+    }, [registry, id, resolvedTransformSV]);
+
+    useLayoutEffect(() => {
       resolvedTransformSV.value = {
         x: resolved.x,
         y: resolved.y,

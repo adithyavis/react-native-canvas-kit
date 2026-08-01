@@ -310,7 +310,8 @@ export function pointerDown(
   rootId: number,
   px: number,
   py: number,
-  now: number
+  now: number,
+  allowDrag: boolean = true
 ): void {
   'worklet';
   const hitNodeId = getHitNodeIdFromSnapshot(
@@ -320,15 +321,17 @@ export function pointerDown(
     px,
     py
   );
-  const dragHitNodeId = getHitNodeIdFromSnapshot(
-    snapshot,
-    getTransform,
-    rootId,
-    px,
-    py,
-    false,
-    true
-  );
+  const dragHitNodeId = allowDrag
+    ? getHitNodeIdFromSnapshot(
+        snapshot,
+        getTransform,
+        rootId,
+        px,
+        py,
+        false,
+        true
+      )
+    : -1;
   const dragTargetId =
     dragHitNodeId !== -1 ? findDragTarget(snapshot, dragHitNodeId) : -1;
   const dragNode = dragTargetId !== -1 ? snapshot.nodes[dragTargetId] : null;

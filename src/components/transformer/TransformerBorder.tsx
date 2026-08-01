@@ -13,6 +13,7 @@ import {
 interface TransformerBorderProps extends TransformChannels {
   rect: BoundsRect;
   resolvedTransformSV: SharedValue<ResolvedTransform>;
+  sceneScaleFactorSV: SharedValue<number>;
   showRotater: boolean;
   rotateAnchorOffset: number;
   stroke: string;
@@ -23,6 +24,7 @@ export const TransformerBorder = memo((props: TransformerBorderProps) => {
   const {
     rect,
     resolvedTransformSV,
+    sceneScaleFactorSV,
     dragOffsetSV,
     scaleSV,
     rotationSV,
@@ -76,6 +78,7 @@ export const TransformerBorder = memo((props: TransformerBorderProps) => {
   }, [
     rect,
     resolvedTransformSV,
+    sceneScaleFactorSV,
     dragOffsetSV,
     scaleSV,
     rotationSV,
@@ -83,12 +86,17 @@ export const TransformerBorder = memo((props: TransformerBorderProps) => {
     rotateAnchorOffset,
   ]);
 
+  const strokeWidthSV = useDerivedValue(
+    () => strokeWidth / sceneScaleFactorSV.value,
+    [strokeWidth, sceneScaleFactorSV]
+  );
+
   return (
     <Path
       path={borderPath}
       style="stroke"
       color={stroke}
-      strokeWidth={strokeWidth}
+      strokeWidth={strokeWidthSV}
     />
   );
 });

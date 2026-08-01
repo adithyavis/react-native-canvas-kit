@@ -12,6 +12,11 @@ export {
   useSceneTransform,
   type SceneTransform,
 } from './components/internal/gestureState';
+export {
+  useRenderBounds,
+  rectIntersectsBounds,
+  type VisibleBounds,
+} from './components/useVisibleBounds';
 export { Layer } from './components/Layer';
 export type { LayerProps } from './components/Layer';
 export { Group } from './components/Group';

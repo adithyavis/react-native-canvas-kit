@@ -14,6 +14,7 @@ import {
 interface TransformerHandlesProps extends TransformChannels {
   rect: BoundsRect;
   resolvedTransformSV: SharedValue<ResolvedTransform>;
+  sceneScaleFactorSV: SharedValue<number>;
   enabledAnchors: AnchorId[];
   anchorSize: number;
   rotateAnchorOffset: number;
@@ -26,6 +27,7 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
   const {
     rect,
     resolvedTransformSV,
+    sceneScaleFactorSV,
     dragOffsetSV,
     scaleSV,
     rotationSV,
@@ -39,6 +41,7 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
 
   const handlesPath = useDerivedValue(() => {
     const p = Skia.Path.Make();
+    const screenScale = sceneScaleFactorSV.value;
     const t = computeTransform(resolvedTransformSV.value, {
       dragOffsetSV,
       scaleSV,
@@ -46,7 +49,8 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
     });
     const ox = resolvedTransformSV.value.offsetX;
     const oy = resolvedTransformSV.value.offsetY;
-    const half = anchorSize / 2;
+    const half = anchorSize / screenScale / 2;
+    const rotOffset = rotateAnchorOffset;
     for (let i = 0; i < enabledAnchors.length; i++) {
       const anchor = enabledAnchors[i]!;
       if (anchor === 'rotater') {
@@ -60,7 +64,7 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
         const center = rotaterAnchorPoint(
           tc,
           t.rotation * DEG_TO_RAD,
-          rotateAnchorOffset
+          rotOffset
         );
         p.addCircle(center.x, center.y, half);
         continue;
@@ -73,6 +77,7 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
   }, [
     rect,
     resolvedTransformSV,
+    sceneScaleFactorSV,
     dragOffsetSV,
     scaleSV,
     rotationSV,
@@ -81,6 +86,11 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
     rotateAnchorOffset,
   ]);
 
+  const strokeWidthSV = useDerivedValue(
+    () => strokeWidth / sceneScaleFactorSV.value,
+    [strokeWidth, sceneScaleFactorSV]
+  );
+
   return (
     <Fragment>
       <Path path={handlesPath} style="fill" color={fill} />
@@ -88,7 +98,7 @@ export const TransformerHandles = memo((props: TransformerHandlesProps) => {
         path={handlesPath}
         style="stroke"
         color={stroke}
-        strokeWidth={strokeWidth}
+        strokeWidth={strokeWidthSV}
       />
     </Fragment>
   );

@@ -12,11 +12,22 @@ import {
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import {
   Canvas,
+  Group as SkiaGroup,
   ImageFormat,
   Skia,
   useCanvasRef,
   type SkImage,
+  type Transforms3d,
 } from '@shopify/react-native-skia';
+import { useDerivedValue, useAnimatedReaction } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
+import {
+  zoomAroundPoint,
+  DEFAULT_MIN_ZOOM,
+  DEFAULT_MAX_ZOOM,
+  type SceneState,
+} from '../core/scene';
+import { clampToBounds } from '../core/nodeBounds';
 import {
   Gesture,
   GestureDetector,
@@ -55,6 +66,13 @@ export interface StageHandle {
   makeImageSnapshot: (options?: StageToImageOptions) => Promise<SkImage | null>;
   toBase64: (options?: StageToImageOptions) => Promise<string | null>;
   toDataURL: (options?: StageToImageOptions) => Promise<string | null>;
+  getScene: () => SceneState;
+  zoomTo: (scale: number, focal?: { x: number; y: number }) => void;
+  zoomIn: (step?: number) => void;
+  zoomOut: (step?: number) => void;
+  panTo: (x: number, y: number) => void;
+  centerOn: (x: number, y: number, scale?: number) => void;
+  resetView: () => void;
 }
 
 const MIME_TYPE_TO_IMAGE_FORMAT: Record<
@@ -72,6 +90,10 @@ export interface StageProps {
   style?: StyleProp<ViewStyle>;
   listening?: boolean;
   gestureEnabled?: boolean;
+  infinite?: boolean;
+  minZoom?: number;
+  maxZoom?: number;
+  onSceneChange?: (scene: SceneState) => void;
   pinchSensitivity?: number;
   rotationSensitivity?: number;
   simultaneousGesture?:
@@ -89,6 +111,10 @@ export const Stage = memo(
       style,
       listening = true,
       gestureEnabled: _gestureEnabled = true,
+      infinite = false,
+      minZoom = DEFAULT_MIN_ZOOM,
+      maxZoom = DEFAULT_MAX_ZOOM,
+      onSceneChange,
       pinchSensitivity,
       rotationSensitivity,
       simultaneousGesture,
@@ -121,11 +147,41 @@ export const Stage = memo(
     }, [registry, rootId]);
 
     const gestureEnabled = listening !== false && _gestureEnabled !== false;
-    const { gesture, activeGestureSV } = useStageGestures(
-      registry,
-      rootId,
-      gestureEnabled,
-      { pinchSensitivity, rotationSensitivity }
+    const { gesture, activeGestureSV, sceneOffsetSV, sceneScaleSV } =
+      useStageGestures(registry, rootId, gestureEnabled, {
+        pinchSensitivity,
+        rotationSensitivity,
+        infinite,
+      });
+
+    const sceneTransform = useDerivedValue<Transforms3d>(() => {
+      const offset = sceneOffsetSV.value;
+      const scale = sceneScaleSV.value;
+      const out: Transforms3d = [];
+      if (offset.x !== 0) out.push({ translateX: offset.x });
+      if (offset.y !== 0) out.push({ translateY: offset.y });
+      if (scale.x !== 1) out.push({ scaleX: scale.x });
+      if (scale.y !== 1) out.push({ scaleY: scale.y });
+      return out;
+    }, []);
+
+    const emitSceneChange = useCallback(
+      (scene: SceneState) => {
+        onSceneChange?.(scene);
+      },
+      [onSceneChange]
+    );
+
+    useAnimatedReaction(
+      () => Math.round(sceneScaleSV.value.x * 100),
+      (percent, previous) => {
+        if (percent === previous) return;
+        scheduleOnRN(emitSceneChange, {
+          x: sceneOffsetSV.value.x,
+          y: sceneOffsetSV.value.y,
+          scale: sceneScaleSV.value.x,
+        });
+      }
     );
 
     const composedGesture = useMemo(() => {
@@ -144,10 +200,20 @@ export const Stage = memo(
         snapshotSV,
         getTransform,
         activeGestureSV,
+        sceneOffsetSV,
+        sceneScaleSV,
         width,
         height,
       }),
-      [snapshotSV, getTransform, activeGestureSV, width, height]
+      [
+        snapshotSV,
+        getTransform,
+        activeGestureSV,
+        sceneOffsetSV,
+        sceneScaleSV,
+        width,
+        height,
+      ]
     );
 
     const registerPortal = useCallback((entry: PortalEntry) => {
@@ -190,6 +256,29 @@ export const Stage = memo(
         return image.encodeToBase64(format, quality);
       };
 
+      const applyScene = (
+        nextOffset: { x: number; y: number },
+        next: number
+      ) => {
+        sceneOffsetSV.value = nextOffset;
+        sceneScaleSV.value = { x: next, y: next };
+        emitSceneChange({ x: nextOffset.x, y: nextOffset.y, scale: next });
+      };
+
+      const zoomTo = (scale: number, focal?: { x: number; y: number }) => {
+        const current = sceneScaleSV.value.x;
+        const next = clampToBounds(scale, minZoom, maxZoom);
+        const point = focal ?? { x: width / 2, y: height / 2 };
+        const offset = zoomAroundPoint(
+          sceneOffsetSV.value,
+          current,
+          next,
+          point.x,
+          point.y
+        );
+        applyScene(offset, next);
+      };
+
       return {
         makeImageSnapshot: snapshot,
         toBase64: encode,
@@ -198,8 +287,39 @@ export const Stage = memo(
           if (base64 == null) return null;
           return `data:${options?.mimeType ?? 'image/png'};base64,${base64}`;
         },
+        getScene: () => ({
+          x: sceneOffsetSV.value.x,
+          y: sceneOffsetSV.value.y,
+          scale: sceneScaleSV.value.x,
+        }),
+        zoomTo,
+        zoomIn: (step = 1.2) => zoomTo(sceneScaleSV.value.x * step),
+        zoomOut: (step = 1.2) => zoomTo(sceneScaleSV.value.x / step),
+        panTo: (x: number, y: number) =>
+          applyScene({ x, y }, sceneScaleSV.value.x),
+        centerOn: (x: number, y: number, scale?: number) => {
+          const next = clampToBounds(
+            scale ?? sceneScaleSV.value.x,
+            minZoom,
+            maxZoom
+          );
+          applyScene(
+            { x: width / 2 - next * x, y: height / 2 - next * y },
+            next
+          );
+        },
+        resetView: () => applyScene({ x: 0, y: 0 }, 1),
       };
-    }, [canvasRef]);
+    }, [
+      canvasRef,
+      sceneOffsetSV,
+      sceneScaleSV,
+      emitSceneChange,
+      minZoom,
+      maxZoom,
+      width,
+      height,
+    ]);
 
     const canvas = useMemo(
       () => (
@@ -214,7 +334,13 @@ export const Stage = memo(
             <ParentContext.Provider value={rootId}>
               <PortalContext.Provider value={portalContext}>
                 <GestureStateContext.Provider value={gestureState}>
-                  <OrderedChildren>{children}</OrderedChildren>
+                  {infinite ? (
+                    <SkiaGroup transform={sceneTransform}>
+                      <OrderedChildren>{children}</OrderedChildren>
+                    </SkiaGroup>
+                  ) : (
+                    <OrderedChildren>{children}</OrderedChildren>
+                  )}
                 </GestureStateContext.Provider>
               </PortalContext.Provider>
             </ParentContext.Provider>
@@ -226,6 +352,8 @@ export const Stage = memo(
         children,
         gestureEnabled,
         height,
+        infinite,
+        sceneTransform,
         portalContext,
         gestureState,
         registry,
@@ -253,6 +381,8 @@ export const Stage = memo(
           entries={portalEntries}
           snapshotSV={snapshotSV}
           getTransform={getTransform}
+          sceneOffsetSV={sceneOffsetSV}
+          sceneScaleSV={sceneScaleSV}
         />
       </View>
     );

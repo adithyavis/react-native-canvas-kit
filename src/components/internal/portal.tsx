@@ -97,10 +97,14 @@ export function PortalHost({
   entries,
   snapshotSV,
   getTransform,
+  sceneOffsetSV,
+  sceneScaleSV,
 }: {
   entries: PortalEntry[];
   snapshotSV: SharedValue<Snapshot>;
   getTransform: TransformLookup;
+  sceneOffsetSV: SharedValue<Vector2d>;
+  sceneScaleSV: SharedValue<Vector2d>;
 }) {
   if (entries.length === 0) return null;
   const ordered = [...entries].sort((a, b) => a.id - b.id);
@@ -112,6 +116,8 @@ export function PortalHost({
           entry={entry}
           snapshotSV={snapshotSV}
           getTransform={getTransform}
+          sceneOffsetSV={sceneOffsetSV}
+          sceneScaleSV={sceneScaleSV}
         />
       ))}
     </View>
@@ -122,10 +128,14 @@ function PortalView({
   entry,
   snapshotSV,
   getTransform,
+  sceneOffsetSV,
+  sceneScaleSV,
 }: {
   entry: PortalEntry;
   snapshotSV: SharedValue<Snapshot>;
   getTransform: TransformLookup;
+  sceneOffsetSV: SharedValue<Vector2d>;
+  sceneScaleSV: SharedValue<Vector2d>;
 }) {
   const {
     id,
@@ -172,12 +182,35 @@ function PortalView({
       offsetX: t.offsetX,
       offsetY: t.offsetY,
     });
+    const sceneOffset = sceneOffsetSV.value;
+    const sceneScale = sceneScaleSV.value;
+    const rootId = snapshot.rootId;
+    const getTransformWithoutScene: TransformLookup = (lookupId) => {
+      if (lookupId === rootId) {
+        return { offset: { x: 0, y: 0 }, scale: { x: 1, y: 1 }, rotation: 0 };
+      }
+      return getTransform(lookupId);
+    };
     const parentAbsoluteMatrix = getAbsoluteMatrixFromSnapshot(
       snapshot,
-      getTransform,
+      getTransformWithoutScene,
       node.parentId
     );
-    const m = multiply(parentAbsoluteMatrix, localMatrix);
+    const sceneMatrix = composeMatrix({
+      x: sceneOffset.x,
+      y: sceneOffset.y,
+      rotation: 0,
+      scaleX: sceneScale.x,
+      scaleY: sceneScale.y,
+      skewX: 0,
+      skewY: 0,
+      offsetX: 0,
+      offsetY: 0,
+    });
+    const m = multiply(
+      sceneMatrix,
+      multiply(parentAbsoluteMatrix, localMatrix)
+    );
 
     return {
       opacity: 1,

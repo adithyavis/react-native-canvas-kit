@@ -46,7 +46,7 @@ Clamp how far the scene can zoom with `minZoom` / `maxZoom` (defaults `0.1` and
 <Stage width={width} height={height} infinite minZoom={0.25} maxZoom={4} />
 ```
 
-## Controlling the camera
+## Controlling the zoom
 
 Attach a `ref` to drive the scene imperatively through the
 [`StageHandle`](./stage.md):
@@ -81,7 +81,7 @@ useEffect(() => {
 }, []);
 ```
 
-### Observing scene changes
+### Observing zoom changes
 
 Pass `onSceneChange` to react to zoom on the JS thread — for example, to render a
 live zoom percentage. It fires on integer-percent zoom changes, so it does not
@@ -102,7 +102,7 @@ const [zoom, setZoom] = useState(1);
 // elsewhere: <Text>{Math.round(zoom * 100)}%</Text>
 ```
 
-## Reacting to the scene from children
+## Reacting to the changes from children
 
 `useSceneTransform()` exposes the live scene offset and zoom as shared values to
 any component inside the `Stage`. It is the way to build scene-aware overlays —

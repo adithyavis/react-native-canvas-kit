@@ -37,7 +37,10 @@ function HomepageHero() {
             >
               Get Started
             </Link>
-            <Link className="button button--secondary button--lg" to="/intro">
+            <Link
+              className={`button button--lg ${styles.docsButton}`}
+              to="/intro"
+            >
               Read the Docs
             </Link>
           </div>

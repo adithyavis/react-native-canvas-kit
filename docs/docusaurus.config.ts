@@ -58,6 +58,12 @@ const config: Config = {
     colorMode: {
       respectPrefersColorScheme: true,
     },
+    algolia: {
+      appId: 'U9PLQTMVZT',
+      apiKey: 'fb01f09f8f35cc449627ffcdfe315111',
+      indexName: 'React Native Canvas Kit',
+      contextualSearch: false,
+    },
     navbar: {
       title: 'Canvas Kit',
       logo: {
@@ -71,6 +77,10 @@ const config: Config = {
           sidebarId: 'docs',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          type: 'search',
+          position: 'right',
         },
         {
           type: 'docsVersionDropdown',

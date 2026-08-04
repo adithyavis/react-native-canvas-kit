@@ -1,13 +1,9 @@
-/**
- * Homepage feature-grid styling.
- */
-
 .features {
-  padding: 4.5rem 0 5rem;
+  padding: 5rem 0 5.5rem;
 }
 
 .sectionHead {
-  max-width: 640px;
+  max-width: 660px;
   margin: 0 auto 3rem;
   text-align: center;
 }
@@ -18,8 +14,9 @@
 }
 
 .sectionSubtitle {
-  font-size: 1.1rem;
-  color: var(--ifm-color-emphasis-700);
+  font-size: 1.12rem;
+  line-height: 1.6;
+  color: var(--ck-muted);
   margin: 0;
 }
 
@@ -28,42 +25,67 @@
 }
 
 .card {
+  position: relative;
   height: 100%;
-  padding: 1.75rem;
-  border-radius: 14px;
+  padding: 1.85rem;
+  border-radius: 1rem;
   background: var(--ifm-background-surface-color);
-  border: 1px solid var(--ifm-color-emphasis-200);
+  border: 1px solid var(--ck-line);
+  overflow: hidden;
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
     border-color 0.18s ease;
 }
 
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--ck-gradient);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
 .card:hover {
-  transform: translateY(-4px);
-  border-color: var(--ifm-color-primary);
-  box-shadow: 0 16px 40px rgba(138, 43, 226, 0.14);
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--ck-indigo) 40%, transparent);
+  box-shadow: 0 20px 44px var(--ck-shadow);
+}
+
+.card:hover::before {
+  opacity: 1;
 }
 
 .cardIcon {
-  font-size: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  font-size: 1.6rem;
   line-height: 1;
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
+  background: color-mix(in srgb, var(--ck-indigo) 12%, transparent);
+  border: 1px solid var(--ck-line);
 }
 
 .cardTitle {
-  font-size: 1.2rem;
+  font-size: 1.22rem;
+  letter-spacing: -0.015em;
   margin-bottom: 0.5rem;
 }
 
 .cardText {
-  color: var(--ifm-color-emphasis-700);
+  color: var(--ck-muted);
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.62;
 }
 
 .ctaRow {
   display: flex;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }

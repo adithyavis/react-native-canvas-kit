@@ -8,6 +8,13 @@
 # react-native-canvas-kit
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/react-native-canvas-kit"><img alt="npm version" src="https://img.shields.io/npm/v/react-native-canvas-kit?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/react-native-canvas-kit"><img alt="license" src="https://img.shields.io/npm/l/react-native-canvas-kit?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/react-native-canvas-kit"><img alt="types included" src="https://img.shields.io/badge/types-included-blue?style=flat-square" /></a>
+  <a href="https://expo.io/"><img alt="runs with expo" src="https://img.shields.io/badge/Runs%20with%20Expo-4630EB.svg?style=flat-square&logo=EXPO&labelColor=f3f3f3&logoColor=000" /></a>
+</p>
+
+<p align="center">
   <video src="https://github.com/adithyavis/react-native-canvas-kit/raw/main/assets/landscape.mp4" width="100%" controls muted autoplay loop></video>
 </p>
 

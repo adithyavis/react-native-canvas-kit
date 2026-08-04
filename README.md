@@ -31,16 +31,35 @@ experience from scratch.
 
 Popular app experiences rebuilt with Canvas Kit:
 
-<p align="center">
-  <video src="https://github.com/user-attachments/assets/88cc1c85-a0bb-4416-b454-490c61a04aef" width="180" controls muted autoplay loop></video>
-  <video src="https://github.com/user-attachments/assets/e0caed23-7470-4fc7-8b77-029c77e8f8e5" width="180" controls muted autoplay loop></video>
-  <video src="https://github.com/user-attachments/assets/8256f8ed-023e-4c58-9722-dcc9729bae82" width="180" controls muted autoplay loop></video>
-  <video src="https://github.com/user-attachments/assets/afc7c51a-e421-4050-992e-df0cb6639beb" width="180" controls muted autoplay loop></video>
-  <video src="https://github.com/user-attachments/assets/b0c28f35-3d77-40a0-9cf3-f35bd7a52dcd" width="180" controls muted autoplay loop></video>
-</p>
-<p align="center">
-  <sub><b>Canva</b> &nbsp;&middot;&nbsp; <b>Instagram</b> &nbsp;&middot;&nbsp; <b>Snapseed</b> &nbsp;&middot;&nbsp; <b>DocuSign</b> &nbsp;&middot;&nbsp; <b>Google Pay</b></sub>
-</p>
+<table>
+  <tr>
+    <td width="25%" align="center">
+      <video src="https://github.com/user-attachments/assets/88cc1c85-a0bb-4416-b454-490c61a04aef" controls muted autoplay loop></video>
+      <br /><sub><b>Canva</b></sub>
+    </td>
+    <td width="25%" align="center">
+      <video src="https://github.com/user-attachments/assets/e0caed23-7470-4fc7-8b77-029c77e8f8e5" controls muted autoplay loop></video>
+      <br /><sub><b>Instagram</b></sub>
+    </td>
+    <td width="25%" align="center">
+      <video src="https://github.com/user-attachments/assets/8256f8ed-023e-4c58-9722-dcc9729bae82" controls muted autoplay loop></video>
+      <br /><sub><b>Snapseed</b></sub>
+    </td>
+    <td width="25%" align="center">
+      <video src="https://github.com/user-attachments/assets/afc7c51a-e421-4050-992e-df0cb6639beb" controls muted autoplay loop></video>
+      <br /><sub><b>DocuSign</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="25%" align="center">
+      <video src="https://github.com/user-attachments/assets/b0c28f35-3d77-40a0-9cf3-f35bd7a52dcd" controls muted autoplay loop></video>
+      <br /><sub><b>Google Pay</b></sub>
+    </td>
+    <td width="25%"></td>
+    <td width="25%"></td>
+    <td width="25%"></td>
+  </tr>
+</table>
 
 ## What you get
 

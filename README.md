@@ -1,11 +1,10 @@
-<p align="center">
+<h1>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg" />
-    <img alt="React Native Canvas Kit" src="assets/logo.svg" width="112" height="112" />
+    <img alt="React Native Canvas Kit" src="assets/logo.svg" width="48" height="48" align="left" />
   </picture>
-</p>
-
-# react-native-canvas-kit
+  &nbsp;react-native-canvas-kit
+</h1>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/react-native-canvas-kit"><img alt="npm version" src="https://img.shields.io/npm/v/react-native-canvas-kit?style=flat-square" /></a>
@@ -32,35 +31,16 @@ experience from scratch.
 
 Popular app experiences rebuilt with Canvas Kit:
 
-<table>
-  <tr>
-    <td width="50%" align="center">
-      <video src="https://github.com/user-attachments/assets/88cc1c85-a0bb-4416-b454-490c61a04aef" width="100%" controls muted autoplay loop></video>
-      <br /><sub><b>Canva</b> — design canvas</sub>
-    </td>
-    <td width="50%" align="center">
-      <video src="https://github.com/user-attachments/assets/e0caed23-7470-4fc7-8b77-029c77e8f8e5" width="100%" controls muted autoplay loop></video>
-      <br /><sub><b>Instagram</b> — crop &amp; transform</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <video src="https://github.com/user-attachments/assets/8256f8ed-023e-4c58-9722-dcc9729bae82" width="100%" controls muted autoplay loop></video>
-      <br /><sub><b>Snapseed</b> — photo editing</sub>
-    </td>
-    <td width="50%" align="center">
-      <video src="https://github.com/user-attachments/assets/afc7c51a-e421-4050-992e-df0cb6639beb" width="100%" controls muted autoplay loop></video>
-      <br /><sub><b>DocuSign</b> — signature capture</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <video src="https://github.com/user-attachments/assets/b0c28f35-3d77-40a0-9cf3-f35bd7a52dcd" width="100%" controls muted autoplay loop></video>
-      <br /><sub><b>Google Pay</b> — scratch card</sub>
-    </td>
-    <td width="50%"></td>
-  </tr>
-</table>
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/88cc1c85-a0bb-4416-b454-490c61a04aef" width="180" controls muted autoplay loop></video>
+  <video src="https://github.com/user-attachments/assets/e0caed23-7470-4fc7-8b77-029c77e8f8e5" width="180" controls muted autoplay loop></video>
+  <video src="https://github.com/user-attachments/assets/8256f8ed-023e-4c58-9722-dcc9729bae82" width="180" controls muted autoplay loop></video>
+  <video src="https://github.com/user-attachments/assets/afc7c51a-e421-4050-992e-df0cb6639beb" width="180" controls muted autoplay loop></video>
+  <video src="https://github.com/user-attachments/assets/b0c28f35-3d77-40a0-9cf3-f35bd7a52dcd" width="180" controls muted autoplay loop></video>
+</p>
+<p align="center">
+  <sub><b>Canva</b> &nbsp;&middot;&nbsp; <b>Instagram</b> &nbsp;&middot;&nbsp; <b>Snapseed</b> &nbsp;&middot;&nbsp; <b>DocuSign</b> &nbsp;&middot;&nbsp; <b>Google Pay</b></sub>
+</p>
 
 ## What you get
 

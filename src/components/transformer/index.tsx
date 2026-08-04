@@ -1,6 +1,7 @@
 import { Fragment, memo, useCallback, useMemo } from 'react';
 import {
   useAnimatedReaction,
+  useDerivedValue,
   useSharedValue,
   runOnJS,
 } from 'react-native-reanimated';
@@ -87,7 +88,11 @@ export const Transformer = memo((props: TransformerProps) => {
 
   const activeAnchorSV = useSharedValue<ActiveAnchorDrag | null>(null);
 
-  const activeGestureSV = useGestureState()?.activeGestureSV;
+  const gestureState = useGestureState();
+  const activeGestureSV = gestureState?.activeGestureSV;
+  const sceneScaleSV = gestureState?.sceneScaleSV;
+
+  const sceneScaleFactorSV = useDerivedValue(() => sceneScaleSV?.value.x ?? 1);
 
   const onTransform = useOnTransform(_onTransform);
 
@@ -268,6 +273,7 @@ export const Transformer = memo((props: TransformerProps) => {
       <TransformerBorder
         rect={rect}
         resolvedTransformSV={target.resolvedTransformSV}
+        sceneScaleFactorSV={sceneScaleFactorSV}
         dragOffsetSV={target.dragOffsetSV}
         scaleSV={target.scaleSV}
         rotationSV={target.rotationSV}
@@ -279,6 +285,7 @@ export const Transformer = memo((props: TransformerProps) => {
       <TransformerHandles
         rect={rect}
         resolvedTransformSV={target.resolvedTransformSV}
+        sceneScaleFactorSV={sceneScaleFactorSV}
         dragOffsetSV={target.dragOffsetSV}
         scaleSV={target.scaleSV}
         rotationSV={target.rotationSV}

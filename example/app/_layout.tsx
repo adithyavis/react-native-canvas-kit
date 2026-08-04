@@ -58,6 +58,10 @@ export default function RootLayout() {
           options={{ drawerLabel: 'Brushes', title: 'Brushes' }}
         />
         <Drawer.Screen
+          name="infinite"
+          options={{ drawerLabel: 'Infinite Board', title: 'Infinite Board' }}
+        />
+        <Drawer.Screen
           name="portal"
           options={{ drawerLabel: 'Portal', title: 'Portal' }}
         />

@@ -34,6 +34,16 @@ import {
   type PinchState,
 } from '../../core/gestures';
 import type { Vector2d } from '../../core/types';
+import {
+  scenePanBegin,
+  scenePanUpdate,
+  scenePanEnd,
+  sceneZoomBegin,
+  sceneZoomUpdate,
+  sceneZoomEnd,
+  type ScenePanState,
+  type SceneZoomState,
+} from '../../core/scene';
 
 type idToSVMap<T> = Record<number, SharedValue<T>>;
 
@@ -41,11 +51,14 @@ export interface StageGestureOptions {
   // User multipliers on top of the base sensitivity (default 1 = base only).
   pinchSensitivity?: number;
   rotationSensitivity?: number;
+  infinite?: boolean;
 }
 
 export interface StageGestures {
   gesture: ComposedGesture;
   activeGestureSV: SharedValue<ActiveGesture | null>;
+  sceneOffsetSV: SharedValue<Vector2d>;
+  sceneScaleSV: SharedValue<Vector2d>;
 }
 
 export function useStageGestures(
@@ -58,6 +71,11 @@ export function useStageGestures(
     PINCH_SCALE_SENSITIVITY * (options.pinchSensitivity ?? 1);
   const rotationSensitivity =
     ROTATION_SENSITIVITY * (options.rotationSensitivity ?? 1);
+  const infinite = options.infinite ?? false;
+  const sceneOffsetSV = useSharedValue<Vector2d>({ x: 0, y: 0 });
+  const sceneScaleSV = useSharedValue<Vector2d>({ x: 1, y: 1 });
+  const scenePanStateSV = useSharedValue<ScenePanState | null>(null);
+  const sceneZoomStateSV = useSharedValue<SceneZoomState | null>(null);
   const snapshotSV = useSharedValue<Snapshot>(EMPTY_SNAPSHOT);
   const idToDragOffsetMapSV = useSharedValue<idToSVMap<Vector2d>>({});
   const idToScaleMapSV = useSharedValue<idToSVMap<Vector2d>>({});
@@ -98,6 +116,16 @@ export function useStageGestures(
     idToRotationMapSV,
     brushPointsSV,
   ]);
+
+  useEffect(() => {
+    if (!infinite) return;
+    registry.registerDragOffset(rootId, sceneOffsetSV);
+    registry.registerScale(rootId, sceneScaleSV);
+    return () => {
+      registry.unregisterDragOffset(rootId);
+      registry.unregisterScale(rootId);
+    };
+  }, [registry, rootId, infinite, sceneOffsetSV, sceneScaleSV]);
 
   const dispatchRef = useRef((type: string, id: number, payload?: unknown) => {
     dispatch(registry, type, id, payload ?? {});
@@ -214,6 +242,12 @@ export function useStageGestures(
           e.y,
           Date.now()
         );
+        if (infinite) {
+          const press = pressStateSV.value;
+          if (!press || press.dragTargetId === -1) {
+            scenePanBegin(sceneOffsetSV, scenePanStateSV, e.x, e.y);
+          }
+        }
       })
       .onUpdate((e) => {
         'worklet';
@@ -222,6 +256,10 @@ export function useStageGestures(
         if (brushPoints) {
           if (brushAbortedSV.value) return;
           brushPoints.value = [...brushPoints.value, e.x, e.y];
+          return;
+        }
+        if (scenePanStateSV.value) {
+          scenePanUpdate(sceneOffsetSV, scenePanStateSV, e.x, e.y, null);
           return;
         }
         pointerMove(
@@ -255,6 +293,9 @@ export function useStageGestures(
           e.y,
           Date.now()
         );
+        if (infinite) {
+          scenePanEnd(scenePanStateSV);
+        }
       });
 
     const pinch = Gesture.Pinch()
@@ -271,9 +312,34 @@ export function useStageGestures(
           touchesSV.value,
           pressStateSV
         );
+        if (infinite) {
+          const p = pinchStateSV.value;
+          const hasScalableTarget =
+            p != null && p.targetId !== -1 && p.scalable;
+          if (!hasScalableTarget) {
+            sceneZoomBegin(
+              sceneOffsetSV,
+              sceneScaleSV,
+              sceneZoomStateSV,
+              touchesSV.value
+            );
+          }
+        }
       })
       .onUpdate((e) => {
         'worklet';
+        if (sceneZoomStateSV.value) {
+          sceneZoomUpdate(
+            sceneOffsetSV,
+            sceneScaleSV,
+            sceneZoomStateSV,
+            touchesSV.value,
+            e.scale,
+            pinchSensitivity,
+            null
+          );
+          return;
+        }
         pinchUpdate(
           snapshotSV.value,
           getTransform,
@@ -285,6 +351,9 @@ export function useStageGestures(
       })
       .onFinalize(() => {
         'worklet';
+        if (sceneZoomStateSV.value) {
+          sceneZoomEnd(sceneZoomStateSV);
+        }
         pinchEnd(snapshotSV.value, getTransform, pinchStateSV, callbacks);
       });
 
@@ -335,7 +404,12 @@ export function useStageGestures(
     enabled,
     pinchSensitivity,
     rotationSensitivity,
+    infinite,
+    sceneOffsetSV,
+    sceneScaleSV,
+    scenePanStateSV,
+    sceneZoomStateSV,
   ]);
 
-  return { gesture, activeGestureSV };
+  return { gesture, activeGestureSV, sceneOffsetSV, sceneScaleSV };
 }
